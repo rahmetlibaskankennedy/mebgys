@@ -682,7 +682,8 @@
     schoolbook: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z"/><path d="M8 4v16"/><path d="M12 8h4M12 12h4"/><path d="m14 15 .7 1.4 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2L14 15Z"/>',
     gavel: '<path d="m14 13-7.5 7.5a1 1 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6 4 4-6 6-4-4Z"/>',
     arrow: '<path d="m9 18 6-6-6-6"/>',
-    back: '<path d="m15 18-6-6 6-6"/>'
+    back: '<path d="m15 18-6-6 6-6"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>'
   };
 
   function topicSvg(name, className = 'ui-icon') {
@@ -694,11 +695,20 @@
     return typeof topic === 'string' ? { title: topic } : topic;
   }
 
+  // Bir madde grubunun tüm çocukları "yaprak" madde ise (alt bölümü yoksa),
+  // bu grup liste yerine kart bazlı (swipe) görünümle açılır.
+  function isArticleCardGroup(item) {
+    return !!item.children && item.children.length > 0 &&
+      item.children.every(child => (child.articleNumber || child.articleLabel) && !child.children);
+  }
+
   // Şu anki drill-down durumu: kategori + iç içe geçilen madde grubu zinciri
   let currentCategoryKey = null;
   let navStack = []; // her eleman: { title, subtitle, icon, iconClass, topics, progress }
+  let swiperState = null; // madde kartı (swipe) modu aktifken: { articles, index, completed, parentLevel, groupTitle }
 
   function renderLevel(level) {
+    swiperState = null;
     topicSheetTitle.textContent = level.title;
     topicSheetSubtitle.textContent = level.subtitle;
     topicEyebrow.textContent = level.eyebrow || 'KONU KATEGORİSİ';
@@ -775,6 +785,11 @@
 
       const activate = () => {
         if (item.children) {
+          if (isArticleCardGroup(item)) {
+            haptic(20);
+            openArticleSwiper(item);
+            return;
+          }
           haptic(20);
           navStack.push({
             title: item.title,
@@ -812,6 +827,7 @@
 
 
   function renderArticleDetail(item) {
+    swiperState = null;
     topicSheetTitle.textContent = item.title;
     topicSheetSubtitle.textContent = `${item.articleLabel || 'Kanun maddesi'} • ${item.questionCount || 0} soru`;
     topicEyebrow.textContent = 'MADDE DETAYI';
@@ -938,6 +954,277 @@
       // GitHub prototipinde burada soru ekranına yönlendirme yapılabilir:
       // window.location.href = `quiz.html?law=657&article=${item.articleNumber}`;
     });
+  }
+
+  // --- Madde kartı (swipe) görünümü ---
+  // "Kapsam ve Genel Hükümler" gibi tüm çocukları madde olan gruplar,
+  // sıralı bir liste yerine tek seferde bir kart gösteren, sağa/sola
+  // kaydırılabilen bir kart yığını olarak açılır.
+
+  function openArticleSwiper(group) {
+    const parentLevel = navStack[navStack.length - 1];
+    swiperState = {
+      articles: group.children,
+      index: 0,
+      completed: new Set(),
+      parentLevel,
+      groupTitle: group.title,
+      groupIconClass: parentLevel.iconClass
+    };
+    renderSwiperCard();
+  }
+
+  function renderSwiperCard(direction) {
+    const { articles, index, completed, parentLevel, groupTitle } = swiperState;
+    const item = articles[index];
+    const isLast = index === articles.length - 1;
+    const isDone = completed.has(index);
+
+    topicEyebrow.textContent = 'MADDE KARTI';
+    topicHeadingIcon.className = 'topic-heading-icon';
+    topicHeadingIcon.innerHTML = topicSvg('gavel');
+    topicSheetTitle.textContent = groupTitle;
+    topicSheetSubtitle.textContent = `Madde ${index + 1} / ${articles.length}`;
+
+    topicBreadcrumbWrap.innerHTML = `
+      <div class="topic-breadcrumb" id="swiperBackBtn" role="button" tabindex="0">
+        ${topicSvg('back')}
+        <span>${parentLevel.title}</span>
+      </div>
+    `;
+    const backBtn = document.getElementById('swiperBackBtn');
+    const goBackToParent = () => {
+      haptic(14);
+      swiperState = null;
+      renderLevel(parentLevel);
+    };
+    backBtn.addEventListener('click', goBackToParent);
+    backBtn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goBackToParent(); }
+    });
+
+    const completedCount = completed.size;
+    const progress = Math.round((completedCount / articles.length) * 100);
+    topicProgressText.textContent = completedCount === 0 ? 'Henüz çalışılmadı' : `%${progress} tamamlandı`;
+    topicProgressBar.style.width = `${progress}%`;
+
+    const keyPoints = item.keyPoints && item.keyPoints.length
+      ? item.keyPoints
+      : ['Madde başlığını öğren', 'Temel kavramları ayırt et', 'Madde sorularıyla pekiştir'];
+
+    topicList.innerHTML = `
+      <div class="swiper-dots">
+        ${articles.map((a, i) => `<span class="swiper-dot ${i === index ? 'active' : ''} ${completed.has(i) ? 'done' : ''}"></span>`).join('')}
+      </div>
+
+      <div class="article-swiper-track" id="swiperTrack">
+        <article class="article-detail-card swiper-card ${direction ? 'enter-' + direction : ''}" id="swiperCard">
+          <div class="article-kicker">
+            <span class="article-label">${item.articleLabel || `Madde ${item.articleNumber || ''}`}</span>
+            <button class="article-toggle-complete ${isDone ? 'done' : ''}" id="swiperToggleComplete" type="button">
+              ${isDone ? topicSvg('check', 'choice-icon') : ''}<span>${isDone ? 'Tamamlandı' : 'Tamamlandı İşaretle'}</span>
+            </button>
+          </div>
+          <h4>${item.title}</h4>
+          <p>${item.summary || 'Bu maddeye ilişkin kısa açıklama daha sonra içerik yönetim sisteminden getirilecektir.'}</p>
+        </article>
+      </div>
+
+      <div class="article-demo-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 11v5"></path>
+          <path d="M12 8h.01"></path>
+        </svg>
+        <span>Bu ekran kurgu amaçlıdır. Resmî madde hükmü sonraki aşamada doğrulanmış mevzuat kaynağından otomatik olarak yüklenecektir.</span>
+      </div>
+
+      <div class="article-tabs" role="tablist">
+        <button class="article-tab active" data-article-tab="explanation" type="button">Sade Anlatım</button>
+        <button class="article-tab" data-article-tab="official" type="button">Kanun Metni</button>
+        <button class="article-tab" data-article-tab="points" type="button">Önemli Noktalar</button>
+      </div>
+
+      <section class="article-panel" id="swiperPanel">
+        <h5>Sade Anlatım</h5>
+        <p>${item.summary || 'Madde açıklaması içerik sistemi bağlandığında burada gösterilecektir.'}</p>
+      </section>
+
+      <div class="article-actions">
+        <button class="article-action secondary" id="swiperSolveBtn" type="button">${item.questionCount || 0} Madde Sorusunu Çöz</button>
+        <button class="article-action primary" id="swiperNextBtn" type="button">${isLast ? 'Kategoriye Dön' : 'Sıradaki Madde ›'}</button>
+      </div>
+    `;
+
+    topicSheet.scrollTop = 0;
+
+    // Kart giriş animasyonunu tetikle (varsa)
+    if (direction) {
+      const cardEl = document.getElementById('swiperCard');
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          cardEl.classList.remove('enter-next', 'enter-prev');
+        });
+      });
+    }
+
+    // Sekmeler
+    const panel = document.getElementById('swiperPanel');
+    const tabs = topicList.querySelectorAll('.article-tab');
+    function showTab(tabName) {
+      tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.articleTab === tabName));
+      if (tabName === 'official') {
+        panel.innerHTML = `
+          <h5>Resmî Kanun Metni</h5>
+          <p>Resmî hüküm metni henüz bu prototipe eklenmedi. Üretim aşamasında doğrulanmış mevzuat dosyasından veya içerik servisinden getirilecek.</p>
+        `;
+      } else if (tabName === 'points') {
+        panel.innerHTML = `
+          <h5>Önemli Noktalar</h5>
+          <ul>${keyPoints.map(point => `<li>${point}</li>`).join('')}</ul>
+        `;
+      } else {
+        panel.innerHTML = `
+          <h5>Sade Anlatım</h5>
+          <p>${item.summary || 'Madde açıklaması içerik sistemi bağlandığında burada gösterilecektir.'}</p>
+        `;
+      }
+    }
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        haptic(10);
+        showTab(tab.dataset.articleTab);
+      });
+    });
+
+    // Tamamlandı işaretle (kaydırmadan, mevcut kartta kal)
+    document.getElementById('swiperToggleComplete').addEventListener('click', () => {
+      haptic(16);
+      if (swiperState.completed.has(swiperState.index)) {
+        swiperState.completed.delete(swiperState.index);
+      } else {
+        swiperState.completed.add(swiperState.index);
+      }
+      renderSwiperCard();
+    });
+
+    // Soruları çöz (sol taraf)
+    document.getElementById('swiperSolveBtn').addEventListener('click', () => {
+      haptic(20);
+      toast.textContent = `${item.articleLabel} için ${item.questionCount || 0} soruluk çalışma açılıyor…`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2300);
+    });
+
+    // Sıradaki madde (sağ taraf) — geçince otomatik tamamlandı işaretlenir
+    document.getElementById('swiperNextBtn').addEventListener('click', () => {
+      haptic(24);
+      advanceSwiper();
+    });
+
+    // Noktalardan doğrudan geçiş
+    topicList.querySelectorAll('.swiper-dot').forEach((dot, i) => {
+      dot.addEventListener('click', () => {
+        if (i === swiperState.index) return;
+        haptic(12);
+        goToIndex(i, i > swiperState.index ? 'next' : 'prev');
+      });
+    });
+
+    attachSwipeHandlers();
+  }
+
+  function advanceSwiper() {
+    const { index, articles, completed, parentLevel } = swiperState;
+    completed.add(index); // sıradaki maddeye geçince mevcut madde otomatik tamamlandı sayılır
+
+    if (index >= articles.length - 1) {
+      toast.textContent = 'Tüm maddeler tamamlandı! Bölüme dönülüyor…';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2300);
+      swiperState = null;
+      renderLevel(parentLevel);
+      return;
+    }
+
+    goToIndex(index + 1, 'next');
+  }
+
+  function goToIndex(newIndex, direction) {
+    const card = document.getElementById('swiperCard');
+    if (!card) {
+      swiperState.index = newIndex;
+      renderSwiperCard(direction);
+      return;
+    }
+
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      swiperState.index = newIndex;
+      renderSwiperCard(direction);
+    };
+
+    card.style.transform = '';
+    card.style.opacity = '';
+    card.classList.add(direction === 'next' ? 'exit-next' : 'exit-prev');
+    card.addEventListener('transitionend', finish, { once: true });
+    setTimeout(finish, 300);
+  }
+
+  function attachSwipeHandlers() {
+    const card = document.getElementById('swiperCard');
+    if (!card) return;
+
+    let dragging = false;
+    let startX = 0;
+    let deltaX = 0;
+    let pointerId = null;
+
+    const onDown = event => {
+      dragging = true;
+      pointerId = event.pointerId;
+      startX = event.clientX;
+      deltaX = 0;
+      card.style.transition = 'none';
+      try { card.setPointerCapture(pointerId); } catch (e) { /* no-op */ }
+    };
+
+    const onMove = event => {
+      if (!dragging) return;
+      deltaX = event.clientX - startX;
+      card.style.transform = `translateX(${deltaX}px) rotate(${deltaX / 40}deg)`;
+      card.style.opacity = String(Math.max(1 - Math.abs(deltaX) / 260, 0.4));
+    };
+
+    const onUp = () => {
+      if (!dragging) return;
+      dragging = false;
+      card.style.transition = '';
+      const threshold = 70;
+
+      if (deltaX <= -threshold) {
+        // Sola kaydırma: sıradaki maddeye geç (son maddedeyse bölümü tamamla ve geri dön)
+        haptic(16);
+        card.style.transform = '';
+        card.style.opacity = '';
+        advanceSwiper();
+      } else if (deltaX >= threshold && swiperState.index > 0) {
+        haptic(16);
+        card.style.transform = '';
+        card.style.opacity = '';
+        goToIndex(swiperState.index - 1, 'prev');
+      } else {
+        card.style.transform = '';
+        card.style.opacity = '';
+      }
+    };
+
+    card.addEventListener('pointerdown', onDown);
+    card.addEventListener('pointermove', onMove);
+    card.addEventListener('pointerup', onUp);
+    card.addEventListener('pointercancel', onUp);
   }
 
   function openTopicSheet(categoryKey) {
