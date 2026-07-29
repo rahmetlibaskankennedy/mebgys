@@ -26,13 +26,20 @@
   .phone{
     width:340px;
     height:734px;
-    background:#ffffff;
     border-radius:40px;
     position:relative;
     overflow:hidden;
-    box-shadow:0 20px 60px rgba(21,59,115,0.14);
     border:10px solid #0B1220;
-  }
+    box-shadow:0 20px 60px rgba(21,59,115,.14);
+
+    background:
+        linear-gradient(rgba(255,255,255,.05),rgba(255,255,255,.05)),
+        url("images/background.png");
+
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+}
 
   .statusbar{
     display:flex; justify-content:space-between; align-items:center;
