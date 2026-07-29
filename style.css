@@ -1,3 +1,12 @@
+/*
+  SınavRotası — Ana ekran, konu listesi ve 657 madde detay stilleri
+  Revize sürüm:
+  - CSS içine yanlışlıkla eklenen HTML etiketleri kaldırıldı.
+  - Yinelenen stat ve kategori ikon kuralları tekilleştirildi.
+  - Kategori kartı yerleşimi düzeltildi.
+  - Madde detay kontrollerine odak ve basma durumları eklendi.
+*/
+
 :root{
   --navy:#071f49;
   --navy-2:#0b2f68;
@@ -152,10 +161,6 @@ button{font:inherit}
 }
 .stat{padding:14px 7px 13px;text-align:center;position:relative}
 .stat:not(:last-child):after{content:"";position:absolute;right:0;top:18px;bottom:18px;width:1px;background:#eceef3}
-.stat-icon{
-  width:34px;height:34px;margin:0 auto 7px;border-radius:50%;
-  display:grid;place-items:center;font-size:18px;background:#eff3fa
-}
 .stat:nth-child(2) .stat-icon,.stat:nth-child(4) .stat-icon{background:var(--red-soft)}
 .stat:nth-child(3) .stat-icon{background:#fff4e7}
 .stat strong{display:block;font-size:19px;margin-bottom:3px}
@@ -167,16 +172,11 @@ button{font:inherit}
 
 .categories{display:flex;flex-direction:column;gap:10px}
 .category{
-  display:grid;grid-template-columns:66px 1fr 20px;gap:12px;align-items:center;
-  background:#fff;border:1px solid #edf0f4;border-radius:17px;padding:0 15px 0 0;
+  display:grid;grid-template-columns:58px minmax(0,1fr) 20px;gap:12px;align-items:center;
+  background:#fff;border:1px solid #edf0f4;border-radius:17px;padding:12px 15px 12px 12px;
   min-height:82px;box-shadow:0 8px 22px rgba(13,28,56,.06);cursor:pointer;
 }
-.cat-icon{
-  height:82px;border-radius:17px 15px 15px 17px;display:grid;place-items:center;
-  background:linear-gradient(145deg,#082654,#0b397c);color:#fff;font-size:31px;
-}
-.category:nth-child(2) .cat-icon{background:linear-gradient(145deg,#143f86,#2c67b8)}
-.category:nth-child(3) .cat-icon{background:linear-gradient(145deg,#ff3237,#f0252c)}
+.cat-copy{min-width:0}
 .cat-copy h4{font-size:15px;margin:0 0 4px}
 .cat-copy p{font-size:11.5px;line-height:1.35;margin:0;color:var(--muted)}
 .cat-copy small{display:block;margin-top:6px;color:var(--red);font-size:10.5px}
@@ -724,4 +724,159 @@ button{font:inherit}
   background:#edf3fb;
   padding:2px 7px;
   border-radius:6px;
+}
+
+/* 657 Madde Detay Ekranı — prototip */
+.article-detail{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding-bottom:18px;
+}
+.article-detail-card{
+  padding:17px;
+  border:1px solid #e6eaf0;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(11,33,71,.06);
+}
+.article-kicker{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+.article-label{
+  display:inline-flex;
+  align-items:center;
+  min-height:25px;
+  padding:0 9px;
+  border-radius:999px;
+  color:#fff;
+  background:#153b73;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.7px;
+}
+.article-status{
+  color:#17834b;
+  font-size:9px;
+  font-weight:750;
+}
+.article-detail-card h4{
+  margin:0 0 10px;
+  color:#10264a;
+  font-size:19px;
+  line-height:1.3;
+}
+.article-detail-card p{
+  margin:0;
+  color:#5f6b7e;
+  font-size:12px;
+  line-height:1.65;
+}
+.article-demo-note{
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+  padding:11px 12px;
+  border:1px solid #f0d8da;
+  border-radius:14px;
+  color:#7b3a3e;
+  background:#fff7f7;
+  font-size:10px;
+  line-height:1.5;
+}
+.article-demo-note svg{
+  width:17px;
+  height:17px;
+  flex:0 0 auto;
+  color:#e31e24;
+}
+.article-tabs{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+}
+.article-tab{
+  min-height:38px;
+  border:1px solid #e1e6ed;
+  border-radius:12px;
+  color:#657084;
+  background:#fff;
+  font-size:10px;
+  font-weight:750;
+  cursor:pointer;
+}
+.article-tab.active{
+  border-color:#153b73;
+  color:#fff;
+  background:#153b73;
+}
+.article-panel{
+  padding:15px;
+  border:1px solid #e6eaf0;
+  border-radius:17px;
+  background:#fff;
+}
+.article-panel h5{
+  margin:0 0 9px;
+  color:#153b73;
+  font-size:12px;
+}
+.article-panel p,
+.article-panel li{
+  color:#667286;
+  font-size:11px;
+  line-height:1.65;
+}
+.article-panel ul{
+  margin:0;
+  padding-left:17px;
+}
+.article-actions{
+  display:grid;
+  grid-template-columns:1fr 1.45fr;
+  gap:9px;
+}
+.article-action{
+  min-height:45px;
+  border:0;
+  border-radius:14px;
+  font-size:11px;
+  font-weight:800;
+  cursor:pointer;
+}
+.article-action.secondary{
+  color:#153b73;
+  background:#edf3fb;
+}
+.article-action.primary{
+  color:#fff;
+  background:linear-gradient(135deg,#2d7ef7,#153b73);
+  box-shadow:0 9px 18px rgba(21,59,115,.20);
+}
+
+/* Madde detay erişilebilirlik ve etkileşim durumları */
+.article-tab,
+.article-action{
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .14s ease,background-color .14s ease,border-color .14s ease,box-shadow .14s ease;
+}
+.article-tab:active,
+.article-action:active{
+  transform:scale(.98);
+}
+.article-tab:focus-visible,
+.article-action:focus-visible,
+.topic-close:focus-visible,
+.topic-breadcrumb:focus-visible,
+.topic-item:focus-visible{
+  outline:3px solid rgba(45,126,247,.25);
+  outline-offset:2px;
+}
+.article-action:disabled{
+  cursor:default;
+  opacity:.72;
 }
