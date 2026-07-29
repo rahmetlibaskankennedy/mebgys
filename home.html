@@ -191,6 +191,9 @@ button{font:inherit}
 
 .route-card{
   margin-top:15px;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
   border-radius:20px;
   background:
     radial-gradient(circle at 88% 2%,rgba(42,100,180,.28),transparent 32%),
@@ -203,7 +206,11 @@ button{font:inherit}
   position:relative;
   transition:transform .18s ease,box-shadow .18s ease;
 }
-.route-card:active{transform:scale(.985)}
+.route-card:active{
+  transform:scale(.985) translateY(1px);
+  box-shadow:0 8px 20px rgba(5,22,53,.20);
+  filter:brightness(.91)
+}
 .route-card:focus-visible{outline:3px solid rgba(255,59,63,.35);outline-offset:3px}
 .route-top{display:grid;grid-template-columns:50px 1fr 18px;gap:12px;align-items:center}
 .route-icon{
@@ -281,8 +288,13 @@ button{font:inherit}
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .mode-option{
   border:1px solid #e5e8ee;border-radius:14px;padding:11px;background:#fff;
-  text-align:left;cursor:pointer;color:var(--text)
+  text-align:left;cursor:pointer;color:var(--text);
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .14s ease,background-color .14s ease,border-color .14s ease,box-shadow .14s ease
 }
+.mode-option:active{transform:scale(.975);background:#f7f8fb}
 .mode-option strong{display:block;font-size:12px;margin-bottom:3px}
 .mode-option span{display:block;font-size:9.5px;color:var(--muted);line-height:1.3}
 .mode-option.selected{
@@ -292,8 +304,13 @@ button{font:inherit}
 .choice-row{display:flex;gap:8px}
 .choice{
   flex:1;border:1px solid #e5e8ee;border-radius:12px;background:#fff;
-  padding:10px 6px;font-size:11px;font-weight:700;color:#4c566b;cursor:pointer
+  padding:10px 6px;font-size:11px;font-weight:700;color:#4c566b;cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .14s ease,background-color .14s ease,border-color .14s ease,box-shadow .14s ease
 }
+.choice:active{transform:scale(.96);background:#f1f3f7}
 .choice.selected{background:#092b60;color:#fff;border-color:#092b60}
 .sheet-summary{
   display:flex;justify-content:space-between;align-items:center;
@@ -383,6 +400,52 @@ button{font:inherit}
   .route-bottom{align-items:stretch;flex-direction:column}
   .route-start{width:100%}
 }
+
+/* Kurumsal SVG ikon sistemi */
+.ui-icon{width:23px;height:23px;display:block}
+.inline-arrow{width:14px;height:14px;vertical-align:-2px;margin-left:2px}
+.status-icons .wifi svg{width:20px;height:20px;display:block}
+.stat-icon{
+  width:40px;height:40px;border-radius:14px;
+  display:grid;place-items:center;
+  color:#153B73;
+  background:#edf3fb;
+  margin:0 auto 7px;
+}
+.stat-icon.accent{color:#e93238;background:#fff0f1}
+.stat-icon .ui-icon{width:21px;height:21px}
+.cat-icon{
+  width:58px;height:58px;border-radius:16px;
+  display:grid;place-items:center;
+  background:linear-gradient(145deg,#082f69,#061d43);
+  color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+}
+.cat-icon.blue{background:linear-gradient(145deg,#235fae,#153b73)}
+.cat-icon.red{background:linear-gradient(145deg,#f34549,#dd242a)}
+.cat-icon .ui-icon{width:31px;height:31px;stroke-width:1.65}
+.chevron{display:grid;place-items:center;color:#8c97aa}
+.chevron .ui-icon{width:19px;height:19px}
+.route-icon .ui-icon{width:28px;height:28px}
+.route-chevron{display:grid;place-items:center}
+.route-chevron .ui-icon{width:21px;height:21px}
+.route-meta span{
+  display:inline-flex;align-items:center;gap:5px;
+}
+.route-meta span b{font:inherit;font-weight:600}
+.meta-icon{width:13px;height:13px;display:block}
+.sheet-title{display:flex;align-items:center;gap:9px}
+.sheet-title-icon{
+  width:31px;height:31px;padding:6px;border-radius:10px;
+  color:#153B73;background:#edf3fb;box-sizing:border-box
+}
+.mode-option strong{
+  display:flex!important;align-items:center;gap:7px;
+}
+.option-icon{width:18px;height:18px;color:#153B73;flex:0 0 auto}
+.mode-option.selected .option-icon{color:#e93238}
+.choice{display:flex;align-items:center;justify-content:center;gap:6px}
+.choice-icon{width:16px;height:16px}
+
 </style>
 </head>
 <body>
@@ -393,7 +456,7 @@ button{font:inherit}
         <span>9:41</span>
         <div class="status-icons">
           <span class="signal"><i></i><i></i><i></i><i></i></span>
-          <span class="wifi">⌁</span>
+          <span class="wifi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9a14 14 0 0 1 18 0"/><path d="M6 13a9 9 0 0 1 12 0"/><path d="M9.5 17a4 4 0 0 1 5 0"/><circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/></svg></span>
           <span class="battery"></span>
         </div>
       </div>
@@ -439,61 +502,61 @@ button{font:inherit}
 
     <main class="content">
       <section class="stats">
-        <div class="stat"><div class="stat-icon">📖</div><strong>12</strong><span>Konu<br>Tamamlandı</span></div>
-        <div class="stat"><div class="stat-icon">🎯</div><strong>320</strong><span>Soru<br>Çözüldü</span></div>
-        <div class="stat"><div class="stat-icon">🏆</div><strong>18</strong><span>Deneme<br>Tamamlandı</span></div>
-        <div class="stat"><div class="stat-icon">🔥</div><strong>7</strong><span>Günlük<br>Seri</span></div>
+        <div class="stat"><div class="stat-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H12v18H7.5A3.5 3.5 0 0 0 4 23V5.5Z"/><path d="M20 5.5A3.5 3.5 0 0 0 16.5 2H12v18h4.5A3.5 3.5 0 0 1 20 23V5.5Z"/></svg></div><strong>12</strong><span>Konu<br>Tamamlandı</span></div>
+        <div class="stat"><div class="stat-icon accent"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="m15 9 5-5"/><path d="M17 4h3v3"/></svg></div><strong>320</strong><span>Soru<br>Çözüldü</span></div>
+        <div class="stat"><div class="stat-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="m8.5 12-1 10 4.5-2 4.5 2-1-10"/></svg></div><strong>18</strong><span>Deneme<br>Tamamlandı</span></div>
+        <div class="stat"><div class="stat-icon accent"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7 0-5-4-7-5-12-3 2-5 5-5 8-1-1-2-2-2-4-2 2-3 5-3 8 0 4 3 7 8 7Z"/><path d="M10 18c0-2 1-3 2-5 1 2 3 3 3 5a3 3 0 0 1-5 0Z"/></svg></div><strong>7</strong><span>Günlük<br>Seri</span></div>
       </section>
 
       <div class="section-head">
         <h3>Konu Kategorileri</h3>
-        <a href="#">Tümünü Gör&nbsp; ›</a>
+        <a href="#">Tümünü Gör&nbsp; <svg class="inline-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>
       </div>
 
       <section class="categories">
         <article class="category">
-          <div class="cat-icon">⚖</div>
+          <div class="cat-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M6 6h12"/><path d="m6 6-4 7h8L6 6Z"/><path d="m18 6-4 7h8l-4-7Z"/><path d="M8 21h8"/></svg></div>
           <div class="cat-copy">
             <h4>Mevzuat</h4>
             <p>Kanunlar, yönetmelikler<br>ve resmî düzenlemeler</p>
             <small>120 Konu&nbsp; • &nbsp;2400 Soru</small>
           </div>
-          <div class="chevron">›</div>
+          <div class="chevron"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
         </article>
 
         <article class="category">
-          <div class="cat-icon">🏛</div>
+          <div class="cat-icon blue"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-6 9 6"/><path d="M5 10h14"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/><path d="M4 18h16M3 22h18"/></svg></div>
           <div class="cat-copy">
             <h4>Genel Kültür</h4>
             <p>Tarih, coğrafya, vatandaşlık<br>ve güncel bilgiler</p>
             <small>95 Konu&nbsp; • &nbsp;1900 Soru</small>
           </div>
-          <div class="chevron">›</div>
+          <div class="chevron"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
         </article>
 
         <article class="category">
-          <div class="cat-icon">📖</div>
+          <div class="cat-icon red"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z"/><path d="M8 4v16"/><path d="M12 8h4M12 12h4"/><path d="m14 15 .7 1.4 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2L14 15Z"/></svg></div>
           <div class="cat-copy">
             <h4>MEB Mevzuatı</h4>
             <p>Millî Eğitim Bakanlığı<br>mevzuat ve yönergeleri</p>
             <small>75 Konu&nbsp; • &nbsp;1500 Soru</small>
           </div>
-          <div class="chevron">›</div>
+          <div class="chevron"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
         </article>
       </section>
 
       <section class="route-card" id="routeCard" role="button" tabindex="0" aria-label="Bugünkü rotayı aç">
         <div class="route-top">
-          <div class="route-icon">🧭</div>
+          <div class="route-icon" id="routeMainIcon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg></div>
           <div class="route-title">
-            <span>SANA ÖZEL</span>
-            <h4>Bugünkü Rota</h4>
-            <p>Zayıf olduğun konulara göre hazırlandı.</p>
+            <span id="routeBadge">SANA ÖZEL</span>
+            <h4 id="routeCardTitle">Bugünkü Rota</h4>
+            <p id="routeCardSubtitle">Zayıf olduğun konulara göre hazırlandı.</p>
           </div>
-          <div class="route-chevron">›</div>
+          <div class="route-chevron"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
         </div>
 
-        <div class="route-plan">
+        <div class="route-plan" id="routePlan">
           <div class="route-plan-item">
             <span class="route-dot red"></span>
             <span>Genel Mevzuat</span>
@@ -513,9 +576,9 @@ button{font:inherit}
 
         <div class="route-bottom">
           <div class="route-meta">
-            <span>❓ 20 Soru</span>
-            <span>⏱ 18 dk</span>
-            <span>🔥 Serini koru</span>
+            <span id="routeQuestionMeta"><svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.5 2.5 0 1 1 3.9 2c-1 .7-1.6 1.2-1.6 2.5"/><path d="M12 17h.01"/></svg><b>20 Soru</b></span>
+            <span id="routeTimeMeta"><svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><b>18 dk</b></span>
+            <span id="routeSeriesMeta"><svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22c4 0 7-3 7-7 0-5-4-7-5-12-3 2-5 5-5 8-1-1-2-2-2-4-2 2-3 5-3 8 0 4 3 7 8 7Z"/><path d="M10 18c0-2 1-3 2-5 1 2 3 3 3 5a3 3 0 0 1-5 0Z"/></svg><b>Serini koru</b></span>
           </div>
           <button class="route-start" id="openRouteSheet" type="button">Rotayı Başlat</button>
         </div>
@@ -529,7 +592,7 @@ button{font:inherit}
     <div class="sheet-handle"></div>
     <div class="sheet-head">
       <div>
-        <h3>🧭 Bugünkü Rota</h3>
+        <h3 class="sheet-title"><svg class="sheet-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg><span>Bugünkü Rota</span></h3>
         <p>Önerilen plan hazır. İstersen başlamadan önce özelleştir.</p>
       </div>
       <button class="sheet-close" id="closeRouteSheet" type="button" aria-label="Paneli kapat">×</button>
@@ -539,19 +602,19 @@ button{font:inherit}
       <span class="sheet-label">PRATİK TÜRÜ</span>
       <div class="mode-grid" id="modeGrid">
         <button class="mode-option selected" data-mode="Sana Özel Karma" type="button">
-          <strong>✨ Sana Özel</strong>
+          <strong><svg class="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 1.1 3.1L16 7.2l-2.9 1.1L12 11l-1.1-2.7L8 7.2l2.9-1.1L12 3Z"/><path d="m18 13 .7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z"/><path d="m6 14 .8 2.2L9 17l-2.2.8L6 20l-.8-2.2L3 17l2.2-.8L6 14Z"/></svg><span>Sana Özel</span></strong>
           <span>Zayıf ve eksik konularına göre</span>
         </button>
         <button class="mode-option" data-mode="Zayıf Konular" type="button">
-          <strong>📉 Zayıf Konular</strong>
+          <strong><svg class="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 7 6 6 4-4 8 8"/><path d="M15 17h6v-6"/></svg><span>Zayıf Konular</span></strong>
           <span>En çok yanlış yaptığın alanlar</span>
         </button>
         <button class="mode-option" data-mode="Son Çalışılan Konu" type="button">
-          <strong>📚 Son Çalışılan</strong>
+          <strong><svg class="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg><span>Son Çalışılan</span></strong>
           <span>Kaldığın konudan devam et</span>
         </button>
         <button class="mode-option" data-mode="Rastgele Karma" type="button">
-          <strong>🎲 Rastgele Karma</strong>
+          <strong><svg class="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="m21 3-7 7"/><path d="M4 7h3l10 10h4"/><path d="M16 21h5v-5"/><path d="m21 21-4-4"/><path d="M4 17h3l3-3"/></svg><span>Rastgele Karma</span></strong>
           <span>Tüm konulardan dengeli seçim</span>
         </button>
       </div>
@@ -570,8 +633,8 @@ button{font:inherit}
     <div class="sheet-section">
       <span class="sheet-label">SÜRE MODU</span>
       <div class="choice-row" id="timeChoices">
-        <button class="choice selected" data-time="Süreli" type="button">⏱ Süreli</button>
-        <button class="choice" data-time="Süresiz" type="button">∞ Süresiz</button>
+        <button class="choice selected" data-time="Süreli" type="button"><svg class="choice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Süreli</span></button>
+        <button class="choice" data-time="Süresiz" type="button"><svg class="choice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 8c-2.5 0-4.5 1.8-4.5 4s2 4 4.5 4c3.5 0 5.5-8 9-8 2.5 0 4.5 1.8 4.5 4s-2 4-4.5 4c-3.5 0-5.5-8-9-8Z"/></svg><span>Süresiz</span></button>
       </div>
     </div>
 
@@ -627,11 +690,92 @@ button{font:inherit}
   const summaryDuration = document.getElementById('summaryDuration');
   const toast = document.getElementById('toast');
 
+  const routeBadge = document.getElementById('routeBadge');
+  const routeCardTitle = document.getElementById('routeCardTitle');
+  const routeCardSubtitle = document.getElementById('routeCardSubtitle');
+  const routePlan = document.getElementById('routePlan');
+  const routeQuestionMeta = document.getElementById('routeQuestionMeta');
+  const routeTimeMeta = document.getElementById('routeTimeMeta');
+  const routeSeriesMeta = document.getElementById('routeSeriesMeta');
+  const routeMainIcon = document.getElementById('routeMainIcon');
+
   let selectedMode = 'Sana Özel Karma';
   let selectedQuestions = 20;
   let selectedTime = 'Süreli';
 
+  const modePlans = {
+    'Sana Özel Karma': {
+      badge: 'SANA ÖZEL',
+      title: 'Bugünkü Rota',
+      subtitle: 'Zayıf olduğun konulara göre hazırlandı.',
+      icon: 'sparkles',
+      distribution: [
+        ['Genel Mevzuat', 8, 'red'],
+        ['MEB Mevzuatı', 6, 'blue'],
+        ['Genel Kültür', 6, 'light']
+      ]
+    },
+    'Zayıf Konular': {
+      badge: 'ODAK MODU',
+      title: 'Zayıf Konular',
+      subtitle: 'En çok yanlış yaptığın alanlara odaklan.',
+      icon: 'trenddown',
+      distribution: [
+        ['657 DMK', 10, 'red'],
+        ['MEB Mevzuatı', 6, 'blue'],
+        ['İnkılap Tarihi', 4, 'light']
+      ]
+    },
+    'Son Çalışılan Konu': {
+      badge: 'DEVAM ET',
+      title: 'Son Çalışılan Konu',
+      subtitle: 'Kaldığın yerden kesintisiz devam et.',
+      icon: 'history',
+      distribution: [
+        ['MEB Mevzuatı', 12, 'blue'],
+        ['Eğitim Yönetimi', 5, 'light'],
+        ['Genel Mevzuat', 3, 'red']
+      ]
+    },
+    'Rastgele Karma': {
+      badge: 'KARMA SET',
+      title: 'Rastgele Karma',
+      subtitle: 'Tüm konulardan dengeli ve sürpriz bir set.',
+      icon: 'shuffle',
+      distribution: [
+        ['Genel Mevzuat', 7, 'red'],
+        ['MEB Mevzuatı', 7, 'blue'],
+        ['Genel Kültür', 6, 'light']
+      ]
+    }
+  };
+
+
+  const iconPaths = {
+    compass: '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/>',
+    sparkles: '<path d="m12 3 1.1 3.1L16 7.2l-2.9 1.1L12 11l-1.1-2.7L8 7.2l2.9-1.1L12 3Z"/><path d="m18 13 .7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2Z"/><path d="m6 14 .8 2.2L9 17l-2.2.8L6 20l-.8-2.2L3 17l2.2-.8L6 14Z"/>',
+    trenddown: '<path d="m3 7 6 6 4-4 8 8"/><path d="M15 17h6v-6"/>',
+    history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>',
+    shuffle: '<path d="M16 3h5v5"/><path d="m21 3-7 7"/><path d="M4 7h3l10 10h4"/><path d="M16 21h5v-5"/><path d="m21 21-4-4"/><path d="M4 17h3l3-3"/>',
+    help: '<circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.5 2.5 0 1 1 3.9 2c-1 .7-1.6 1.2-1.6 2.5"/><path d="M12 17h.01"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    flame: '<path d="M12 22c4 0 7-3 7-7 0-5-4-7-5-12-3 2-5 5-5 8-1-1-2-2-2-4-2 2-3 5-3 8 0 4 3 7 8 7Z"/><path d="M10 18c0-2 1-3 2-5 1 2 3 3 3 5a3 3 0 0 1-5 0Z"/>',
+    focus: '<circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+    repeat: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="m7 22-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>'
+  };
+
+  function svgIcon(name, className = 'meta-icon') {
+    return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths[name] || iconPaths.compass}</svg>`;
+  }
+
+  function haptic(duration = 20) {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(duration);
+    }
+  }
+
   function openSheet() {
+    haptic(20);
     sheet.classList.add('open');
     backdrop.classList.add('open');
     sheet.setAttribute('aria-hidden', 'false');
@@ -641,6 +785,58 @@ button{font:inherit}
     sheet.classList.remove('open');
     backdrop.classList.remove('open');
     sheet.setAttribute('aria-hidden', 'true');
+  }
+
+  function scaledDistribution(baseDistribution, totalQuestions) {
+    const baseTotal = baseDistribution.reduce((sum, item) => sum + item[1], 0);
+    const scaled = baseDistribution.map(item => [
+      item[0],
+      Math.max(1, Math.round((item[1] / baseTotal) * totalQuestions)),
+      item[2]
+    ]);
+
+    let difference = totalQuestions - scaled.reduce((sum, item) => sum + item[1], 0);
+    let index = 0;
+
+    while (difference !== 0) {
+      const direction = difference > 0 ? 1 : -1;
+      if (scaled[index][1] + direction >= 1) {
+        scaled[index][1] += direction;
+        difference -= direction;
+      }
+      index = (index + 1) % scaled.length;
+    }
+
+    return scaled;
+  }
+
+  function updateCard() {
+    const plan = modePlans[selectedMode];
+    const distribution = scaledDistribution(plan.distribution, selectedQuestions);
+    const minutes = Math.max(5, Math.round(selectedQuestions * 0.9));
+
+    routeBadge.textContent = plan.badge;
+    routeCardTitle.textContent = plan.title;
+    routeMainIcon.innerHTML = svgIcon(plan.icon, 'ui-icon');
+    routeCardSubtitle.textContent = plan.subtitle;
+
+    routePlan.innerHTML = distribution.map(([label, count, dotClass]) => `
+      <div class="route-plan-item">
+        <span class="route-dot ${dotClass}"></span>
+        <span>${label}</span>
+        <strong>${count} soru</strong>
+      </div>
+    `).join('');
+
+    routeQuestionMeta.innerHTML = `${svgIcon('help')}<b>${selectedQuestions} Soru</b>`;
+    routeTimeMeta.innerHTML = selectedTime === 'Süresiz'
+      ? `${svgIcon('repeat')}<b>Süresiz</b>`
+      : `${svgIcon('clock')}<b>${minutes} dk</b>`;
+    routeSeriesMeta.innerHTML = selectedMode === 'Zayıf Konular'
+      ? `${svgIcon('focus')}<b>Odak puanı</b>`
+      : selectedMode === 'Son Çalışılan Konu'
+        ? `${svgIcon('history')}<b>Kaldığın yer</b>`
+        : `${svgIcon('flame')}<b>Serini koru</b>`;
   }
 
   function updateSummary() {
@@ -666,44 +862,60 @@ button{font:inherit}
     openSheet();
   });
 
-  closeButton.addEventListener('click', closeSheet);
+  closeButton.addEventListener('click', () => {
+    haptic(12);
+    closeSheet();
+  });
+
   backdrop.addEventListener('click', closeSheet);
 
   document.querySelectorAll('#modeGrid .mode-option').forEach(button => {
     button.addEventListener('click', () => {
+      haptic(20);
       document.querySelectorAll('#modeGrid .mode-option').forEach(item => item.classList.remove('selected'));
       button.classList.add('selected');
       selectedMode = button.dataset.mode;
       updateSummary();
+      updateCard();
     });
   });
 
   document.querySelectorAll('#questionChoices .choice').forEach(button => {
     button.addEventListener('click', () => {
+      haptic(18);
       document.querySelectorAll('#questionChoices .choice').forEach(item => item.classList.remove('selected'));
       button.classList.add('selected');
       selectedQuestions = Number(button.dataset.questions);
       updateSummary();
+      updateCard();
     });
   });
 
   document.querySelectorAll('#timeChoices .choice').forEach(button => {
     button.addEventListener('click', () => {
+      haptic(18);
       document.querySelectorAll('#timeChoices .choice').forEach(item => item.classList.remove('selected'));
       button.classList.add('selected');
       selectedTime = button.dataset.time;
       updateSummary();
+      updateCard();
     });
   });
 
   startButton.addEventListener('click', () => {
+    haptic(35);
+    updateCard();
     closeSheet();
-    toast.textContent = `${selectedQuestions} soruluk ${selectedMode} rotası hazırlanıyor…`;
+
+    const planLabel = selectedTime === 'Süresiz'
+      ? `${selectedMode} – süresiz mod`
+      : `${selectedQuestions} soruluk ${selectedMode}`;
+
+    toast.textContent = `${planLabel} hazırlanıyor…`;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2400);
 
-    // Gerçek soru ekranına yönlendirmek için aşağıdaki satırı etkinleştirebilirsin:
-    // window.location.href = `quiz.html?mode=${encodeURIComponent(selectedMode)}&questions=${selectedQuestions}&time=${encodeURIComponent(selectedTime)}`;
+    // Gerçek uygulamada rota state'i store/context üzerinden quiz ekranına aktarılabilir.
   });
 
   document.addEventListener('keydown', (event) => {
@@ -711,6 +923,7 @@ button{font:inherit}
   });
 
   updateSummary();
+  updateCard();
 })();
 </script>
 
