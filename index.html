@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>SınavRotası - Modern & Minimal</title>
+<style>
+  :root{
+    --navy:#153B73;
+    --accent:#2D7EF7;
+    --gray-border:#E3E7EE;
+    --text-gray:#8A96A8;
+    --placeholder:#B7C0CE;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; font-family:-apple-system,'SF Pro Display',Roboto,Arial,sans-serif;}
+  body{
+    background:#EEF2F7;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    gap:40px;
+    min-height:100vh;
+    padding:50px 30px;
+    flex-wrap:wrap;
+  }
+
+  .phone{
+    width:340px;
+    height:734px;
+    background:#ffffff;
+    border-radius:40px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(21,59,115,0.14);
+    border:10px solid #0B1220;
+  }
+
+  .statusbar{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:16px 26px 0; font-size:13px; font-weight:600; color:#111;
+  }
+
+  .wave{
+    position:absolute; bottom:0; left:0; right:0; z-index:0;
+  }
+
+  .content{
+    position:relative; z-index:1;
+    padding:20px 26px 24px;
+    display:flex; flex-direction:column;
+    height:100%;
+  }
+
+  /* Logo */
+  .logo-wrap{ display:flex; flex-direction:column; align-items:center; margin-top:8px; margin-bottom:6px;}
+  .brand-title{ font-size:22px; font-weight:700; letter-spacing:-0.3px; margin-top:10px;}
+  .brand-title .s1{ color:var(--navy);}
+  .brand-title .s2{ color:var(--accent);}
+  .brand-sub{ font-size:12px; color:var(--text-gray); margin-top:3px;}
+
+  .heading{ text-align:center; margin-top:22px;}
+  .heading h1{ font-size:19px; font-weight:700; color:#16233B;}
+  .heading p{ font-size:12.5px; color:var(--text-gray); margin-top:4px;}
+
+  .field{
+    display:flex; align-items:center; gap:10px;
+    height:48px; border-radius:12px;
+    border:1px solid var(--gray-border);
+    padding:0 14px;
+    margin-top:14px;
+  }
+  .field svg{ width:17px; height:17px; flex-shrink:0;}
+  .field input{
+    border:none; outline:none; flex:1; background:transparent;
+    font-size:13.5px; color:#16233B;
+  }
+  .field input::placeholder{ color:var(--placeholder);}
+  .field .eye{ cursor:pointer;}
+
+  .row-between{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:12px; font-size:12px;
+  }
+  .remember{ display:flex; align-items:center; gap:6px; color:#4A5A70;}
+  .remember input{ width:14px; height:14px; accent-color:var(--accent);}
+  .forgot{ color:var(--accent); font-weight:600;}
+
+  .terms{
+    display:flex; align-items:flex-start; gap:7px;
+    margin-top:12px; font-size:11.5px; color:#4A5A70; line-height:1.4;
+  }
+  .terms input{ width:14px; height:14px; margin-top:2px; accent-color:var(--accent);}
+  .terms a{ color:var(--accent); font-weight:600; text-decoration:none;}
+
+  .primary-btn{
+    width:100%; height:50px; margin-top:18px;
+    border:none; border-radius:14px;
+    background:var(--accent);
+    color:#fff; font-size:14.5px; font-weight:700;
+    cursor:pointer;
+  }
+
+  .divider{ display:flex; align-items:center; gap:10px; margin:20px 0 16px;}
+  .divider .line{ flex:1; height:1px; background:var(--gray-border);}
+  .divider span{ font-size:11.5px; color:var(--text-gray);}
+
+  .socials{ display:flex; gap:10px; justify-content:center;}
+  .social-box{
+    width:64px; height:48px; border-radius:12px;
+    border:1px solid var(--gray-border);
+    display:flex; align-items:center; justify-content:center;
+    background:#fff;
+  }
+  .social-box svg{ width:20px; height:20px;}
+
+  .bottom-link{
+    margin-top:auto; text-align:center;
+    font-size:12.5px; color:#4A5A70; padding-top:16px;
+  }
+  .bottom-link a{ color:var(--accent); font-weight:700; text-decoration:none;}
+
+  .label{
+    text-align:center; font-size:13px; font-weight:700; color:var(--navy);
+    margin-bottom:14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div>
+  <div class="label">Tekrar Hoş Geldin — Giriş</div>
+  <div class="phone">
+    <svg class="wave" viewBox="0 0 340 160" preserveAspectRatio="none" width="100%" height="160">
+      <path d="M0,90 C90,140 250,50 340,100 L340,160 L0,160 Z" fill="#EAF2FF"/>
+    </svg>
+
+    <div class="statusbar"><span>9:41</span><span>●●● ▲ ▮</span></div>
+
+    <div class="content">
+      <div class="logo-wrap">
+        <svg width="58" height="58" viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="24" stroke="#153B73" stroke-width="2.5"/>
+          <circle cx="32" cy="32" r="2.5" fill="#153B73"/>
+          <path d="M32 14 L40 32 L32 32 Z" fill="#2D7EF7"/>
+          <path d="M32 14 L24 32 L32 32 Z" fill="#153B73"/>
+          <path d="M32 32 L24 50 L32 50 Z" fill="#CBD9F0"/>
+          <path d="M32 32 L40 50 L32 50 Z" fill="#8FAEE0"/>
+        </svg>
+        <div class="brand-title"><span class="s1">Sınav</span><span class="s2">Rotası</span></div>
+        <div class="brand-sub">Başarıya giden yol burada.</div>
+      </div>
+
+      <div class="heading">
+        <h1>Tekrar Hoş Geldin!</h1>
+        <p>Yolculuğuna devam etmek için giriş yap.</p>
+      </div>
+
+      <div class="field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+        <input type="text" placeholder="E-posta veya Kullanıcı Adı">
+      </div>
+      <div class="field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <input type="password" placeholder="Şifre">
+        <svg class="eye" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+
+      <div class="row-between">
+        <label class="remember"><input type="checkbox">Beni hatırla</label>
+        <span class="forgot">Şifremi Unuttum?</span>
+      </div>
+
+      <button class="primary-btn">Giriş Yap</button>
+
+      <div class="divider"><div class="line"></div><span>veya şununla devam et</span><div class="line"></div></div>
+
+      <div class="socials">
+        <div class="social-box"><svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.4 0 6.4 1.2 8.8 3.5l6.5-6.5C35.3 2.6 30 0 24 0 14.6 0 6.5 5.4 2.5 13.2l7.6 5.9C12.1 13 17.5 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.6c-.5 2.9-2.2 5.4-4.7 7.1l7.3 5.7c4.3-4 6.8-9.9 6.8-17.3z"/><path fill="#FBBC05" d="M10.1 19.1a14.5 14.5 0 0 0 0 9.7l-7.6 5.9a24 24 0 0 1 0-21.5z"/><path fill="#34A853" d="M24 48c6.5 0 12-2.1 16-5.8l-7.3-5.7c-2 1.4-4.7 2.2-8.7 2.2-6.5 0-12-4.4-13.9-10.3l-7.6 5.9C6.5 42.6 14.6 48 24 48z"/></svg></div>
+        <div class="social-box"><svg viewBox="0 0 48 48"><path fill="#000" d="M33.4 25.3c0-5.5 4.5-8.1 4.7-8.3-2.6-3.8-6.6-4.3-8-4.4-3.4-.3-6.6 2-8.4 2-1.7 0-4.4-1.9-7.3-1.9-3.7.1-7.2 2.2-9.1 5.5-3.9 6.8-1 16.8 2.8 22.3 1.9 2.7 4.1 5.7 7 5.6 2.8-.1 3.9-1.8 7.3-1.8 3.4 0 4.3 1.8 7.3 1.7 3-.1 4.9-2.7 6.7-5.5 1.5-2.2 2.3-4.3 2.6-5.4-.1 0-5.6-2.1-5.6-8.8z"/><path fill="#000" d="M28.4 8.4c1.4-1.7 2.4-4.1 2.1-6.4-2.1.1-4.5 1.4-6 3.1-1.3 1.5-2.5 4-2.2 6.2 2.3.2 4.6-1.2 6.1-2.9z"/></svg></div>
+        <div class="social-box"><svg viewBox="0 0 48 48"><rect x="4" y="4" width="18" height="18" fill="#F25022"/><rect x="26" y="4" width="18" height="18" fill="#7FBA00"/><rect x="4" y="26" width="18" height="18" fill="#00A4EF"/><rect x="26" y="26" width="18" height="18" fill="#FFB900"/></svg></div>
+      </div>
+
+      <div class="bottom-link">Hesabın yok mu? <a href="#">Kayıt Ol</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SIGN UP ================= -->
+<div>
+  <div class="label">Hesap Oluştur — Kayıt</div>
+  <div class="phone">
+    <svg class="wave" viewBox="0 0 340 160" preserveAspectRatio="none" width="100%" height="160">
+      <path d="M0,90 C90,140 250,50 340,100 L340,160 L0,160 Z" fill="#EAF2FF"/>
+    </svg>
+
+    <div class="statusbar"><span>9:41</span><span>●●● ▲ ▮</span></div>
+
+    <div class="content">
+      <div class="heading" style="margin-top:26px;">
+        <h1>Hesap Oluştur</h1>
+        <p>SınavRotası'na katıl ve başarı yolculuğuna başla.</p>
+      </div>
+
+      <div class="field" style="margin-top:22px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+        <input type="text" placeholder="Ad Soyad">
+      </div>
+      <div class="field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        <input type="text" placeholder="E-posta">
+      </div>
+      <div class="field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <input type="password" placeholder="Şifre">
+        <svg class="eye" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+      <div class="field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <input type="password" placeholder="Şifreyi Onayla">
+        <svg class="eye" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+
+      <div class="terms">
+        <input type="checkbox">
+        <span><a href="#">Kullanım Koşulları</a> ve <a href="#">Gizlilik Politikası</a>'nı kabul ediyorum</span>
+      </div>
+
+      <button class="primary-btn">Kayıt Ol</button>
+
+      <div class="divider"><div class="line"></div><span>veya şununla kayıt ol</span><div class="line"></div></div>
+
+      <div class="socials">
+        <div class="social-box"><svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.4 0 6.4 1.2 8.8 3.5l6.5-6.5C35.3 2.6 30 0 24 0 14.6 0 6.5 5.4 2.5 13.2l7.6 5.9C12.1 13 17.5 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.6c-.5 2.9-2.2 5.4-4.7 7.1l7.3 5.7c4.3-4 6.8-9.9 6.8-17.3z"/><path fill="#FBBC05" d="M10.1 19.1a14.5 14.5 0 0 0 0 9.7l-7.6 5.9a24 24 0 0 1 0-21.5z"/><path fill="#34A853" d="M24 48c6.5 0 12-2.1 16-5.8l-7.3-5.7c-2 1.4-4.7 2.2-8.7 2.2-6.5 0-12-4.4-13.9-10.3l-7.6 5.9C6.5 42.6 14.6 48 24 48z"/></svg></div>
+        <div class="social-box"><svg viewBox="0 0 48 48"><path fill="#000" d="M33.4 25.3c0-5.5 4.5-8.1 4.7-8.3-2.6-3.8-6.6-4.3-8-4.4-3.4-.3-6.6 2-8.4 2-1.7 0-4.4-1.9-7.3-1.9-3.7.1-7.2 2.2-9.1 5.5-3.9 6.8-1 16.8 2.8 22.3 1.9 2.7 4.1 5.7 7 5.6 2.8-.1 3.9-1.8 7.3-1.8 3.4 0 4.3 1.8 7.3 1.7 3-.1 4.9-2.7 6.7-5.5 1.5-2.2 2.3-4.3 2.6-5.4-.1 0-5.6-2.1-5.6-8.8z"/><path fill="#000" d="M28.4 8.4c1.4-1.7 2.4-4.1 2.1-6.4-2.1.1-4.5 1.4-6 3.1-1.3 1.5-2.5 4-2.2 6.2 2.3.2 4.6-1.2 6.1-2.9z"/></svg></div>
+        <div class="social-box"><svg viewBox="0 0 48 48"><rect x="4" y="4" width="18" height="18" fill="#F25022"/><rect x="26" y="4" width="18" height="18" fill="#7FBA00"/><rect x="4" y="26" width="18" height="18" fill="#00A4EF"/><rect x="26" y="26" width="18" height="18" fill="#FFB900"/></svg></div>
+      </div>
+
+      <div class="bottom-link">Zaten bir hesabın var mı? <a href="#">Giriş Yap</a></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
