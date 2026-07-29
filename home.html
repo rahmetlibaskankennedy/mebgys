@@ -1,407 +1,340 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SınavRotası - Ana Ekran</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SınavRotası - Ana Sayfa</title>
 <style>
-  :root {
-    --navy-bg: #0B172A;
-    --navy-light: #162B4A;
-    --red-accent: #E84C55;
-    --red-light: #FDECEE;
-    --bg-color: #F8F9FB;
-    --text-dark: #1E293B;
-    --text-gray: #8F9BB3;
-    --white: #FFFFFF;
-    --card-shadow: 0 8px 24px rgba(11, 23, 42, 0.06);
-  }
+:root{
+  --navy:#071f49;
+  --navy-2:#0b2f68;
+  --navy-3:#163c78;
+  --red:#ff3b3f;
+  --red-soft:#fff0f1;
+  --text:#0d1c38;
+  --muted:#687186;
+  --line:#e7eaf0;
+  --bg:#f7f8fb;
+  --white:#fff;
+  --shadow:0 12px 30px rgba(20,35,60,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Arial,sans-serif;background:#e7ebf1;color:var(--text)}
+body{display:flex;justify-content:center;padding:22px}
+button{font:inherit}
+.phone{
+  width:390px;
+  height:844px;
+  background:var(--bg);
+  border:9px solid #111827;
+  border-radius:42px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 30px 80px rgba(0,0,0,.22);
+}
+.scroll{
+  height:100%;
+  overflow-y:auto;
+  padding-bottom:98px;
+  scrollbar-width:none;
+}
+.scroll::-webkit-scrollbar{display:none}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-  
-  body {
-    background: #E2E8F0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 20px;
-  }
+/* Üst alan */
+.hero{
+  position:relative;
+  padding:22px 20px 18px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 76% 8%, rgba(30,86,155,.34), transparent 34%),
+    linear-gradient(160deg,#061a3c 0%,#08285a 72%,#061b3f 100%);
+  border-radius:0 0 30px 30px;
+}
+.status{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:15px;
+  font-weight:700;
+  padding:0 8px 18px;
+}
+.status-icons{display:flex;align-items:center;gap:7px}
+.signal{display:flex;align-items:flex-end;gap:2px;height:14px}
+.signal i{display:block;width:3px;background:#fff;border-radius:2px}
+.signal i:nth-child(1){height:5px}.signal i:nth-child(2){height:8px}.signal i:nth-child(3){height:11px}.signal i:nth-child(4){height:14px}
+.wifi{font-size:16px;line-height:1}
+.battery{width:24px;height:12px;border:1.7px solid #fff;border-radius:3px;position:relative}
+.battery:before{content:"";position:absolute;left:2px;top:2px;right:3px;bottom:2px;background:#fff;border-radius:1px}
+.battery:after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:5px;background:#fff;border-radius:0 1px 1px 0}
 
-  /* Telefon Çerçevesi */
-  .phone {
-    width: 360px;
-    height: 760px;
-    border-radius: 40px;
-    position: relative;
-    overflow: hidden;
-    background: var(--bg-color);
-    border: 10px solid #0B1220;
-    box-shadow: 0 25px 70px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
-  }
+.profile-row{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:16px;
+}
+.avatar-wrap{position:relative;flex:0 0 auto}
+.avatar{
+  width:65px;height:65px;border-radius:50%;
+  object-fit:cover;border:3px solid rgba(255,255,255,.86);
+  display:block;
+}
+.online-dot{
+  position:absolute;right:0;top:3px;width:14px;height:14px;background:var(--red);
+  border:2px solid #fff;border-radius:50%;
+}
+.greeting{flex:1;min-width:0}
+.greeting h1{font-size:20px;line-height:1.2;margin:0 0 6px;font-weight:500}
+.greeting h1 strong{font-weight:800}
+.greeting p{font-size:13.5px;line-height:1.45;margin:0;color:rgba(255,255,255,.83)}
+.quick-actions{display:flex;gap:9px}
+.icon-btn{
+  width:44px;height:44px;border:0;border-radius:16px;background:rgba(255,255,255,.07);
+  color:#fff;display:grid;place-items:center;position:relative;cursor:pointer;
+}
+.icon-btn svg{width:22px;height:22px}
+.badge{
+  position:absolute;right:4px;top:4px;width:17px;height:17px;border-radius:50%;
+  background:var(--red);display:grid;place-items:center;font-size:9px;font-weight:800;
+}
 
-  /* Status Bar - Sabit Üst Çubuk */
-  .statusbar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 16px 24px 0; font-size: 14px; font-weight: 600; color: var(--text-dark); /* Kaydırılınca okunabilmesi için dark yapıldı */
-    z-index: 20;
-    pointer-events: none;
-  }
-  .statusbar svg { fill: var(--text-dark); }
-  
-  /* İlk açılışta status bar beyaz görünsün diye arkasına küçük bir gölge/renk eklenebilir ama tasarımda bütünlük için içerikle kayan model kuruldu */
+.progress-card{
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:20px;
+  padding:16px;
+  display:grid;
+  grid-template-columns:92px 1fr;
+  gap:14px;
+  align-items:center;
+  backdrop-filter:blur(8px);
+}
+.ring{
+  --value:65;
+  width:88px;height:88px;border-radius:50%;
+  background:conic-gradient(var(--red) calc(var(--value)*1%), rgba(255,255,255,.09) 0);
+  display:grid;place-items:center;
+  position:relative;
+}
+.ring:before{
+  content:"";position:absolute;inset:9px;border-radius:50%;background:#0a2b5f;
+}
+.ring-content{position:relative;text-align:center}
+.ring-content b{display:block;font-size:22px;line-height:1;font-weight:800}
+.ring-content span{display:block;font-size:9.5px;margin-top:5px;color:rgba(255,255,255,.78)}
+.progress-copy h2{font-size:17px;margin:0 0 7px}
+.progress-copy p{font-size:12px;line-height:1.45;margin:0 0 12px;color:rgba(255,255,255,.8)}
+.bar{height:7px;background:rgba(255,255,255,.16);border-radius:999px;overflow:hidden}
+.bar span{display:block;width:65%;height:100%;background:linear-gradient(90deg,#ff5353,#ff3b3f);border-radius:999px}
+.progress-meta{display:flex;justify-content:space-between;margin-top:9px;font-size:11px;color:rgba(255,255,255,.77)}
+.progress-meta strong{color:var(--red);font-size:12px}
+.progress-meta b{color:#fff}
 
-  /* Kaydırılabilir İçerik Alanı */
-  .home-content {
-    flex: 1;
-    overflow-y: auto;
-    position: relative;
-    z-index: 10;
-    padding: 0 0 100px 0; /* Alttaki menü için alt boşluk */
-    scrollbar-width: none;
-  }
-  .home-content::-webkit-scrollbar { display: none; }
+/* İçerik */
+.content{padding:16px 17px 0}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  background:#fff;border-radius:18px;box-shadow:var(--shadow);
+  margin-top:0;overflow:hidden;
+}
+.stat{padding:14px 7px 13px;text-align:center;position:relative}
+.stat:not(:last-child):after{content:"";position:absolute;right:0;top:18px;bottom:18px;width:1px;background:#eceef3}
+.stat-icon{
+  width:34px;height:34px;margin:0 auto 7px;border-radius:50%;
+  display:grid;place-items:center;font-size:18px;background:#eff3fa
+}
+.stat:nth-child(2) .stat-icon,.stat:nth-child(4) .stat-icon{background:var(--red-soft)}
+.stat:nth-child(3) .stat-icon{background:#fff4e7}
+.stat strong{display:block;font-size:19px;margin-bottom:3px}
+.stat span{display:block;font-size:10px;line-height:1.3;color:#36415a}
 
-  /* Kendi Arkaplanı ile Kayan Üst Bölüm (Lacivert Kısım) */
-  .top-section {
-    background: radial-gradient(circle at top right, #1A365D 0%, var(--navy-bg) 70%);
-    border-bottom-left-radius: 40px;
-    border-bottom-right-radius: 40px;
-    padding: 60px 24px 30px; /* 60px top padding status bar boşluğunu bırakır */
-    position: relative;
-  }
-  /* Kayan Kısımdaki Status Bar Arkasını Beyaz Yapan Hile */
-  .top-section::before {
-    content: "9:41";
-    position: absolute; top: 16px; left: 24px; font-size: 14px; font-weight: 600; color: var(--white); z-index: 30;
-  }
-  .top-section::after {
-    content: "●●● ▲ ▮";
-    position: absolute; top: 16px; right: 24px; font-size: 11px; letter-spacing: 1px; color: var(--white); z-index: 30;
-  }
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 11px}
+.section-head h3{margin:0;font-size:17px}
+.section-head a{color:var(--red);text-decoration:none;font-size:13px;font-weight:600}
 
-  /* Header / Kullanıcı Profili */
-  .header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-  .avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 2px solid var(--white);
-    object-fit: cover;
-    margin-right: 14px;
-  }
-  .user-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  .greeting { font-size: 13px; color: rgba(255,255,255,0.7); }
-  .user-name { font-size: 20px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
-  .badges { display: flex; gap: 10px; }
-  .badge {
-    background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; font-size: 11px; color: var(--white); display: flex; align-items: center; gap: 4px; backdrop-filter: blur(4px);
-  }
-  .bell-icon {
-    position: relative; color: var(--white); width: 24px; height: 24px; align-self: flex-start; margin-top: 5px;
-  }
-  .notification-dot {
-    position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; background: var(--red-accent); color: white; font-size: 9px; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid var(--navy-bg);
-  }
+.categories{display:flex;flex-direction:column;gap:10px}
+.category{
+  display:grid;grid-template-columns:66px 1fr 20px;gap:12px;align-items:center;
+  background:#fff;border:1px solid #edf0f4;border-radius:17px;padding:0 15px 0 0;
+  min-height:82px;box-shadow:0 8px 22px rgba(13,28,56,.06);cursor:pointer;
+}
+.cat-icon{
+  height:82px;border-radius:17px 15px 15px 17px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#082654,#0b397c);color:#fff;font-size:31px;
+}
+.category:nth-child(2) .cat-icon{background:linear-gradient(145deg,#143f86,#2c67b8)}
+.category:nth-child(3) .cat-icon{background:linear-gradient(145deg,#ff3237,#f0252c)}
+.cat-copy h4{font-size:15px;margin:0 0 4px}
+.cat-copy p{font-size:11.5px;line-height:1.35;margin:0;color:var(--muted)}
+.cat-copy small{display:block;margin-top:6px;color:var(--red);font-size:10.5px}
+.chevron{font-size:27px;color:#9aa3b2;font-weight:200}
 
-  /* Günlük İlerleme Kartı */
-  .progress-card {
-    background: var(--white);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: var(--card-shadow);
-    margin-bottom: -70px; /* Alt bölümün üstüne taşmasını sağlar */
-    position: relative;
-    z-index: 5;
-  }
-  .prog-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .prog-left { display: flex; align-items: center; gap: 12px; }
-  .cal-icon {
-    width: 44px; height: 44px; background: var(--red-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--red-accent);
-  }
-  .prog-title { font-size: 15px; font-weight: 700; color: var(--text-dark); }
-  .prog-sub { font-size: 12px; color: var(--text-gray); margin-top: 2px; }
-  .prog-right { text-align: right; }
-  .prog-percent { font-size: 20px; font-weight: 700; color: var(--navy-bg); }
-  .prog-goal { font-size: 11px; color: var(--text-gray); }
-  
-  .progress-bar-bg { width: 100%; height: 6px; background: #F1F5F9; border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
-  .progress-bar-fill { height: 100%; background: var(--red-accent); width: 75%; border-radius: 10px; }
-  .prog-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-gray); font-weight: 500; }
-  .prog-footer .studied { color: var(--red-accent); font-weight: 700; }
+.practice{
+  margin-top:15px;
+  border-radius:18px;
+  background:linear-gradient(140deg,#082657,#061d43);
+  color:#fff;padding:14px 17px;
+  display:grid;grid-template-columns:52px 1fr 20px;align-items:center;gap:13px;
+  box-shadow:0 12px 26px rgba(7,31,73,.2);
+}
+.practice-icon{
+  width:52px;height:52px;border-radius:15px;background:rgba(255,255,255,.07);
+  display:grid;place-items:center;font-size:27px
+}
+.practice h4{margin:0 0 4px;font-size:17px}
+.practice p{margin:0;color:rgba(255,255,255,.73);font-size:12px}
+.practice .arrow{font-size:30px}
 
-  /* Alt Bölüm İçeriği (Taşan kartın altındaki alan) */
-  .bottom-section {
-    padding: 90px 24px 0; /* progress-card'ın taşma payı (70px) + boşluk (20px) */
-  }
+/* Alt navigasyon */
+.bottom-nav{
+  position:absolute;left:0;right:0;bottom:0;height:86px;background:rgba(255,255,255,.97);
+  border-top:1px solid #ebedf1;display:grid;grid-template-columns:repeat(5,1fr);
+  padding:11px 8px 17px;z-index:20;backdrop-filter:blur(12px);
+}
+.nav-item{
+  border:0;background:none;color:#6d7585;display:flex;flex-direction:column;
+  align-items:center;gap:4px;font-size:10px;cursor:pointer
+}
+.nav-item svg{width:23px;height:23px;stroke-width:1.9}
+.nav-item.active{color:var(--red);font-weight:700}
 
-  /* Başlıklar */
-  .section-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
-  }
-  .section-title { font-size: 17px; font-weight: 700; color: var(--navy-bg); }
-  .see-all { font-size: 13px; color: var(--red-accent); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 4px; }
-
-  /* Konu Kartları (Yatay Kaydırma) */
-  .topics-scroll {
-    display: flex; gap: 14px; overflow-x: auto; padding-bottom: 15px; margin-left: -24px; padding-left: 24px; margin-right: -24px; padding-right: 24px; scrollbar-width: none;
-  }
-  .topics-scroll::-webkit-scrollbar { display: none; }
-  .topic-card {
-    min-width: 145px; background: var(--white); border-radius: 20px; padding: 18px; box-shadow: var(--card-shadow); flex-shrink: 0; position: relative;
-  }
-  .tc-icon {
-    width: 50px; height: 50px; background: var(--navy-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); margin-bottom: 14px;
-  }
-  .tc-badge {
-    position: absolute; top: 18px; right: 18px; background: var(--red-light); color: var(--red-accent); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 8px;
-  }
-  .tc-title { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
-  .tc-desc { font-size: 11px; color: var(--text-gray); line-height: 1.4; margin-bottom: 16px; min-height: 30px;}
-  .tc-footer { display: flex; justify-content: space-between; align-items: center; }
-  .tc-count { font-size: 12px; font-weight: 600; color: var(--red-accent); }
-  .tc-arrow { color: var(--red-accent); }
-
-  /* Testler Dikey Liste Bölümü */
-  .test-item {
-    display: flex; align-items: center; background: var(--white);
-    border-radius: 16px; padding: 16px; margin-bottom: 12px;
-    box-shadow: var(--card-shadow);
-    transition: transform 0.2s; cursor: pointer;
-  }
-  .test-item:active { transform: scale(0.98); }
-  .test-icon {
-    width: 44px; height: 44px; background: #F0F4FA; color: var(--navy-light);
-    border-radius: 12px; display: flex; align-items: center; justify-content: center;
-    margin-right: 14px;
-  }
-  .test-info { flex: 1; }
-  .test-title { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
-  .test-desc { font-size: 11px; color: var(--text-gray); }
-  .test-btn {
-    background: var(--red-light); color: var(--red-accent);
-    padding: 8px 14px; border-radius: 10px; font-size: 11.5px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px;
-  }
-
-  /* Alt Navigasyon */
-  .bottom-nav {
-    position: absolute; bottom: 0; left: 0; right: 0; height: 86px; background: var(--white); border-top: 1px solid #F1F5F9; border-radius: 0 0 40px 40px; display: flex; justify-content: space-around; align-items: center; padding: 0 10px 20px; z-index: 20;
-  }
-  .nav-item {
-    display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--text-gray); cursor: pointer; position: relative; width: 64px;
-  }
-  .nav-item.active { color: var(--red-accent); }
-  .nav-item svg { width: 22px; height: 22px; }
-  .nav-item span { font-size: 10px; font-weight: 600; }
-  .nav-item.active::after {
-    content: ''; position: absolute; bottom: -12px; width: 24px; height: 3px; background: var(--red-accent); border-radius: 2px;
-  }
+@media(max-width:430px){
+  body{padding:0;background:var(--bg)}
+  .phone{width:100%;height:100vh;border:0;border-radius:0}
+}
 </style>
 </head>
 <body>
-
 <div class="phone">
+  <div class="scroll">
+    <section class="hero">
+      <div class="status">
+        <span>9:41</span>
+        <div class="status-icons">
+          <span class="signal"><i></i><i></i><i></i><i></i></span>
+          <span class="wifi">⌁</span>
+          <span class="battery"></span>
+        </div>
+      </div>
 
-  <!-- Şeffaf Gerçek Status Bar (Kaydırıldığında görünmez olacak şekilde ayarlandı) -->
-  <div class="statusbar" style="opacity: 0;">
-    <span>9:41</span>
-    <span>●●● ▲ ▮</span>
+      <div class="profile-row">
+        <div class="avatar-wrap">
+          <img class="avatar" src="https://i.pravatar.cc/160?img=12" alt="Ahmet profil fotoğrafı">
+          <span class="online-dot"></span>
+        </div>
+        <div class="greeting">
+          <h1>Merhaba, <strong>Ahmet!</strong></h1>
+          <p>Bugün harika bir gün, hedeflerine<br>bir adım daha yaklaş!</p>
+        </div>
+        <div class="quick-actions">
+          <button class="icon-btn" aria-label="Bildirimler">
+            <span class="badge">3</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M10 20h4"/></svg>
+          </button>
+          <button class="icon-btn" aria-label="Mesajlar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3 1.5-5A8 8 0 1 1 21 15Z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="progress-card">
+        <div class="ring">
+          <div class="ring-content">
+            <b>%65</b>
+            <span>Günlük Hedef</span>
+          </div>
+        </div>
+        <div class="progress-copy">
+          <h2>Günlük Çalışma İlerlemesi</h2>
+          <p>Harika gidiyorsun! Hedefine ulaşmak için istikrarlı devam et.</p>
+          <div class="bar"><span></span></div>
+          <div class="progress-meta">
+            <span><strong>65</strong> / <b>100</b> Soru</span>
+            <span>Bitiş 22:30</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="content">
+      <section class="stats">
+        <div class="stat"><div class="stat-icon">📖</div><strong>12</strong><span>Konu<br>Tamamlandı</span></div>
+        <div class="stat"><div class="stat-icon">🎯</div><strong>320</strong><span>Soru<br>Çözüldü</span></div>
+        <div class="stat"><div class="stat-icon">🏆</div><strong>18</strong><span>Deneme<br>Tamamlandı</span></div>
+        <div class="stat"><div class="stat-icon">🔥</div><strong>7</strong><span>Günlük<br>Seri</span></div>
+      </section>
+
+      <div class="section-head">
+        <h3>Konu Kategorileri</h3>
+        <a href="#">Tümünü Gör&nbsp; ›</a>
+      </div>
+
+      <section class="categories">
+        <article class="category">
+          <div class="cat-icon">⚖</div>
+          <div class="cat-copy">
+            <h4>Mevzuat</h4>
+            <p>Kanunlar, yönetmelikler<br>ve resmî düzenlemeler</p>
+            <small>120 Konu&nbsp; • &nbsp;2400 Soru</small>
+          </div>
+          <div class="chevron">›</div>
+        </article>
+
+        <article class="category">
+          <div class="cat-icon">🏛</div>
+          <div class="cat-copy">
+            <h4>Genel Kültür</h4>
+            <p>Tarih, coğrafya, vatandaşlık<br>ve güncel bilgiler</p>
+            <small>95 Konu&nbsp; • &nbsp;1900 Soru</small>
+          </div>
+          <div class="chevron">›</div>
+        </article>
+
+        <article class="category">
+          <div class="cat-icon">📖</div>
+          <div class="cat-copy">
+            <h4>MEB Mevzuatı</h4>
+            <p>Millî Eğitim Bakanlığı<br>mevzuat ve yönergeleri</p>
+            <small>75 Konu&nbsp; • &nbsp;1500 Soru</small>
+          </div>
+          <div class="chevron">›</div>
+        </article>
+      </section>
+
+      <section class="practice">
+        <div class="practice-icon">🎯</div>
+        <div>
+          <h4>Pratiğe Başla</h4>
+          <p>Hemen soru çözmeye başla</p>
+        </div>
+        <div class="arrow">›</div>
+      </section>
+    </main>
   </div>
 
-  <!-- Kaydırılabilir İçerik -->
-  <div class="home-content">
-    
-    <!-- KAYDIRILAN LACİVERT ÜST BÖLÜM -->
-    <div class="top-section">
-      <!-- Profil Alanı -->
-      <header class="header">
-        <img src="https://i.pravatar.cc/150?img=11" alt="Profil" class="avatar">
-        <div class="user-info">
-          <span class="greeting">Günaydın,</span>
-          <span class="user-name">Ahmet Yılmaz</span>
-          <div class="badges">
-            <div class="badge"><span>⭐</span> Seviye 12</div>
-            <div class="badge"><span>🎯</span> 2,350 / 3,500</div>
-          </div>
-        </div>
-        <div class="bell-icon">
-          <div class="notification-dot">3</div>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        </div>
-      </header>
-
-      <!-- Günlük İlerleme Kartı -->
-      <div class="progress-card">
-        <div class="prog-top">
-          <div class="prog-left">
-            <div class="cal-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M10 16l2 2 4-4"></path></svg>
-            </div>
-            <div>
-              <div class="prog-title">Günlük Çalışma İlerlemesi</div>
-              <div class="prog-sub">Harika gidiyorsun! İstikrar en önemlisidir.</div>
-            </div>
-          </div>
-          <div class="prog-right">
-            <div class="prog-percent">75%</div>
-            <div class="prog-goal">Günlük Hedef</div>
-          </div>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill"></div>
-        </div>
-        <div class="prog-footer">
-          <div><span class="studied">90</span> dk çalışıldı</div>
-          <div>120 dk hedef</div>
-        </div>
-      </div>
-    </div> <!-- Üst bölüm sonu -->
-
-    <!-- ALT BEYAZ BÖLÜM -->
-    <div class="bottom-section">
-      <!-- Çalışma Konuları Başlığı -->
-      <div class="section-header">
-        <div class="section-title">Çalışma Konuları</div>
-        <a href="#" class="see-all">Tümünü Gör <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
-      </div>
-
-      <!-- 3 Ana Başlıkta Yatay Kartlar -->
-      <div class="topics-scroll">
-        
-        <!-- Kart 1: Genel Mevzuat -->
-        <div class="topic-card">
-          <div class="tc-badge">124</div>
-          <div class="tc-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M12 3v18"></path><path d="M3 10l9-6 9 6"></path><path d="M5 10v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9"></path><line x1="9" y1="21" x2="15" y2="21"></line></svg>
-          </div>
-          <div class="tc-title">Genel Mevzuat</div>
-          <div class="tc-desc">Anayasa, Temel Kanunlar ve Genel Yönetmelikler</div>
-          <div class="tc-footer">
-            <span class="tc-count">124 Konu</span>
-            <svg class="tc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </div>
-        </div>
-
-        <!-- Kart 2: MEB Mevzuatı -->
-        <div class="topic-card">
-          <div class="tc-badge">67</div>
-          <div class="tc-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
-          </div>
-          <div class="tc-title">MEB Mevzuatı</div>
-          <div class="tc-desc">Milli Eğitim Bakanlığı Teşkilat ve Eğitim Kuralları</div>
-          <div class="tc-footer">
-            <span class="tc-count">67 Konu</span>
-            <svg class="tc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </div>
-        </div>
-
-        <!-- Kart 3: Genel Kültür -->
-        <div class="topic-card">
-          <div class="tc-badge">98</div>
-          <div class="tc-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-          </div>
-          <div class="tc-title">Genel Kültür</div>
-          <div class="tc-desc">Tarih, Coğrafya ve Güncel Önemli Bilgiler</div>
-          <div class="tc-footer">
-            <span class="tc-count">98 Konu</span>
-            <svg class="tc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Testler Başlığı -->
-      <div class="section-header" style="margin-top: 16px;">
-        <div class="section-title">Testler</div>
-      </div>
-
-      <!-- 3 Ana Başlıkta Test Listesi -->
-      <div class="tests-list">
-        
-        <!-- Test Öğesi 1 -->
-        <div class="test-item">
-          <div class="test-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          </div>
-          <div class="test-info">
-            <div class="test-title">Genel Mevzuat Testleri</div>
-            <div class="test-desc">15 Test • Toplam 150 Soru</div>
-          </div>
-          <button class="test-btn">Çöz</button>
-        </div>
-
-        <!-- Test Öğesi 2 -->
-        <div class="test-item">
-          <div class="test-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          </div>
-          <div class="test-info">
-            <div class="test-title">MEB Mevzuatı Testleri</div>
-            <div class="test-desc">12 Test • Toplam 120 Soru</div>
-          </div>
-          <button class="test-btn">Çöz</button>
-        </div>
-
-        <!-- Test Öğesi 3 -->
-        <div class="test-item">
-          <div class="test-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          </div>
-          <div class="test-info">
-            <div class="test-title">Genel Kültür Testleri</div>
-            <div class="test-desc">20 Test • Toplam 200 Soru</div>
-          </div>
-          <button class="test-btn">Çöz</button>
-        </div>
-
-      </div>
-    </div> <!-- Alt bölüm sonu -->
-  </div> <!-- Kaydırılabilir İçerik sonu -->
-
-  <!-- Alt Navigasyon (Bottom Bar) -->
   <nav class="bottom-nav">
-    <div class="nav-item active">
-      <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    <button class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 11 12 3l9 8v9H3z"/><path d="M9 20v-6h6v6"/></svg>
       <span>Ana Sayfa</span>
-    </div>
-    
-    <!-- Testler Yazısı "Denemeler" Olarak Değiştirildi -->
-    <div class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
       <span>Denemeler</span>
-    </div>
-
-    <div class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-      <span>İstatistikler</span>
-    </div>
-    <div class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-      <span>Kaydedilenler</span>
-    </div>
-    <div class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 20V10M9 20V4M14 20v-7M19 20V7"/><path d="M2 20h20"/></svg>
+      <span>Çalışmalarım</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 5a4 4 0 0 1 4-2h4v17H8a4 4 0 0 0-4 2z"/><path d="M20 5a4 4 0 0 0-4-2h-4v17h4a4 4 0 0 1 4 2z"/></svg>
+      <span>Kitaplık</span>
+    </button>
+    <button class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="7" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
       <span>Profil</span>
-    </div>
+    </button>
   </nav>
-
 </div>
-
 </body>
 </html>
