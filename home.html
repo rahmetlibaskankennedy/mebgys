@@ -170,21 +170,121 @@ button{font:inherit}
 .cat-copy small{display:block;margin-top:6px;color:var(--red);font-size:10.5px}
 .chevron{font-size:27px;color:#9aa3b2;font-weight:200}
 
-.practice{
+.route-card{
   margin-top:15px;
-  border-radius:18px;
-  background:linear-gradient(140deg,#082657,#061d43);
-  color:#fff;padding:14px 17px;
-  display:grid;grid-template-columns:52px 1fr 20px;align-items:center;gap:13px;
-  box-shadow:0 12px 26px rgba(7,31,73,.2);
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 88% 2%,rgba(42,100,180,.28),transparent 32%),
+    linear-gradient(145deg,#08295e,#061c41);
+  color:#fff;
+  padding:17px;
+  box-shadow:0 15px 34px rgba(7,31,73,.23);
+  cursor:pointer;
+  overflow:hidden;
+  position:relative;
+  transition:transform .18s ease,box-shadow .18s ease;
 }
-.practice-icon{
-  width:52px;height:52px;border-radius:15px;background:rgba(255,255,255,.07);
-  display:grid;place-items:center;font-size:27px
+.route-card:active{transform:scale(.985)}
+.route-card:focus-visible{outline:3px solid rgba(255,59,63,.35);outline-offset:3px}
+.route-top{display:grid;grid-template-columns:50px 1fr 18px;gap:12px;align-items:center}
+.route-icon{
+  width:50px;height:50px;border-radius:15px;background:rgba(255,255,255,.08);
+  display:grid;place-items:center;font-size:26px;border:1px solid rgba(255,255,255,.08)
 }
-.practice h4{margin:0 0 4px;font-size:17px}
-.practice p{margin:0;color:rgba(255,255,255,.73);font-size:12px}
-.practice .arrow{font-size:30px}
+.route-title span{
+  display:inline-block;font-size:8px;font-weight:800;letter-spacing:1.2px;
+  color:#ff686b;margin-bottom:3px
+}
+.route-title h4{margin:0 0 4px;font-size:18px}
+.route-title p{margin:0;color:rgba(255,255,255,.7);font-size:11.5px;line-height:1.35}
+.route-chevron{font-size:28px;color:rgba(255,255,255,.92)}
+.route-plan{
+  margin:15px 0 14px;padding:11px 12px;border-radius:14px;
+  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)
+}
+.route-plan-item{
+  display:grid;grid-template-columns:8px 1fr auto;align-items:center;gap:9px;
+  min-height:27px;font-size:11.5px;color:rgba(255,255,255,.82)
+}
+.route-plan-item strong{font-size:11px;color:#fff}
+.route-dot{width:7px;height:7px;border-radius:50%}
+.route-dot.red{background:#ff464b}
+.route-dot.blue{background:#5791e8}
+.route-dot.light{background:#9fc2f6}
+.route-bottom{display:flex;align-items:center;gap:10px}
+.route-meta{display:flex;flex-wrap:wrap;gap:8px;flex:1}
+.route-meta span{
+  font-size:9.5px;color:rgba(255,255,255,.8);
+  background:rgba(255,255,255,.06);padding:5px 7px;border-radius:8px
+}
+.route-start{
+  border:0;border-radius:11px;padding:10px 12px;
+  color:#08295e;background:#fff;font-size:11px;font-weight:800;cursor:pointer;
+  box-shadow:0 6px 16px rgba(0,0,0,.1)
+}
+.route-start:active{transform:scale(.97)}
+
+/* Bottom sheet */
+.sheet-backdrop{
+  position:absolute;inset:0;background:rgba(3,12,29,.48);
+  z-index:40;opacity:0;pointer-events:none;transition:opacity .25s ease;
+  backdrop-filter:blur(2px)
+}
+.sheet-backdrop.open{opacity:1;pointer-events:auto}
+.bottom-sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:50;
+  background:#fff;border-radius:27px 27px 0 0;
+  padding:10px 18px 24px;
+  transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);
+  box-shadow:0 -18px 50px rgba(5,20,45,.2)
+}
+.bottom-sheet.open{transform:translateY(0)}
+.sheet-handle{width:42px;height:5px;background:#d8dce4;border-radius:999px;margin:0 auto 14px}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:15px}
+.sheet-head h3{font-size:20px;margin:0 0 4px}
+.sheet-head p{font-size:11.5px;color:var(--muted);margin:0}
+.sheet-close{
+  width:32px;height:32px;border:0;border-radius:50%;background:#f1f3f6;
+  color:#6d7585;font-size:20px;cursor:pointer
+}
+.sheet-section{margin-top:15px}
+.sheet-label{font-size:11px;font-weight:800;color:#3a455b;margin-bottom:9px;display:block}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.mode-option{
+  border:1px solid #e5e8ee;border-radius:14px;padding:11px;background:#fff;
+  text-align:left;cursor:pointer;color:var(--text)
+}
+.mode-option strong{display:block;font-size:12px;margin-bottom:3px}
+.mode-option span{display:block;font-size:9.5px;color:var(--muted);line-height:1.3}
+.mode-option.selected{
+  border-color:#ff5558;background:#fff5f5;
+  box-shadow:0 0 0 2px rgba(255,59,63,.08)
+}
+.choice-row{display:flex;gap:8px}
+.choice{
+  flex:1;border:1px solid #e5e8ee;border-radius:12px;background:#fff;
+  padding:10px 6px;font-size:11px;font-weight:700;color:#4c566b;cursor:pointer
+}
+.choice.selected{background:#092b60;color:#fff;border-color:#092b60}
+.sheet-summary{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:17px;padding:13px 14px;background:#f6f8fb;border-radius:14px
+}
+.sheet-summary div span{display:block;font-size:9.5px;color:var(--muted);margin-bottom:3px}
+.sheet-summary div strong{font-size:13px}
+.sheet-primary{
+  width:100%;height:50px;margin-top:12px;border:0;border-radius:15px;
+  color:#fff;background:linear-gradient(135deg,#ff494d,#e92e34);
+  font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 10px 22px rgba(232,46,52,.22)
+}
+.sheet-primary:active{transform:scale(.99)}
+.toast{
+  position:absolute;left:50%;bottom:102px;z-index:80;transform:translate(-50%,20px);
+  background:#071f49;color:#fff;padding:11px 15px;border-radius:12px;
+  font-size:11px;opacity:0;pointer-events:none;transition:.25s ease;white-space:nowrap;
+  box-shadow:0 10px 30px rgba(0,0,0,.2)
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* Alt navigasyon */
 .bottom-nav{
@@ -302,16 +402,114 @@ button{font:inherit}
         </article>
       </section>
 
-      <section class="practice">
-        <div class="practice-icon">🎯</div>
-        <div>
-          <h4>Pratiğe Başla</h4>
-          <p>Hemen soru çözmeye başla</p>
+      <section class="route-card" id="routeCard" role="button" tabindex="0" aria-label="Bugünkü rotayı aç">
+        <div class="route-top">
+          <div class="route-icon">🧭</div>
+          <div class="route-title">
+            <span>SANA ÖZEL</span>
+            <h4>Bugünkü Rota</h4>
+            <p>Zayıf olduğun konulara göre hazırlandı.</p>
+          </div>
+          <div class="route-chevron">›</div>
         </div>
-        <div class="arrow">›</div>
+
+        <div class="route-plan">
+          <div class="route-plan-item">
+            <span class="route-dot red"></span>
+            <span>Genel Mevzuat</span>
+            <strong>8 soru</strong>
+          </div>
+          <div class="route-plan-item">
+            <span class="route-dot blue"></span>
+            <span>MEB Mevzuatı</span>
+            <strong>6 soru</strong>
+          </div>
+          <div class="route-plan-item">
+            <span class="route-dot light"></span>
+            <span>Genel Kültür</span>
+            <strong>6 soru</strong>
+          </div>
+        </div>
+
+        <div class="route-bottom">
+          <div class="route-meta">
+            <span>❓ 20 Soru</span>
+            <span>⏱ 18 dk</span>
+            <span>🔥 Serini koru</span>
+          </div>
+          <button class="route-start" id="openRouteSheet" type="button">Rotayı Başlat</button>
+        </div>
       </section>
     </main>
   </div>
+
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+
+  <section class="bottom-sheet" id="routeSheet" aria-hidden="true" aria-label="Bugünkü rota ayarları">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div>
+        <h3>🧭 Bugünkü Rota</h3>
+        <p>Önerilen plan hazır. İstersen başlamadan önce özelleştir.</p>
+      </div>
+      <button class="sheet-close" id="closeRouteSheet" type="button" aria-label="Paneli kapat">×</button>
+    </div>
+
+    <div class="sheet-section">
+      <span class="sheet-label">PRATİK TÜRÜ</span>
+      <div class="mode-grid" id="modeGrid">
+        <button class="mode-option selected" data-mode="Sana Özel Karma" type="button">
+          <strong>✨ Sana Özel</strong>
+          <span>Zayıf ve eksik konularına göre</span>
+        </button>
+        <button class="mode-option" data-mode="Zayıf Konular" type="button">
+          <strong>📉 Zayıf Konular</strong>
+          <span>En çok yanlış yaptığın alanlar</span>
+        </button>
+        <button class="mode-option" data-mode="Son Çalışılan Konu" type="button">
+          <strong>📚 Son Çalışılan</strong>
+          <span>Kaldığın konudan devam et</span>
+        </button>
+        <button class="mode-option" data-mode="Rastgele Karma" type="button">
+          <strong>🎲 Rastgele Karma</strong>
+          <span>Tüm konulardan dengeli seçim</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="sheet-section">
+      <span class="sheet-label">SORU SAYISI</span>
+      <div class="choice-row" id="questionChoices">
+        <button class="choice" data-questions="10" type="button">10</button>
+        <button class="choice selected" data-questions="20" type="button">20</button>
+        <button class="choice" data-questions="30" type="button">30</button>
+        <button class="choice" data-questions="50" type="button">50</button>
+      </div>
+    </div>
+
+    <div class="sheet-section">
+      <span class="sheet-label">SÜRE MODU</span>
+      <div class="choice-row" id="timeChoices">
+        <button class="choice selected" data-time="Süreli" type="button">⏱ Süreli</button>
+        <button class="choice" data-time="Süresiz" type="button">∞ Süresiz</button>
+      </div>
+    </div>
+
+    <div class="sheet-summary">
+      <div>
+        <span>SEÇİLEN ROTA</span>
+        <strong id="summaryMode">Sana Özel Karma</strong>
+      </div>
+      <div style="text-align:right">
+        <span>TAHMİNİ SÜRE</span>
+        <strong id="summaryDuration">18 dakika</strong>
+      </div>
+    </div>
+
+    <button class="sheet-primary" id="startRouteButton" type="button">20 Soruluk Rotayı Başlat</button>
+  </section>
+
+  <div class="toast" id="toast">Rota hazırlanıyor…</div>
 
   <nav class="bottom-nav">
     <button class="nav-item active">
@@ -336,5 +534,105 @@ button{font:inherit}
     </button>
   </nav>
 </div>
+
+<script>
+(() => {
+  const routeCard = document.getElementById('routeCard');
+  const openButton = document.getElementById('openRouteSheet');
+  const sheet = document.getElementById('routeSheet');
+  const backdrop = document.getElementById('sheetBackdrop');
+  const closeButton = document.getElementById('closeRouteSheet');
+  const startButton = document.getElementById('startRouteButton');
+  const summaryMode = document.getElementById('summaryMode');
+  const summaryDuration = document.getElementById('summaryDuration');
+  const toast = document.getElementById('toast');
+
+  let selectedMode = 'Sana Özel Karma';
+  let selectedQuestions = 20;
+  let selectedTime = 'Süreli';
+
+  function openSheet() {
+    sheet.classList.add('open');
+    backdrop.classList.add('open');
+    sheet.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeSheet() {
+    sheet.classList.remove('open');
+    backdrop.classList.remove('open');
+    sheet.setAttribute('aria-hidden', 'true');
+  }
+
+  function updateSummary() {
+    const minutes = selectedTime === 'Süresiz'
+      ? 'Süresiz'
+      : `${Math.max(5, Math.round(selectedQuestions * 0.9))} dakika`;
+
+    summaryMode.textContent = selectedMode;
+    summaryDuration.textContent = minutes;
+    startButton.textContent = `${selectedQuestions} Soruluk Rotayı Başlat`;
+  }
+
+  routeCard.addEventListener('click', openSheet);
+  routeCard.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openSheet();
+    }
+  });
+
+  openButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    openSheet();
+  });
+
+  closeButton.addEventListener('click', closeSheet);
+  backdrop.addEventListener('click', closeSheet);
+
+  document.querySelectorAll('#modeGrid .mode-option').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('#modeGrid .mode-option').forEach(item => item.classList.remove('selected'));
+      button.classList.add('selected');
+      selectedMode = button.dataset.mode;
+      updateSummary();
+    });
+  });
+
+  document.querySelectorAll('#questionChoices .choice').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('#questionChoices .choice').forEach(item => item.classList.remove('selected'));
+      button.classList.add('selected');
+      selectedQuestions = Number(button.dataset.questions);
+      updateSummary();
+    });
+  });
+
+  document.querySelectorAll('#timeChoices .choice').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('#timeChoices .choice').forEach(item => item.classList.remove('selected'));
+      button.classList.add('selected');
+      selectedTime = button.dataset.time;
+      updateSummary();
+    });
+  });
+
+  startButton.addEventListener('click', () => {
+    closeSheet();
+    toast.textContent = `${selectedQuestions} soruluk ${selectedMode} rotası hazırlanıyor…`;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2400);
+
+    // Gerçek soru ekranına yönlendirmek için aşağıdaki satırı etkinleştirebilirsin:
+    // window.location.href = `quiz.html?mode=${encodeURIComponent(selectedMode)}&questions=${selectedQuestions}&time=${encodeURIComponent(selectedTime)}`;
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeSheet();
+  });
+
+  updateSummary();
+})();
+</script>
+
 </body>
 </html>
