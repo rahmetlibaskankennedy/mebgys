@@ -555,7 +555,92 @@
           title: '657 sayılı Devlet Memurları Kanunu',
           questionCount: 340,
           children: [
-            { title: 'Kapsam ve Genel Hükümler', articleRange: 'Madde 1-11', questionCount: 22 },
+            {
+              title: 'Kapsam ve Genel Hükümler',
+              articleRange: 'Madde 1-11',
+              questionCount: 22,
+              children: [
+                {
+                  title: 'Kapsam',
+                  articleLabel: 'Madde 1',
+                  articleNumber: 1,
+                  questionCount: 3,
+                  summary: 'Kanunun hangi kurumlar ve kamu görevlileri bakımından uygulanacağını ele alan giriş maddesidir.'
+                },
+                {
+                  title: 'Amaç',
+                  articleLabel: 'Madde 2',
+                  articleNumber: 2,
+                  questionCount: 2,
+                  summary: 'Kanunun düzenleme amacını ve kamu personel sistemine ilişkin temel çerçeveyi açıklar.'
+                },
+                {
+                  title: 'Temel İlkeler',
+                  articleLabel: 'Madde 3',
+                  articleNumber: 3,
+                  questionCount: 4,
+                  summary: 'Sınıflandırma, kariyer ve liyakat ilkelerini ana hatlarıyla ele alır.',
+                  keyPoints: ['Sınıflandırma', 'Kariyer', 'Liyakat']
+                },
+                {
+                  title: 'İstihdam Şekilleri',
+                  articleLabel: 'Madde 4',
+                  articleNumber: 4,
+                  questionCount: 4,
+                  summary: 'Kamu hizmetlerinin hangi istihdam biçimleriyle yürütüleceğini düzenleyen temel maddelerden biridir.',
+                  keyPoints: ['Memur', 'Sözleşmeli personel', 'Geçici personel', 'İşçi']
+                },
+                {
+                  title: 'İstihdam Şekilleri Dışında Personel Çalıştırılamayacağı',
+                  articleLabel: 'Madde 5',
+                  articleNumber: 5,
+                  questionCount: 1,
+                  summary: 'Kanunda belirtilen istihdam biçimleri dışında personel çalıştırılmasına ilişkin sınırlamayı ele alır.'
+                },
+                {
+                  title: 'Sadakat',
+                  articleLabel: 'Madde 6',
+                  articleNumber: 6,
+                  questionCount: 1,
+                  summary: 'Devlet memurlarının anayasal düzene ve kanunlara bağlılık yükümlülüğünü konu edinir.'
+                },
+                {
+                  title: 'Tarafsızlık ve Devlete Bağlılık',
+                  articleLabel: 'Madde 7',
+                  articleNumber: 7,
+                  questionCount: 2,
+                  summary: 'Kamu görevinde tarafsızlık, eşit davranma ve devlete bağlılık esaslarını ele alır.'
+                },
+                {
+                  title: 'Davranış ve İşbirliği',
+                  articleLabel: 'Madde 8',
+                  articleNumber: 8,
+                  questionCount: 1,
+                  summary: 'Memurların resmî sıfatlarına uygun davranmaları ve görevlerinde işbirliği içinde çalışmaları gerektiğini açıklar.'
+                },
+                {
+                  title: 'Yurt Dışında Davranış',
+                  articleLabel: 'Madde 9',
+                  articleNumber: 9,
+                  questionCount: 1,
+                  summary: 'Yurt dışında görev yapan memurların devletin itibarını koruyacak biçimde davranmasına ilişkin çerçeveyi ele alır.'
+                },
+                {
+                  title: 'Amir Durumunda Olan Devlet Memurlarının Görev ve Sorumlulukları',
+                  articleLabel: 'Madde 10',
+                  articleNumber: 10,
+                  questionCount: 2,
+                  summary: 'Amirlerin görev dağılımı, denetim, yetiştirme ve personele karşı sorumluluklarına ilişkin temel esasları ele alır.'
+                },
+                {
+                  title: 'Devlet Memurlarının Görev ve Sorumlulukları',
+                  articleLabel: 'Madde 11',
+                  articleNumber: 11,
+                  questionCount: 1,
+                  summary: 'Memurların görevlerini dikkat ve özenle yerine getirmesi ile doğabilecek zararlara ilişkin sorumluluk çerçevesini ele alır.'
+                }
+              ]
+            },
             { title: 'Ödevler ve Sorumluluklar', articleRange: 'Madde 6-31', questionCount: 58 },
             { title: 'Genel Haklar', articleRange: 'Madde 17-23', questionCount: 34 },
             { title: 'Sınıflandırma', articleRange: 'Madde 36-45', questionCount: 28 },
@@ -663,6 +748,7 @@
           <div class="topic-copy">
             <h4>${item.title}</h4>
             ${item.articleRange ? `<span class="article-range">${item.articleRange}</span>` : ''}
+            ${item.articleLabel ? `<span class="article-range">${item.articleLabel}</span>` : ''}
             ${metaLine ? `<p>${metaLine}</p>` : ''}
           </div>
           ${hasChildren
@@ -700,6 +786,9 @@
             progress: 0
           });
           renderLevel(navStack[navStack.length - 1]);
+        } else if (item.articleNumber || item.articleLabel) {
+          haptic(18);
+          renderArticleDetail(item);
         } else {
           haptic(18);
           toast.textContent = `${item.title} açılıyor…`;
@@ -718,6 +807,136 @@
           activate();
         }
       });
+    });
+  }
+
+
+  function renderArticleDetail(item) {
+    topicSheetTitle.textContent = item.title;
+    topicSheetSubtitle.textContent = `${item.articleLabel || 'Kanun maddesi'} • ${item.questionCount || 0} soru`;
+    topicEyebrow.textContent = 'MADDE DETAYI';
+    topicHeadingIcon.className = 'topic-heading-icon';
+    topicHeadingIcon.innerHTML = topicSvg('gavel');
+
+    const parentLevel = navStack[navStack.length - 1];
+    topicBreadcrumbWrap.innerHTML = `
+      <div class="topic-breadcrumb" id="articleBackBtn" role="button" tabindex="0">
+        ${topicSvg('back')}
+        <span>${parentLevel.title}</span>
+      </div>
+    `;
+
+    const goBack = () => {
+      haptic(14);
+      renderLevel(parentLevel);
+    };
+
+    const backButton = document.getElementById('articleBackBtn');
+    backButton.addEventListener('click', goBack);
+    backButton.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        goBack();
+      }
+    });
+
+    topicProgressText.textContent = 'Henüz çalışılmadı';
+    topicProgressBar.style.width = '0%';
+
+    const keyPoints = item.keyPoints && item.keyPoints.length
+      ? item.keyPoints
+      : ['Madde başlığını öğren', 'Temel kavramları ayırt et', 'Madde sorularıyla pekiştir'];
+
+    topicList.innerHTML = `
+      <div class="article-detail">
+        <section class="article-detail-card">
+          <div class="article-kicker">
+            <span class="article-label">${item.articleLabel || `Madde ${item.articleNumber || ''}`}</span>
+            <span class="article-status">657 SAYILI KANUN</span>
+          </div>
+          <h4>${item.title}</h4>
+          <p>${item.summary || 'Bu maddeye ilişkin kısa açıklama daha sonra içerik yönetim sisteminden getirilecektir.'}</p>
+        </section>
+
+        <div class="article-demo-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 11v5"></path>
+            <path d="M12 8h.01"></path>
+          </svg>
+          <span>Bu ekran kurgu amaçlıdır. Resmî madde hükmü sonraki aşamada doğrulanmış mevzuat kaynağından otomatik olarak yüklenecektir.</span>
+        </div>
+
+        <div class="article-tabs" role="tablist">
+          <button class="article-tab active" data-article-tab="explanation" type="button">Sade Anlatım</button>
+          <button class="article-tab" data-article-tab="official" type="button">Kanun Metni</button>
+          <button class="article-tab" data-article-tab="points" type="button">Önemli Noktalar</button>
+        </div>
+
+        <section class="article-panel" id="articlePanel">
+          <h5>Sade Anlatım</h5>
+          <p>${item.summary || 'Madde açıklaması içerik sistemi bağlandığında burada gösterilecektir.'}</p>
+        </section>
+
+        <div class="article-actions">
+          <button class="article-action secondary" id="markArticleComplete" type="button">Tamamlandı İşaretle</button>
+          <button class="article-action primary" id="solveArticleQuestions" type="button">${item.questionCount || 0} Madde Sorusunu Çöz</button>
+        </div>
+      </div>
+    `;
+
+    topicSheet.scrollTop = 0;
+
+    const panel = document.getElementById('articlePanel');
+    const tabs = topicList.querySelectorAll('.article-tab');
+
+    function showTab(tabName) {
+      tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.articleTab === tabName));
+
+      if (tabName === 'official') {
+        panel.innerHTML = `
+          <h5>Resmî Kanun Metni</h5>
+          <p>Resmî hüküm metni henüz bu prototipe eklenmedi. Üretim aşamasında doğrulanmış mevzuat dosyasından veya içerik servisinden getirilecek.</p>
+        `;
+      } else if (tabName === 'points') {
+        panel.innerHTML = `
+          <h5>Önemli Noktalar</h5>
+          <ul>${keyPoints.map(point => `<li>${point}</li>`).join('')}</ul>
+        `;
+      } else {
+        panel.innerHTML = `
+          <h5>Sade Anlatım</h5>
+          <p>${item.summary || 'Madde açıklaması içerik sistemi bağlandığında burada gösterilecektir.'}</p>
+        `;
+      }
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        haptic(10);
+        showTab(tab.dataset.articleTab);
+      });
+    });
+
+    document.getElementById('markArticleComplete').addEventListener('click', event => {
+      haptic(20);
+      event.currentTarget.textContent = 'Tamamlandı';
+      event.currentTarget.disabled = true;
+      topicProgressText.textContent = '%100 tamamlandı';
+      topicProgressBar.style.width = '100%';
+      toast.textContent = `${item.articleLabel} tamamlandı olarak işaretlendi.`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2100);
+    });
+
+    document.getElementById('solveArticleQuestions').addEventListener('click', () => {
+      haptic(30);
+      toast.textContent = `${item.articleLabel} için ${item.questionCount || 0} soruluk çalışma açılıyor…`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2300);
+
+      // GitHub prototipinde burada soru ekranına yönlendirme yapılabilir:
+      // window.location.href = `quiz.html?law=657&article=${item.articleNumber}`;
     });
   }
 
