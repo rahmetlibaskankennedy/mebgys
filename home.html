@@ -446,6 +446,245 @@ button{font:inherit}
 .choice{display:flex;align-items:center;justify-content:center;gap:6px}
 .choice-icon{width:16px;height:16px}
 
+
+/* Konu kategorileri etkileşimleri */
+.category-card{
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .16s ease,box-shadow .16s ease,filter .16s ease;
+}
+.category-card:active{
+  transform:scale(.986) translateY(1px);
+  box-shadow:0 5px 15px rgba(10,31,70,.10);
+  filter:brightness(.975);
+}
+.category-card:focus-visible{
+  outline:3px solid rgba(227,30,36,.22);
+  outline-offset:3px;
+}
+
+.topic-backdrop{
+  position:absolute;
+  inset:0;
+  z-index:58;
+  background:rgba(3,12,29,.50);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease;
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+}
+.topic-backdrop.open{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.topic-sheet{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:60;
+  max-height:89%;
+  overflow-y:auto;
+  background:#f8fafc;
+  border-radius:28px 28px 0 0;
+  padding:10px 17px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(105%);
+  transition:transform .34s cubic-bezier(.2,.8,.2,1);
+  box-shadow:0 -22px 60px rgba(5,20,45,.24);
+  scrollbar-width:none;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.topic-sheet::-webkit-scrollbar{display:none}
+.topic-sheet.open{transform:translateY(0)}
+
+.topic-handle{
+  width:42px;
+  height:5px;
+  border-radius:999px;
+  background:#d6dce5;
+  margin:0 auto 16px;
+}
+.topic-sheet-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.topic-heading-wrap{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+.topic-heading-icon{
+  width:48px;
+  height:48px;
+  flex:0 0 auto;
+  border-radius:15px;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  background:linear-gradient(145deg,#082f69,#061d43);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
+}
+.topic-heading-icon.blue{
+  background:linear-gradient(145deg,#235fae,#153b73);
+}
+.topic-heading-icon.red{
+  background:linear-gradient(145deg,#f34549,#dd242a);
+}
+.topic-heading-icon .ui-icon{
+  width:27px;
+  height:27px;
+}
+.topic-eyebrow{
+  display:block;
+  margin-bottom:3px;
+  color:#e93238;
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:1.05px;
+}
+.topic-sheet-head h3{
+  margin:0 0 4px;
+  color:#0b2147;
+  font-size:20px;
+  line-height:1.15;
+}
+.topic-sheet-head p{
+  margin:0;
+  color:#7d8797;
+  font-size:11px;
+}
+.topic-close{
+  width:32px;
+  height:32px;
+  flex:0 0 auto;
+  border:0;
+  border-radius:50%;
+  background:#e9edf3;
+  color:#677286;
+  font-size:21px;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.topic-progress-card{
+  margin-top:16px;
+  padding:13px 14px;
+  border:1px solid #e7ebf1;
+  border-radius:15px;
+  background:#fff;
+  box-shadow:0 6px 18px rgba(11,33,71,.045);
+}
+.topic-progress-card>div:first-child{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.topic-progress-card span{
+  color:#7a8495;
+  font-size:10px;
+}
+.topic-progress-card strong{
+  color:#153b73;
+  font-size:10px;
+}
+.topic-progress-track{
+  height:6px;
+  margin-top:9px;
+  overflow:hidden;
+  border-radius:999px;
+  background:#e8edf4;
+}
+.topic-progress-track span{
+  display:block;
+  width:0;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#153b73,#2d7ef7);
+  transition:width .35s ease;
+}
+
+.topic-list{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  margin-top:14px;
+}
+.topic-item{
+  display:grid;
+  grid-template-columns:36px minmax(0,1fr) 18px;
+  gap:11px;
+  align-items:center;
+  padding:12px 12px;
+  border:1px solid #e8ebf0;
+  border-radius:15px;
+  background:#fff;
+  box-shadow:0 7px 18px rgba(11,33,71,.05);
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease;
+}
+.topic-item:active{
+  transform:scale(.985);
+  box-shadow:0 3px 10px rgba(11,33,71,.07);
+}
+.topic-number{
+  width:34px;
+  height:34px;
+  border-radius:11px;
+  display:grid;
+  place-items:center;
+  color:#153b73;
+  background:#edf3fb;
+  font-size:11px;
+  font-weight:850;
+}
+.topic-copy{
+  min-width:0;
+}
+.topic-copy h4{
+  margin:0 0 4px;
+  color:#12264a;
+  font-size:12px;
+  line-height:1.35;
+  font-weight:750;
+}
+.topic-copy p{
+  margin:0;
+  color:#8b94a3;
+  font-size:9.5px;
+}
+.topic-arrow{
+  color:#97a1b2;
+  display:grid;
+  place-items:center;
+}
+.topic-arrow .ui-icon{
+  width:17px;
+  height:17px;
+}
+.topic-item.completed{
+  border-color:#d8e5dc;
+  background:#fbfefc;
+}
+.topic-item.completed .topic-number{
+  color:#17834b;
+  background:#e9f6ef;
+}
+.topic-item.completed .topic-copy p{
+  color:#17834b;
+}
+
 </style>
 </head>
 <body>
@@ -653,6 +892,38 @@ button{font:inherit}
   </section>
 
   <div class="toast" id="toast">Rota hazırlanıyor…</div>
+
+  
+  <div class="topic-backdrop" id="topicBackdrop"></div>
+
+  <section class="topic-sheet" id="topicSheet" aria-hidden="true" aria-label="Konu başlıkları">
+    <div class="topic-handle"></div>
+
+    <div class="topic-sheet-head">
+      <div class="topic-heading-wrap">
+        <div class="topic-heading-icon" id="topicHeadingIcon"></div>
+        <div>
+          <span class="topic-eyebrow">KONU KATEGORİSİ</span>
+          <h3 id="topicSheetTitle">Genel Mevzuat</h3>
+          <p id="topicSheetSubtitle">Çalışmak istediğin başlığı seç.</p>
+        </div>
+      </div>
+
+      <button class="topic-close" id="closeTopicSheet" type="button" aria-label="Konu panelini kapat">×</button>
+    </div>
+
+    <div class="topic-progress-card">
+      <div>
+        <span>Kategori ilerlemesi</span>
+        <strong id="topicProgressText">%0 tamamlandı</strong>
+      </div>
+      <div class="topic-progress-track">
+        <span id="topicProgressBar"></span>
+      </div>
+    </div>
+
+    <div class="topic-list" id="topicList"></div>
+  </section>
 
   <nav class="bottom-nav">
     <button class="nav-item active">
@@ -919,8 +1190,158 @@ button{font:inherit}
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeSheet();
+    if (event.key === 'Escape') { closeSheet(); closeTopicSheet(); }
   });
+
+
+  const topicSheet = document.getElementById('topicSheet');
+  const topicBackdrop = document.getElementById('topicBackdrop');
+  const closeTopicSheetButton = document.getElementById('closeTopicSheet');
+  const topicSheetTitle = document.getElementById('topicSheetTitle');
+  const topicSheetSubtitle = document.getElementById('topicSheetSubtitle');
+  const topicHeadingIcon = document.getElementById('topicHeadingIcon');
+  const topicList = document.getElementById('topicList');
+  const topicProgressText = document.getElementById('topicProgressText');
+  const topicProgressBar = document.getElementById('topicProgressBar');
+
+  const categoryTopics = {
+    'general-culture': {
+      title: 'Genel Kültür',
+      subtitle: 'Dil, tarih, demokrasi ve protokol konularını çalış.',
+      icon: 'landmark',
+      iconClass: 'blue',
+      progress: 40,
+      topics: [
+        'Türkçe dilbilgisi',
+        'Atatürk İlkeleri ve İnkılap Tarihi',
+        'Genel kültür',
+        'İnsan hakları ve demokrasi',
+        'Protokol kuralları'
+      ]
+    },
+    'general-legislation': {
+      title: 'Genel Mevzuat',
+      subtitle: 'Temel kamu mevzuatına sıralı şekilde çalış.',
+      icon: 'scale',
+      iconClass: '',
+      progress: 20,
+      topics: [
+        'T.C. Anayasası (Genel esaslar, Temel hak ve ödevleri, Devletin Temel Organları)',
+        '657 sayılı Devlet Memurları Kanunu',
+        'Türk idare sistemi',
+        '5442 sayılı İl İdaresi Kanunu',
+        '4982 sayılı Bilgi Edinme Hakkı Kanunu'
+      ]
+    },
+    'meb-legislation': {
+      title: 'MEB Mevzuatı',
+      subtitle: 'Milli Eğitim Bakanlığı mevzuatını ve bağlı düzenlemeleri çalış.',
+      icon: 'schoolbook',
+      iconClass: 'red',
+      progress: 13,
+      topics: [
+        '1739 sayılı Milli Eğitim Temel Kanunu',
+        '222 sayılı İlköğretim ve Eğitim Kanunu',
+        '652 sayılı KHK',
+        'Bunlara bağlı mevzuat',
+        'MEB Personelin Görevde Yükselme, Unvan Değişikliği ve Yer Değiştirme Suretiyle Atanması Hakkında Yönetmelik',
+        'MEB Aday Memurların Yetiştirilmelerine İlişkin Yönetmelik',
+        'MEB Öğretmenlerin Atama ve Yer Değiştirme Yönetmeliği',
+        'MEB Personelin İzin Yönergesi'
+      ]
+    }
+  };
+
+  const topicIconPaths = {
+    scale: '<path d="M12 3v18"/><path d="M6 6h12"/><path d="m6 6-4 7h8L6 6Z"/><path d="m18 6-4 7h8l-4-7Z"/><path d="M8 21h8"/>',
+    landmark: '<path d="m3 10 9-6 9 6"/><path d="M5 10h14"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/><path d="M4 18h16M3 22h18"/>',
+    schoolbook: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z"/><path d="M8 4v16"/><path d="M12 8h4M12 12h4"/><path d="m14 15 .7 1.4 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2L14 15Z"/>',
+    arrow: '<path d="m9 18 6-6-6-6"/>'
+  };
+
+  function topicSvg(name, className = 'ui-icon') {
+    return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${topicIconPaths[name]}</svg>`;
+  }
+
+  function openTopicSheet(categoryKey) {
+    const category = categoryTopics[categoryKey];
+    if (!category) return;
+
+    haptic(20);
+    topicSheetTitle.textContent = category.title;
+    topicSheetSubtitle.textContent = category.subtitle;
+    topicHeadingIcon.className = `topic-heading-icon ${category.iconClass}`.trim();
+    topicHeadingIcon.innerHTML = topicSvg(category.icon);
+
+    topicProgressText.textContent = `%${category.progress} tamamlandı`;
+    topicProgressBar.style.width = `${category.progress}%`;
+
+    const completedCount = Math.floor((category.progress / 100) * category.topics.length);
+
+    topicList.innerHTML = category.topics.map((topic, index) => {
+      const completed = index < completedCount;
+      return `
+        <article class="topic-item ${completed ? 'completed' : ''}" data-topic="${topic.replace(/"/g, '&quot;')}" role="button" tabindex="0">
+          <div class="topic-number">${completed ? '✓' : String(index + 1).padStart(2, '0')}</div>
+          <div class="topic-copy">
+            <h4>${topic}</h4>
+            <p>${completed ? 'Tamamlandı' : 'Konu anlatımı ve soru bankası'}</p>
+          </div>
+          <div class="topic-arrow">${topicSvg('arrow')}</div>
+        </article>
+      `;
+    }).join('');
+
+    topicSheet.classList.add('open');
+    topicBackdrop.classList.add('open');
+    topicSheet.setAttribute('aria-hidden', 'false');
+
+    topicList.querySelectorAll('.topic-item').forEach(item => {
+      const activate = () => {
+        haptic(18);
+        const topicName = item.dataset.topic;
+        toast.textContent = `${topicName} açılıyor…`;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2200);
+
+        // Gerçek uygulamada:
+        // topicStore.setSelectedTopic(topicName);
+        // router.navigate('/topic-detail');
+      };
+
+      item.addEventListener('click', activate);
+      item.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activate();
+        }
+      });
+    });
+  }
+
+  function closeTopicSheet() {
+    topicSheet.classList.remove('open');
+    topicBackdrop.classList.remove('open');
+    topicSheet.setAttribute('aria-hidden', 'true');
+  }
+
+  document.querySelectorAll('.category-card[data-category]').forEach(card => {
+    card.addEventListener('click', () => openTopicSheet(card.dataset.category));
+    card.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openTopicSheet(card.dataset.category);
+      }
+    });
+  });
+
+  closeTopicSheetButton.addEventListener('click', () => {
+    haptic(12);
+    closeTopicSheet();
+  });
+
+  topicBackdrop.addEventListener('click', closeTopicSheet);
+
 
   updateSummary();
   updateCard();
