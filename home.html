@@ -14,7 +14,7 @@
     --text-dark: #1E293B;
     --text-gray: #8F9BB3;
     --white: #FFFFFF;
-    --card-shadow: 0 8px 24px rgba(11, 23, 42, 0.05);
+    --card-shadow: 0 8px 24px rgba(11, 23, 42, 0.06);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
@@ -31,7 +31,7 @@
   /* Telefon Çerçevesi */
   .phone {
     width: 360px;
-    height: 760px; /* Görseldeki elemanların sığması için biraz uzatıldı */
+    height: 760px;
     border-radius: 40px;
     position: relative;
     overflow: hidden;
@@ -42,26 +42,20 @@
     flex-direction: column;
   }
 
-  /* Kavisli Üst Arka Plan */
-  .top-bg {
+  /* Status Bar - Sabit Üst Çubuk */
+  .statusbar {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 300px;
-    background: radial-gradient(circle at top right, #1A365D 0%, var(--navy-bg) 70%);
-    border-bottom-left-radius: 40px;
-    border-bottom-right-radius: 40px;
-    z-index: 0;
-  }
-
-  /* Status Bar */
-  .statusbar {
-    position: relative;
     display: flex; justify-content: space-between; align-items: center;
-    padding: 16px 24px 0; font-size: 14px; font-weight: 600; color: var(--white);
-    z-index: 10;
+    padding: 16px 24px 0; font-size: 14px; font-weight: 600; color: var(--text-dark); /* Kaydırılınca okunabilmesi için dark yapıldı */
+    z-index: 20;
+    pointer-events: none;
   }
+  .statusbar svg { fill: var(--text-dark); }
+  
+  /* İlk açılışta status bar beyaz görünsün diye arkasına küçük bir gölge/renk eklenebilir ama tasarımda bütünlük için içerikle kayan model kuruldu */
 
   /* Kaydırılabilir İçerik Alanı */
   .home-content {
@@ -69,17 +63,34 @@
     overflow-y: auto;
     position: relative;
     z-index: 10;
-    padding: 20px 24px 100px; /* Alttaki menü için boşluk */
+    padding: 0 0 100px 0; /* Alttaki menü için alt boşluk */
     scrollbar-width: none;
   }
   .home-content::-webkit-scrollbar { display: none; }
+
+  /* Kendi Arkaplanı ile Kayan Üst Bölüm (Lacivert Kısım) */
+  .top-section {
+    background: radial-gradient(circle at top right, #1A365D 0%, var(--navy-bg) 70%);
+    border-bottom-left-radius: 40px;
+    border-bottom-right-radius: 40px;
+    padding: 60px 24px 30px; /* 60px top padding status bar boşluğunu bırakır */
+    position: relative;
+  }
+  /* Kayan Kısımdaki Status Bar Arkasını Beyaz Yapan Hile */
+  .top-section::before {
+    content: "9:41";
+    position: absolute; top: 16px; left: 24px; font-size: 14px; font-weight: 600; color: var(--white); z-index: 30;
+  }
+  .top-section::after {
+    content: "●●● ▲ ▮";
+    position: absolute; top: 16px; right: 24px; font-size: 11px; letter-spacing: 1px; color: var(--white); z-index: 30;
+  }
 
   /* Header / Kullanıcı Profili */
   .header {
     display: flex;
     align-items: center;
     margin-bottom: 24px;
-    margin-top: 10px;
   }
   .avatar {
     width: 60px;
@@ -94,54 +105,17 @@
     display: flex;
     flex-direction: column;
   }
-  .greeting {
-    font-size: 13px;
-    color: rgba(255,255,255,0.7);
-  }
-  .user-name {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--white);
-    margin-bottom: 6px;
-  }
-  .badges {
-    display: flex;
-    gap: 10px;
-  }
+  .greeting { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .user-name { font-size: 20px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+  .badges { display: flex; gap: 10px; }
   .badge {
-    background: rgba(255,255,255,0.1);
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    color: var(--white);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    backdrop-filter: blur(4px);
+    background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 12px; font-size: 11px; color: var(--white); display: flex; align-items: center; gap: 4px; backdrop-filter: blur(4px);
   }
   .bell-icon {
-    position: relative;
-    color: var(--white);
-    width: 24px;
-    height: 24px;
-    align-self: flex-start;
-    margin-top: 5px;
+    position: relative; color: var(--white); width: 24px; height: 24px; align-self: flex-start; margin-top: 5px;
   }
   .notification-dot {
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    width: 14px;
-    height: 14px;
-    background: var(--red-accent);
-    color: white;
-    font-size: 9px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 2px solid var(--navy-bg);
+    position: absolute; top: -2px; right: -2px; width: 14px; height: 14px; background: var(--red-accent); color: white; font-size: 9px; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid var(--navy-bg);
   }
 
   /* Günlük İlerleme Kartı */
@@ -150,28 +124,14 @@
     border-radius: 20px;
     padding: 20px;
     box-shadow: var(--card-shadow);
-    margin-bottom: 30px;
+    margin-bottom: -70px; /* Alt bölümün üstüne taşmasını sağlar */
+    position: relative;
+    z-index: 5;
   }
-  .prog-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  .prog-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .prog-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .prog-left { display: flex; align-items: center; gap: 12px; }
   .cal-icon {
-    width: 44px;
-    height: 44px;
-    background: var(--red-light);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--red-accent);
+    width: 44px; height: 44px; background: var(--red-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--red-accent);
   }
   .prog-title { font-size: 15px; font-weight: 700; color: var(--text-dark); }
   .prog-sub { font-size: 12px; color: var(--text-gray); margin-top: 2px; }
@@ -179,16 +139,15 @@
   .prog-percent { font-size: 20px; font-weight: 700; color: var(--navy-bg); }
   .prog-goal { font-size: 11px; color: var(--text-gray); }
   
-  .progress-bar-bg {
-    width: 100%; height: 6px; background: #F1F5F9; border-radius: 10px; margin-bottom: 12px; overflow: hidden;
-  }
-  .progress-bar-fill {
-    height: 100%; background: var(--red-accent); width: 75%; border-radius: 10px;
-  }
-  .prog-footer {
-    display: flex; justify-content: space-between; font-size: 11px; color: var(--text-gray); font-weight: 500;
-  }
+  .progress-bar-bg { width: 100%; height: 6px; background: #F1F5F9; border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--red-accent); width: 75%; border-radius: 10px; }
+  .prog-footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-gray); font-weight: 500; }
   .prog-footer .studied { color: var(--red-accent); font-weight: 700; }
+
+  /* Alt Bölüm İçeriği (Taşan kartın altındaki alan) */
+  .bottom-section {
+    padding: 90px 24px 0; /* progress-card'ın taşma payı (70px) + boşluk (20px) */
+  }
 
   /* Başlıklar */
   .section-header {
@@ -213,57 +172,37 @@
   }
   .tc-title { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
   .tc-desc { font-size: 11px; color: var(--text-gray); line-height: 1.4; margin-bottom: 16px; min-height: 30px;}
-  .tc-footer {
-    display: flex; justify-content: space-between; align-items: center;
-  }
+  .tc-footer { display: flex; justify-content: space-between; align-items: center; }
   .tc-count { font-size: 12px; font-weight: 600; color: var(--red-accent); }
   .tc-arrow { color: var(--red-accent); }
 
-  /* Pratiğe Hazır mısın? Banner */
-  .practice-banner {
-    background: var(--navy-bg); border-radius: 20px; padding: 20px; color: var(--white); display: flex; align-items: center; justify-content: space-between; margin-top: 10px; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(11,23,42,0.15); overflow: hidden; position: relative;
+  /* Testler Dikey Liste Bölümü */
+  .test-item {
+    display: flex; align-items: center; background: var(--white);
+    border-radius: 16px; padding: 16px; margin-bottom: 12px;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s; cursor: pointer;
   }
-  /* Sağ kısımdaki belli belirsiz desen (Görseldeki gibi) */
-  .banner-bg-icon { position: absolute; right: -20px; bottom: -20px; opacity: 0.1; width: 120px; height: 120px; }
-  .pb-left { display: flex; align-items: center; gap: 14px; position: relative; z-index: 2; }
-  .target-icon { width: 50px; height: 50px; }
-  .pb-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .pb-sub { font-size: 11px; color: rgba(255,255,255,0.7); line-height: 1.4; }
-  .pb-btn {
-    background: var(--red-accent); color: var(--white); border: none; padding: 10px 16px; border-radius: 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; position: relative; z-index: 2;
+  .test-item:active { transform: scale(0.98); }
+  .test-icon {
+    width: 44px; height: 44px; background: #F0F4FA; color: var(--navy-light);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    margin-right: 14px;
   }
-
-  /* Bugünün Planı */
-  .plan-item {
-    display: flex; align-items: center; margin-bottom: 20px;
+  .test-info { flex: 1; }
+  .test-title { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+  .test-desc { font-size: 11px; color: var(--text-gray); }
+  .test-btn {
+    background: var(--red-light); color: var(--red-accent);
+    padding: 8px 14px; border-radius: 10px; font-size: 11.5px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px;
   }
-  /* SVG Circular Progress */
-  .circle-wrap {
-    position: relative; width: 54px; height: 54px; margin-right: 14px;
-  }
-  .circle-bg { fill: none; stroke: #F1F5F9; stroke-width: 4; }
-  .circle-fill { fill: none; stroke: var(--red-accent); stroke-width: 4; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; }
-  .circle-text {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  }
-  .c-num { font-size: 14px; font-weight: 700; color: var(--text-dark); line-height: 1; }
-  .c-min { font-size: 9px; color: var(--text-gray); }
-
-  .plan-info { flex: 1; }
-  .plan-title { font-size: 14px; font-weight: 700; color: var(--text-dark); }
-  .plan-desc { font-size: 11px; color: var(--text-gray); margin-top: 3px; }
-  .plan-right {
-    display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; color: var(--text-gray);
-  }
-  .plan-right .done { color: var(--red-accent); }
-  .chevron { color: var(--text-gray); }
 
   /* Alt Navigasyon */
   .bottom-nav {
     position: absolute; bottom: 0; left: 0; right: 0; height: 86px; background: var(--white); border-top: 1px solid #F1F5F9; border-radius: 0 0 40px 40px; display: flex; justify-content: space-around; align-items: center; padding: 0 10px 20px; z-index: 20;
   }
   .nav-item {
-    display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--text-gray); cursor: pointer; position: relative; width: 60px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--text-gray); cursor: pointer; position: relative; width: 64px;
   }
   .nav-item.active { color: var(--red-accent); }
   .nav-item svg { width: 22px; height: 22px; }
@@ -276,206 +215,164 @@
 <body>
 
 <div class="phone">
-  <!-- Lacivert Kavisli Arka Plan -->
-  <div class="top-bg"></div>
 
-  <!-- Status Bar -->
-  <div class="statusbar">
+  <!-- Şeffaf Gerçek Status Bar (Kaydırıldığında görünmez olacak şekilde ayarlandı) -->
+  <div class="statusbar" style="opacity: 0;">
     <span>9:41</span>
-    <span>
-      <svg width="60" height="15" viewBox="0 0 60 15" fill="white"><path d="M4 10h4v4H4zM11 7h4v7h-4zM18 4h4v10h-4zM25 1h4v13h-4z"/><path d="M40 7c-3-3-8-3-11 0l-1 1 6 7 6-7-1-1z"/><path d="M48 4h10v8H48z" fill="none" stroke="white" stroke-width="1.5"/><rect x="49" y="5" width="8" height="6"/></svg>
-    </span>
+    <span>●●● ▲ ▮</span>
   </div>
 
   <!-- Kaydırılabilir İçerik -->
   <div class="home-content">
     
-    <!-- Profil Alanı -->
-    <header class="header">
-      <img src="https://i.pravatar.cc/150?img=11" alt="Profil" class="avatar">
-      <div class="user-info">
-        <span class="greeting">Günaydın,</span>
-        <span class="user-name">Ahmet Yılmaz</span>
-        <div class="badges">
-          <div class="badge"><span>⭐</span> Seviye 12</div>
-          <div class="badge"><span>🎯</span> 2,350 / 3,500</div>
-        </div>
-      </div>
-      <div class="bell-icon">
-        <div class="notification-dot">3</div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-      </div>
-    </header>
-
-    <!-- Günlük İlerleme Kartı -->
-    <div class="progress-card">
-      <div class="prog-top">
-        <div class="prog-left">
-          <div class="cal-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M10 16l2 2 4-4"></path></svg>
-          </div>
-          <div>
-            <div class="prog-title">Günlük Çalışma İlerlemesi</div>
-            <div class="prog-sub">Harika gidiyorsun! İstikrar en önemlisidir.</div>
+    <!-- KAYDIRILAN LACİVERT ÜST BÖLÜM -->
+    <div class="top-section">
+      <!-- Profil Alanı -->
+      <header class="header">
+        <img src="https://i.pravatar.cc/150?img=11" alt="Profil" class="avatar">
+        <div class="user-info">
+          <span class="greeting">Günaydın,</span>
+          <span class="user-name">Ahmet Yılmaz</span>
+          <div class="badges">
+            <div class="badge"><span>⭐</span> Seviye 12</div>
+            <div class="badge"><span>🎯</span> 2,350 / 3,500</div>
           </div>
         </div>
-        <div class="prog-right">
-          <div class="prog-percent">75%</div>
-          <div class="prog-goal">Günlük Hedef</div>
+        <div class="bell-icon">
+          <div class="notification-dot">3</div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
         </div>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill"></div>
-      </div>
-      <div class="prog-footer">
-        <div><span class="studied">90</span> dk çalışıldı</div>
-        <div>120 dk hedef</div>
-      </div>
-    </div>
+      </header>
 
-    <!-- Çalışma Konuları Başlığı -->
-    <div class="section-header">
-      <div class="section-title">Çalışma Konuları</div>
-      <a href="#" class="see-all">Tümünü Gör <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
-    </div>
-
-    <!-- Yatay Kartlar -->
-    <div class="topics-scroll">
-      
-      <!-- Kart 1 -->
-      <div class="topic-card">
-        <div class="tc-badge">124</div>
-        <div class="tc-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M12 3v18"></path><path d="M3 10l9-6 9 6"></path><path d="M5 10v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9"></path><line x1="9" y1="21" x2="15" y2="21"></line></svg>
-        </div>
-        <div class="tc-title">Mevzuat</div>
-        <div class="tc-desc">Anayasa, Kanun ve Yönetmelikler</div>
-        <div class="tc-footer">
-          <span class="tc-count">124 Konu</span>
-          <svg class="tc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </div>
-      </div>
-
-      <!-- Kart 2 -->
-      <div class="topic-card">
-        <div class="tc-badge">98</div>
-        <div class="tc-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-        </div>
-        <div class="tc-title">Genel Kültür</div>
-        <div class="tc-desc">Tarih, Coğrafya ve Güncel Bilgiler</div>
-        <div class="tc-footer">
-          <span class="tc-count">98 Konu</span>
-          <svg class="tc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </div>
-      </div>
-
-      <!-- Kart 3 -->
-      <div class="topic-card">
-        <div class="tc-badge">67</div>
-        <div class="tc-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
-        </div>
-        <div class="tc-title">MEB Mevzuatı</div>
-        <div class="tc-desc">Milli Eğitim Bakanlığı Yönetmelikleri</div>
-        <div class="tc-footer">
-          <span class="tc-count">67 Konu</span>
-          <svg class="tc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Banner -->
-    <div class="practice-banner">
-      <svg class="banner-bg-icon" viewBox="0 0 24 24" fill="white"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16zm0-14a6 6 0 100 12 6 6 0 000-12zm0 10a4 4 0 110-8 4 4 0 010 8z"/></svg>
-      <div class="pb-left">
-        <svg class="target-icon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="22" y1="12" x2="20" y2="12"/><line x1="4" y1="12" x2="2" y2="12"/><line x1="20.5" y1="3.5" x2="17.5" y2="6.5"/></svg>
-        <div>
-          <div class="pb-title">Pratiğe Hazır mısın?</div>
-          <div class="pb-sub">Bilgini sına ve ilerlemeni<br>takip et.</div>
-        </div>
-      </div>
-      <button class="pb-btn">Pratiğe Başla <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
-    </div>
-
-    <!-- Bugünün Planı -->
-    <div class="section-header" style="margin-bottom: 8px;">
-      <div class="section-title" style="display:flex; align-items:center; gap:8px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Bugünün Planı
-      </div>
-      <a href="#" class="see-all">Planı Düzenle <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></a>
-    </div>
-
-    <div class="plan-list">
-      <!-- Madde 1 -->
-      <div class="plan-item">
-        <div class="circle-wrap">
-          <svg viewBox="0 0 54 54">
-            <circle class="circle-bg" cx="27" cy="27" r="24"></circle>
-            <!-- 30/60 = %50 doluluk (Çevre: 150, Yarısı 75) -->
-            <circle class="circle-fill" cx="27" cy="27" r="24" stroke-dasharray="150" stroke-dashoffset="75"></circle>
-          </svg>
-          <div class="circle-text">
-            <span class="c-num">30</span>
-            <span class="c-min">dk</span>
+      <!-- Günlük İlerleme Kartı -->
+      <div class="progress-card">
+        <div class="prog-top">
+          <div class="prog-left">
+            <div class="cal-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M10 16l2 2 4-4"></path></svg>
+            </div>
+            <div>
+              <div class="prog-title">Günlük Çalışma İlerlemesi</div>
+              <div class="prog-sub">Harika gidiyorsun! İstikrar en önemlisidir.</div>
+            </div>
+          </div>
+          <div class="prog-right">
+            <div class="prog-percent">75%</div>
+            <div class="prog-goal">Günlük Hedef</div>
           </div>
         </div>
-        <div class="plan-info">
-          <div class="plan-title">Mevzuat</div>
-          <div class="plan-desc">Öğretmenlik Kanunu ve Görevleri</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill"></div>
         </div>
-        <div class="plan-right">
-          <span class="done">30</span> / 60 dk <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        <div class="prog-footer">
+          <div><span class="studied">90</span> dk çalışıldı</div>
+          <div>120 dk hedef</div>
         </div>
       </div>
+    </div> <!-- Üst bölüm sonu -->
 
-      <!-- Madde 2 -->
-      <div class="plan-item">
-        <div class="circle-wrap">
-          <svg viewBox="0 0 54 54">
-            <circle class="circle-bg" cx="27" cy="27" r="24"></circle>
-            <!-- 45/60 = %75 doluluk (Çevre: 150, Çeyreği 37.5) -->
-            <circle class="circle-fill" cx="27" cy="27" r="24" stroke-dasharray="150" stroke-dashoffset="37.5"></circle>
-          </svg>
-          <div class="circle-text">
-            <span class="c-num">45</span>
-            <span class="c-min">dk</span>
+    <!-- ALT BEYAZ BÖLÜM -->
+    <div class="bottom-section">
+      <!-- Çalışma Konuları Başlığı -->
+      <div class="section-header">
+        <div class="section-title">Çalışma Konuları</div>
+        <a href="#" class="see-all">Tümünü Gör <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="9 18 15 12 9 6"></polyline></svg></a>
+      </div>
+
+      <!-- 3 Ana Başlıkta Yatay Kartlar -->
+      <div class="topics-scroll">
+        
+        <!-- Kart 1: Genel Mevzuat -->
+        <div class="topic-card">
+          <div class="tc-badge">124</div>
+          <div class="tc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M12 3v18"></path><path d="M3 10l9-6 9 6"></path><path d="M5 10v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9"></path><line x1="9" y1="21" x2="15" y2="21"></line></svg>
+          </div>
+          <div class="tc-title">Genel Mevzuat</div>
+          <div class="tc-desc">Anayasa, Temel Kanunlar ve Genel Yönetmelikler</div>
+          <div class="tc-footer">
+            <span class="tc-count">124 Konu</span>
+            <svg class="tc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </div>
         </div>
-        <div class="plan-info">
-          <div class="plan-title">MEB Mevzuatı</div>
-          <div class="plan-desc">Milli Eğitim Temel Kanunu</div>
-        </div>
-        <div class="plan-right">
-          <span class="done">45</span> / 60 dk <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </div>
-      </div>
 
-      <!-- Madde 3 -->
-      <div class="plan-item">
-        <div class="circle-wrap">
-          <svg viewBox="0 0 54 54">
-            <circle class="circle-bg" cx="27" cy="27" r="24"></circle>
-            <!-- 0/60 = %0 doluluk (Tamamı 150) -->
-            <circle class="circle-fill" cx="27" cy="27" r="24" stroke-dasharray="150" stroke-dashoffset="150" style="stroke: #E2E8F0;"></circle>
-          </svg>
-          <div class="circle-text">
-            <span class="c-num" style="color:var(--text-gray);">0</span>
-            <span class="c-min">dk</span>
+        <!-- Kart 2: MEB Mevzuatı -->
+        <div class="topic-card">
+          <div class="tc-badge">67</div>
+          <div class="tc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+          </div>
+          <div class="tc-title">MEB Mevzuatı</div>
+          <div class="tc-desc">Milli Eğitim Bakanlığı Teşkilat ve Eğitim Kuralları</div>
+          <div class="tc-footer">
+            <span class="tc-count">67 Konu</span>
+            <svg class="tc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </div>
         </div>
-        <div class="plan-info">
-          <div class="plan-title">Genel Kültür</div>
-          <div class="plan-desc">Türk Tarihi - Modern Dönem</div>
+
+        <!-- Kart 3: Genel Kültür -->
+        <div class="topic-card">
+          <div class="tc-badge">98</div>
+          <div class="tc-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </div>
+          <div class="tc-title">Genel Kültür</div>
+          <div class="tc-desc">Tarih, Coğrafya ve Güncel Önemli Bilgiler</div>
+          <div class="tc-footer">
+            <span class="tc-count">98 Konu</span>
+            <svg class="tc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </div>
         </div>
-        <div class="plan-right">
-          <span class="done" style="color:var(--text-gray);">0</span> / 60 dk <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </div>
+
       </div>
 
-    </div>
-  </div>
+      <!-- Testler Başlığı -->
+      <div class="section-header" style="margin-top: 16px;">
+        <div class="section-title">Testler</div>
+      </div>
+
+      <!-- 3 Ana Başlıkta Test Listesi -->
+      <div class="tests-list">
+        
+        <!-- Test Öğesi 1 -->
+        <div class="test-item">
+          <div class="test-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <div class="test-info">
+            <div class="test-title">Genel Mevzuat Testleri</div>
+            <div class="test-desc">15 Test • Toplam 150 Soru</div>
+          </div>
+          <button class="test-btn">Çöz</button>
+        </div>
+
+        <!-- Test Öğesi 2 -->
+        <div class="test-item">
+          <div class="test-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <div class="test-info">
+            <div class="test-title">MEB Mevzuatı Testleri</div>
+            <div class="test-desc">12 Test • Toplam 120 Soru</div>
+          </div>
+          <button class="test-btn">Çöz</button>
+        </div>
+
+        <!-- Test Öğesi 3 -->
+        <div class="test-item">
+          <div class="test-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <div class="test-info">
+            <div class="test-title">Genel Kültür Testleri</div>
+            <div class="test-desc">20 Test • Toplam 200 Soru</div>
+          </div>
+          <button class="test-btn">Çöz</button>
+        </div>
+
+      </div>
+    </div> <!-- Alt bölüm sonu -->
+  </div> <!-- Kaydırılabilir İçerik sonu -->
 
   <!-- Alt Navigasyon (Bottom Bar) -->
   <nav class="bottom-nav">
@@ -483,10 +380,13 @@
       <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
       <span>Ana Sayfa</span>
     </div>
+    
+    <!-- Testler Yazısı "Denemeler" Olarak Değiştirildi -->
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-      <span>Testler</span>
+      <span>Denemeler</span>
     </div>
+
     <div class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
       <span>İstatistikler</span>
