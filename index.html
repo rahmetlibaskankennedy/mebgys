@@ -23,7 +23,7 @@
     flex-wrap:wrap;
   }
 
-  /* 1. Phone CSS güncellendi */
+  /* 1. Phone CSS */
   .phone{
     width:340px;
     height:734px;
@@ -45,7 +45,7 @@
     padding:16px 26px 0; font-size:13px; font-weight:600; color:#111;
   }
 
-  /* 2. Content beyaz cam efekti eklendi */
+  /* 2. Content beyaz cam efekti */
   .content{
     position:relative;
     z-index:2;
@@ -56,7 +56,7 @@
     backdrop-filter:blur(2px);
   }
 
-  /* 3. Glass Card sınıfı eklendi */
+  /* 3. Glass Card sınıfı */
   .glass-card{
     margin-top:18px;
     background:rgba(255,255,255,.82);
@@ -67,22 +67,18 @@
     box-shadow:0 12px 40px rgba(21,59,115,.08);
   }
 
-  /* 8. Logo Wrap boşlukları güncellendi */
+  /* 8. Logo Wrap (Yazılar kaldırıldı, sadece logo kaldı) */
   .logo-wrap{ 
     display:flex; flex-direction:column; align-items:center; 
     margin-top:28px; 
     margin-bottom:18px;
   }
-  .brand-title{ font-size:22px; font-weight:700; letter-spacing:-0.3px; margin-top:10px;}
-  .brand-title .s1{ color:var(--navy);}
-  .brand-title .s2{ color:var(--accent);}
-  .brand-sub{ font-size:12px; color:var(--text-gray); margin-top:3px;}
 
-  .heading{ text-align:center;} /* glass-card içindeki padding ile dengelenmesi için margin-top kaldırıldı */
+  .heading{ text-align:center;} 
   .heading h1{ font-size:19px; font-weight:700; color:#16233B;}
   .heading p{ font-size:12.5px; color:var(--text-gray); margin-top:4px;}
 
-  /* 7. Input alanları arka planla uyumlu yapıldı */
+  /* 7. Input alanları */
   .field{
     display:flex; align-items:center; gap:10px;
     height:48px; border-radius:12px;
@@ -116,7 +112,7 @@
   .terms input{ width:14px; height:14px; margin-top:2px; accent-color:var(--accent);}
   .terms a{ color:var(--accent); font-weight:600; text-decoration:none;}
 
-  /* 6. Buton daha premium hale getirildi */
+  /* 6. Buton */
   .primary-btn{
     width:100%; margin-top:18px;
     color:#fff; font-size:14.5px; font-weight:700;
@@ -168,11 +164,9 @@
 
     <div class="content">
       
-      <!-- Hatalı kısımlar düzeltildi -->
+      <!-- LOGO BÜYÜTÜLDÜ, YAZILAR KALDIRILDI -->
       <div class="logo-wrap">
-        <img src="images/mebgyslogo.png" alt="Sınav Rotası Logo" width="58" height="58">
-        <div class="brand-title"><span class="s1">Sınav</span><span class="s2">Rotası</span></div>
-        <div class="brand-sub">Başarıya giden yol burada.</div>
+        <img src="images/mebgyslogo.png" alt="Logo" width="110" height="110">
       </div>
 
       <!-- Form elemanları Glass Card ile sarıldı -->
