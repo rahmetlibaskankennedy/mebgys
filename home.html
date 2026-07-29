@@ -4,688 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>SınavRotası - Ana Sayfa</title>
-<style>
-:root{
-  --navy:#071f49;
-  --navy-2:#0b2f68;
-  --navy-3:#163c78;
-  --red:#ff3b3f;
-  --red-soft:#fff0f1;
-  --text:#0d1c38;
-  --muted:#687186;
-  --line:#e7eaf0;
-  --bg:#f7f8fb;
-  --white:#fff;
-  --shadow:0 12px 30px rgba(20,35,60,.08);
-}
-*{box-sizing:border-box}
-html,body{
-  margin:0;
-  min-height:100%;
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Arial,sans-serif;
-  background:#e7ebf1;
-  color:var(--text);
-}
-body{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-  overflow:hidden;
-}
-button{font:inherit}
-.phone{
-  width:min(390px, calc((100vh - 48px) * 9 / 16));
-  aspect-ratio:9 / 16;
-  max-height:calc(100vh - 48px);
-  background:var(--bg);
-  border:9px solid #111827;
-  border-radius:42px;
-  overflow:hidden;
-  position:relative;
-  box-shadow:0 30px 80px rgba(0,0,0,.22);
-  flex:0 0 auto;
-}
-.scroll{
-  position:absolute;
-  inset:0;
-  overflow-y:auto;
-  overflow-x:hidden;
-  padding-bottom:104px;
-  scrollbar-width:none;
-  overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
-}
-.scroll::-webkit-scrollbar{display:none}
 
-/* Üst alan */
-.hero{
-  position:relative;
-  padding:22px 20px 18px;
-  color:#fff;
-  background:
-    radial-gradient(circle at 76% 8%, rgba(30,86,155,.34), transparent 34%),
-    linear-gradient(160deg,#061a3c 0%,#08285a 72%,#061b3f 100%);
-  border-radius:0 0 30px 30px;
-}
-.status{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:15px;
-  font-weight:700;
-  padding:0 8px 18px;
-}
-.status-icons{display:flex;align-items:center;gap:7px}
-.signal{display:flex;align-items:flex-end;gap:2px;height:14px}
-.signal i{display:block;width:3px;background:#fff;border-radius:2px}
-.signal i:nth-child(1){height:5px}.signal i:nth-child(2){height:8px}.signal i:nth-child(3){height:11px}.signal i:nth-child(4){height:14px}
-.wifi{font-size:16px;line-height:1}
-.battery{width:24px;height:12px;border:1.7px solid #fff;border-radius:3px;position:relative}
-.battery:before{content:"";position:absolute;left:2px;top:2px;right:3px;bottom:2px;background:#fff;border-radius:1px}
-.battery:after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:5px;background:#fff;border-radius:0 1px 1px 0}
-
-.profile-row{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  margin-bottom:16px;
-}
-.avatar-wrap{position:relative;flex:0 0 auto}
-.avatar{
-  width:65px;height:65px;border-radius:50%;
-  object-fit:cover;border:3px solid rgba(255,255,255,.86);
-  display:block;
-}
-.online-dot{
-  position:absolute;right:0;top:3px;width:14px;height:14px;background:var(--red);
-  border:2px solid #fff;border-radius:50%;
-}
-.greeting{flex:1;min-width:0}
-.greeting h1{font-size:20px;line-height:1.2;margin:0 0 6px;font-weight:500}
-.greeting h1 strong{font-weight:800}
-.greeting p{font-size:13.5px;line-height:1.45;margin:0;color:rgba(255,255,255,.83)}
-.quick-actions{display:flex;gap:9px}
-.icon-btn{
-  width:44px;height:44px;border:0;border-radius:16px;background:rgba(255,255,255,.07);
-  color:#fff;display:grid;place-items:center;position:relative;cursor:pointer;
-}
-.icon-btn svg{width:22px;height:22px}
-.badge{
-  position:absolute;right:4px;top:4px;width:17px;height:17px;border-radius:50%;
-  background:var(--red);display:grid;place-items:center;font-size:9px;font-weight:800;
-}
-
-.progress-card{
-  background:rgba(255,255,255,.055);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:20px;
-  padding:16px;
-  display:grid;
-  grid-template-columns:92px 1fr;
-  gap:14px;
-  align-items:center;
-  backdrop-filter:blur(8px);
-}
-.ring{
-  --value:65;
-  width:88px;height:88px;border-radius:50%;
-  background:conic-gradient(var(--red) calc(var(--value)*1%), rgba(255,255,255,.09) 0);
-  display:grid;place-items:center;
-  position:relative;
-}
-.ring:before{
-  content:"";position:absolute;inset:9px;border-radius:50%;background:#0a2b5f;
-}
-.ring-content{position:relative;text-align:center}
-.ring-content b{display:block;font-size:22px;line-height:1;font-weight:800}
-.ring-content span{display:block;font-size:9.5px;margin-top:5px;color:rgba(255,255,255,.78)}
-.progress-copy h2{font-size:17px;margin:0 0 7px}
-.progress-copy p{font-size:12px;line-height:1.45;margin:0 0 12px;color:rgba(255,255,255,.8)}
-.bar{height:7px;background:rgba(255,255,255,.16);border-radius:999px;overflow:hidden}
-.bar span{display:block;width:65%;height:100%;background:linear-gradient(90deg,#ff5353,#ff3b3f);border-radius:999px}
-.progress-meta{display:flex;justify-content:space-between;margin-top:9px;font-size:11px;color:rgba(255,255,255,.77)}
-.progress-meta strong{color:var(--red);font-size:12px}
-.progress-meta b{color:#fff}
-
-/* İçerik */
-.content{padding:16px 17px 0}
-.stats{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  background:#fff;border-radius:18px;box-shadow:var(--shadow);
-  margin-top:0;overflow:hidden;
-}
-.stat{padding:14px 7px 13px;text-align:center;position:relative}
-.stat:not(:last-child):after{content:"";position:absolute;right:0;top:18px;bottom:18px;width:1px;background:#eceef3}
-.stat-icon{
-  width:34px;height:34px;margin:0 auto 7px;border-radius:50%;
-  display:grid;place-items:center;font-size:18px;background:#eff3fa
-}
-.stat:nth-child(2) .stat-icon,.stat:nth-child(4) .stat-icon{background:var(--red-soft)}
-.stat:nth-child(3) .stat-icon{background:#fff4e7}
-.stat strong{display:block;font-size:19px;margin-bottom:3px}
-.stat span{display:block;font-size:10px;line-height:1.3;color:#36415a}
-
-.section-head{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 11px}
-.section-head h3{margin:0;font-size:17px}
-.section-head a{color:var(--red);text-decoration:none;font-size:13px;font-weight:600}
-
-.categories{display:flex;flex-direction:column;gap:10px}
-.category{
-  display:grid;grid-template-columns:66px 1fr 20px;gap:12px;align-items:center;
-  background:#fff;border:1px solid #edf0f4;border-radius:17px;padding:0 15px 0 0;
-  min-height:82px;box-shadow:0 8px 22px rgba(13,28,56,.06);cursor:pointer;
-}
-.cat-icon{
-  height:82px;border-radius:17px 15px 15px 17px;display:grid;place-items:center;
-  background:linear-gradient(145deg,#082654,#0b397c);color:#fff;font-size:31px;
-}
-.category:nth-child(2) .cat-icon{background:linear-gradient(145deg,#143f86,#2c67b8)}
-.category:nth-child(3) .cat-icon{background:linear-gradient(145deg,#ff3237,#f0252c)}
-.cat-copy h4{font-size:15px;margin:0 0 4px}
-.cat-copy p{font-size:11.5px;line-height:1.35;margin:0;color:var(--muted)}
-.cat-copy small{display:block;margin-top:6px;color:var(--red);font-size:10.5px}
-.chevron{font-size:27px;color:#9aa3b2;font-weight:200}
-
-.route-card{
-  margin-top:15px;
-  user-select:none;
-  -webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent;
-  border-radius:20px;
-  background:
-    radial-gradient(circle at 88% 2%,rgba(42,100,180,.28),transparent 32%),
-    linear-gradient(145deg,#08295e,#061c41);
-  color:#fff;
-  padding:17px;
-  box-shadow:0 15px 34px rgba(7,31,73,.23);
-  cursor:pointer;
-  overflow:hidden;
-  position:relative;
-  transition:transform .18s ease,box-shadow .18s ease;
-}
-.route-card:active{
-  transform:scale(.985) translateY(1px);
-  box-shadow:0 8px 20px rgba(5,22,53,.20);
-  filter:brightness(.91)
-}
-.route-card:focus-visible{outline:3px solid rgba(255,59,63,.35);outline-offset:3px}
-.route-top{display:grid;grid-template-columns:50px 1fr 18px;gap:12px;align-items:center}
-.route-icon{
-  width:50px;height:50px;border-radius:15px;background:rgba(255,255,255,.08);
-  display:grid;place-items:center;font-size:26px;border:1px solid rgba(255,255,255,.08)
-}
-.route-title span{
-  display:inline-block;font-size:8px;font-weight:800;letter-spacing:1.2px;
-  color:#ff686b;margin-bottom:3px
-}
-.route-title h4{margin:0 0 4px;font-size:18px}
-.route-title p{margin:0;color:rgba(255,255,255,.7);font-size:11.5px;line-height:1.35}
-.route-chevron{font-size:28px;color:rgba(255,255,255,.92)}
-.route-plan{
-  margin:15px 0 14px;padding:11px 12px;border-radius:14px;
-  background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)
-}
-.route-plan-item{
-  display:grid;grid-template-columns:8px 1fr auto;align-items:center;gap:9px;
-  min-height:27px;font-size:11.5px;color:rgba(255,255,255,.82)
-}
-.route-plan-item strong{font-size:11px;color:#fff}
-.route-dot{width:7px;height:7px;border-radius:50%}
-.route-dot.red{background:#ff464b}
-.route-dot.blue{background:#5791e8}
-.route-dot.light{background:#9fc2f6}
-.route-bottom{display:flex;align-items:center;gap:10px}
-.route-meta{display:flex;flex-wrap:wrap;gap:8px;flex:1}
-.route-meta span{
-  font-size:9.5px;color:rgba(255,255,255,.8);
-  background:rgba(255,255,255,.06);padding:5px 7px;border-radius:8px
-}
-.route-start{
-  border:0;border-radius:11px;padding:10px 12px;
-  color:#08295e;background:#fff;font-size:11px;font-weight:800;cursor:pointer;
-  box-shadow:0 6px 16px rgba(0,0,0,.1)
-}
-.route-start:active{transform:scale(.97)}
-
-/* Bottom sheet */
-.sheet-backdrop{
-  position:absolute;inset:0;background:rgba(3,12,29,.48);
-  z-index:40;opacity:0;pointer-events:none;transition:opacity .25s ease;
-  backdrop-filter:blur(2px)
-}
-.sheet-backdrop.open{opacity:1;pointer-events:auto}
-.bottom-sheet{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-  z-index:50;
-  max-height:88%;
-  overflow-y:auto;
-  background:#fff;
-  border-radius:27px 27px 0 0;
-  padding:10px 18px calc(24px + env(safe-area-inset-bottom));
-  transform:translateY(105%);
-  transition:transform .32s cubic-bezier(.2,.8,.2,1);
-  box-shadow:0 -18px 50px rgba(5,20,45,.2);
-  scrollbar-width:none;
-}
-.bottom-sheet::-webkit-scrollbar{display:none}
-.bottom-sheet.open{transform:translateY(0)}
-.sheet-handle{width:42px;height:5px;background:#d8dce4;border-radius:999px;margin:0 auto 14px}
-.sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:15px}
-.sheet-head h3{font-size:20px;margin:0 0 4px}
-.sheet-head p{font-size:11.5px;color:var(--muted);margin:0}
-.sheet-close{
-  width:32px;height:32px;border:0;border-radius:50%;background:#f1f3f6;
-  color:#6d7585;font-size:20px;cursor:pointer
-}
-.sheet-section{margin-top:15px}
-.sheet-label{font-size:11px;font-weight:800;color:#3a455b;margin-bottom:9px;display:block}
-.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.mode-option{
-  border:1px solid #e5e8ee;border-radius:14px;padding:11px;background:#fff;
-  text-align:left;cursor:pointer;color:var(--text);
-  user-select:none;
-  -webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent;
-  transition:transform .14s ease,background-color .14s ease,border-color .14s ease,box-shadow .14s ease
-}
-.mode-option:active{transform:scale(.975);background:#f7f8fb}
-.mode-option strong{display:block;font-size:12px;margin-bottom:3px}
-.mode-option span{display:block;font-size:9.5px;color:var(--muted);line-height:1.3}
-.mode-option.selected{
-  border-color:#ff5558;background:#fff5f5;
-  box-shadow:0 0 0 2px rgba(255,59,63,.08)
-}
-.choice-row{display:flex;gap:8px}
-.choice{
-  flex:1;border:1px solid #e5e8ee;border-radius:12px;background:#fff;
-  padding:10px 6px;font-size:11px;font-weight:700;color:#4c566b;cursor:pointer;
-  user-select:none;
-  -webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent;
-  transition:transform .14s ease,background-color .14s ease,border-color .14s ease,box-shadow .14s ease
-}
-.choice:active{transform:scale(.96);background:#f1f3f7}
-.choice.selected{background:#092b60;color:#fff;border-color:#092b60}
-.sheet-summary{
-  display:flex;justify-content:space-between;align-items:center;
-  margin-top:17px;padding:13px 14px;background:#f6f8fb;border-radius:14px
-}
-.sheet-summary div span{display:block;font-size:9.5px;color:var(--muted);margin-bottom:3px}
-.sheet-summary div strong{font-size:13px}
-.sheet-primary{
-  width:100%;height:50px;margin-top:12px;border:0;border-radius:15px;
-  color:#fff;background:linear-gradient(135deg,#ff494d,#e92e34);
-  font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 10px 22px rgba(232,46,52,.22)
-}
-.sheet-primary:active{transform:scale(.99)}
-.toast{
-  position:absolute;left:50%;bottom:102px;z-index:80;transform:translate(-50%,20px);
-  background:#071f49;color:#fff;padding:11px 15px;border-radius:12px;
-  font-size:11px;opacity:0;pointer-events:none;transition:.25s ease;white-space:nowrap;
-  box-shadow:0 10px 30px rgba(0,0,0,.2)
-}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-
-/* Alt navigasyon */
-.bottom-nav{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-  height:88px;
-  background:rgba(255,255,255,.97);
-  border-top:1px solid #ebedf1;
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  padding:10px 7px 18px;
-  z-index:20;
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-}
-.nav-item{
-  border:0;background:none;color:#6d7585;display:flex;flex-direction:column;
-  align-items:center;gap:4px;font-size:10px;cursor:pointer
-}
-.nav-item svg{width:23px;height:23px;stroke-width:1.9}
-.nav-item.active{color:var(--red);font-weight:700}
-
-@media (max-width:430px){
-  body{
-    padding:0;
-    background:var(--bg);
-    overflow:hidden;
-  }
-  .phone{
-    width:100vw;
-    height:100dvh;
-    max-height:none;
-    aspect-ratio:auto;
-    border:0;
-    border-radius:0;
-    box-shadow:none;
-  }
-  .hero{
-    padding-top:max(18px, env(safe-area-inset-top));
-  }
-  .bottom-nav{
-    height:calc(78px + env(safe-area-inset-bottom));
-    padding-bottom:calc(10px + env(safe-area-inset-bottom));
-  }
-  .scroll{
-    padding-bottom:calc(96px + env(safe-area-inset-bottom));
-  }
-}
-
-@media (max-height:760px) and (min-width:431px){
-  body{padding:12px}
-  .phone{
-    width:min(360px, calc((100vh - 24px) * 9 / 16));
-    max-height:calc(100vh - 24px);
-    border-width:7px;
-    border-radius:36px;
-  }
-}
-
-@media (max-width:360px){
-  .content{padding-left:14px;padding-right:14px}
-  .hero{padding-left:16px;padding-right:16px}
-  .stats{grid-template-columns:repeat(2,1fr)}
-  .stat:nth-child(2):after{display:none}
-  .route-bottom{align-items:stretch;flex-direction:column}
-  .route-start{width:100%}
-}
-
-/* Kurumsal SVG ikon sistemi */
-.ui-icon{width:23px;height:23px;display:block}
-.inline-arrow{width:14px;height:14px;vertical-align:-2px;margin-left:2px}
-.status-icons .wifi svg{width:20px;height:20px;display:block}
-.stat-icon{
-  width:40px;height:40px;border-radius:14px;
-  display:grid;place-items:center;
-  color:#153B73;
-  background:#edf3fb;
-  margin:0 auto 7px;
-}
-.stat-icon.accent{color:#e93238;background:#fff0f1}
-.stat-icon .ui-icon{width:21px;height:21px}
-.cat-icon{
-  width:58px;height:58px;border-radius:16px;
-  display:grid;place-items:center;
-  background:linear-gradient(145deg,#082f69,#061d43);
-  color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
-}
-.cat-icon.blue{background:linear-gradient(145deg,#235fae,#153b73)}
-.cat-icon.red{background:linear-gradient(145deg,#f34549,#dd242a)}
-.cat-icon .ui-icon{width:31px;height:31px;stroke-width:1.65}
-.chevron{display:grid;place-items:center;color:#8c97aa}
-.chevron .ui-icon{width:19px;height:19px}
-.route-icon .ui-icon{width:28px;height:28px}
-.route-chevron{display:grid;place-items:center}
-.route-chevron .ui-icon{width:21px;height:21px}
-.route-meta span{
-  display:inline-flex;align-items:center;gap:5px;
-}
-.route-meta span b{font:inherit;font-weight:600}
-.meta-icon{width:13px;height:13px;display:block}
-.sheet-title{display:flex;align-items:center;gap:9px}
-.sheet-title-icon{
-  width:31px;height:31px;padding:6px;border-radius:10px;
-  color:#153B73;background:#edf3fb;box-sizing:border-box
-}
-.mode-option strong{
-  display:flex!important;align-items:center;gap:7px;
-}
-.option-icon{width:18px;height:18px;color:#153B73;flex:0 0 auto}
-.mode-option.selected .option-icon{color:#e93238}
-.choice{display:flex;align-items:center;justify-content:center;gap:6px}
-.choice-icon{width:16px;height:16px}
-
-
-/* Konu kategorileri etkileşimleri */
-.category{
-  cursor:pointer;
-  user-select:none;
-  -webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent;
-  transition:transform .16s ease,box-shadow .16s ease,filter .16s ease;
-}
-.category:active{
-  transform:scale(.986) translateY(1px);
-  box-shadow:0 5px 15px rgba(10,31,70,.10);
-  filter:brightness(.975);
-}
-.category:focus-visible{
-  outline:3px solid rgba(227,30,36,.22);
-  outline-offset:3px;
-}
-
-.topic-backdrop{
-  position:absolute;
-  inset:0;
-  z-index:58;
-  background:rgba(3,12,29,.50);
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .25s ease;
-  backdrop-filter:blur(2px);
-  -webkit-backdrop-filter:blur(2px);
-}
-.topic-backdrop.open{
-  opacity:1;
-  pointer-events:auto;
-}
-
-.topic-sheet{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:0;
-  z-index:60;
-  max-height:89%;
-  overflow-y:auto;
-  background:#f8fafc;
-  border-radius:28px 28px 0 0;
-  padding:10px 17px calc(26px + env(safe-area-inset-bottom));
-  transform:translateY(105%);
-  transition:transform .34s cubic-bezier(.2,.8,.2,1);
-  box-shadow:0 -22px 60px rgba(5,20,45,.24);
-  scrollbar-width:none;
-  overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
-}
-.topic-sheet::-webkit-scrollbar{display:none}
-.topic-sheet.open{transform:translateY(0)}
-
-.topic-handle{
-  width:42px;
-  height:5px;
-  border-radius:999px;
-  background:#d6dce5;
-  margin:0 auto 16px;
-}
-.topic-sheet-head{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-}
-.topic-heading-wrap{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width:0;
-}
-.topic-heading-icon{
-  width:48px;
-  height:48px;
-  flex:0 0 auto;
-  border-radius:15px;
-  display:grid;
-  place-items:center;
-  color:#fff;
-  background:linear-gradient(145deg,#082f69,#061d43);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
-}
-.topic-heading-icon.blue{
-  background:linear-gradient(145deg,#235fae,#153b73);
-}
-.topic-heading-icon.red{
-  background:linear-gradient(145deg,#f34549,#dd242a);
-}
-.topic-heading-icon .ui-icon{
-  width:27px;
-  height:27px;
-}
-.topic-eyebrow{
-  display:block;
-  margin-bottom:3px;
-  color:#e93238;
-  font-size:8px;
-  font-weight:850;
-  letter-spacing:1.05px;
-}
-.topic-sheet-head h3{
-  margin:0 0 4px;
-  color:#0b2147;
-  font-size:20px;
-  line-height:1.15;
-}
-.topic-sheet-head p{
-  margin:0;
-  color:#7d8797;
-  font-size:11px;
-}
-.topic-close{
-  width:32px;
-  height:32px;
-  flex:0 0 auto;
-  border:0;
-  border-radius:50%;
-  background:#e9edf3;
-  color:#677286;
-  font-size:21px;
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-}
-
-.topic-progress-card{
-  margin-top:16px;
-  padding:13px 14px;
-  border:1px solid #e7ebf1;
-  border-radius:15px;
-  background:#fff;
-  box-shadow:0 6px 18px rgba(11,33,71,.045);
-}
-.topic-progress-card>div:first-child{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-}
-.topic-progress-card span{
-  color:#7a8495;
-  font-size:10px;
-}
-.topic-progress-card strong{
-  color:#153b73;
-  font-size:10px;
-}
-.topic-progress-track{
-  height:6px;
-  margin-top:9px;
-  overflow:hidden;
-  border-radius:999px;
-  background:#e8edf4;
-}
-.topic-progress-track span{
-  display:block;
-  width:0;
-  height:100%;
-  border-radius:inherit;
-  background:linear-gradient(90deg,#153b73,#2d7ef7);
-  transition:width .35s ease;
-}
-
-.topic-list{
-  display:flex;
-  flex-direction:column;
-  gap:9px;
-  margin-top:14px;
-}
-.topic-item{
-  display:grid;
-  grid-template-columns:36px minmax(0,1fr) 18px;
-  gap:11px;
-  align-items:center;
-  padding:12px 12px;
-  border:1px solid #e8ebf0;
-  border-radius:15px;
-  background:#fff;
-  box-shadow:0 7px 18px rgba(11,33,71,.05);
-  cursor:pointer;
-  user-select:none;
-  -webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent;
-  transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease;
-}
-.topic-item:active{
-  transform:scale(.985);
-  box-shadow:0 3px 10px rgba(11,33,71,.07);
-}
-.topic-number{
-  width:34px;
-  height:34px;
-  border-radius:11px;
-  display:grid;
-  place-items:center;
-  color:#153b73;
-  background:#edf3fb;
-  font-size:11px;
-  font-weight:850;
-}
-.topic-copy{
-  min-width:0;
-}
-.topic-copy h4{
-  margin:0 0 4px;
-  color:#12264a;
-  font-size:12px;
-  line-height:1.35;
-  font-weight:750;
-}
-.topic-copy p{
-  margin:0;
-  color:#8b94a3;
-  font-size:9.5px;
-}
-.topic-arrow{
-  color:#97a1b2;
-  display:grid;
-  place-items:center;
-}
-.topic-arrow .ui-icon{
-  width:17px;
-  height:17px;
-}
-.topic-item.completed{
-  border-color:#d8e5dc;
-  background:#fbfefc;
-}
-.topic-item.completed .topic-number{
-  color:#17834b;
-  background:#e9f6ef;
-}
-.topic-item.completed .topic-copy p{
-  color:#17834b;
-}
-
-</style>
 </head>
 <body>
 <div class="phone">
@@ -903,7 +222,7 @@ button{font:inherit}
       <div class="topic-heading-wrap">
         <div class="topic-heading-icon" id="topicHeadingIcon"></div>
         <div>
-          <span class="topic-eyebrow">KONU KATEGORİSİ</span>
+          <span class="topic-eyebrow" id="topicEyebrow">KONU KATEGORİSİ</span>
           <h3 id="topicSheetTitle">Genel Mevzuat</h3>
           <p id="topicSheetSubtitle">Çalışmak istediğin başlığı seç.</p>
         </div>
@@ -911,6 +230,8 @@ button{font:inherit}
 
       <button class="topic-close" id="closeTopicSheet" type="button" aria-label="Konu panelini kapat">×</button>
     </div>
+
+    <div id="topicBreadcrumbWrap"></div>
 
     <div class="topic-progress-card">
       <div>
@@ -1199,11 +520,14 @@ button{font:inherit}
   const closeTopicSheetButton = document.getElementById('closeTopicSheet');
   const topicSheetTitle = document.getElementById('topicSheetTitle');
   const topicSheetSubtitle = document.getElementById('topicSheetSubtitle');
+  const topicEyebrow = document.getElementById('topicEyebrow');
   const topicHeadingIcon = document.getElementById('topicHeadingIcon');
   const topicList = document.getElementById('topicList');
   const topicProgressText = document.getElementById('topicProgressText');
   const topicProgressBar = document.getElementById('topicProgressBar');
+  const topicBreadcrumbWrap = document.getElementById('topicBreadcrumbWrap');
 
+  // --- Konu verisi: düz string OR { title, questionCount, children:[...] } ---
   const categoryTopics = {
     'general-culture': {
       title: 'Genel Kültür',
@@ -1227,7 +551,22 @@ button{font:inherit}
       progress: 20,
       topics: [
         'T.C. Anayasası (Genel esaslar, Temel hak ve ödevleri, Devletin Temel Organları)',
-        '657 sayılı Devlet Memurları Kanunu',
+        {
+          title: '657 sayılı Devlet Memurları Kanunu',
+          questionCount: 340,
+          children: [
+            { title: 'Kapsam ve Genel Hükümler', articleRange: 'Madde 1-11', questionCount: 22 },
+            { title: 'Ödevler ve Sorumluluklar', articleRange: 'Madde 6-31', questionCount: 58 },
+            { title: 'Genel Haklar', articleRange: 'Madde 17-23', questionCount: 34 },
+            { title: 'Sınıflandırma', articleRange: 'Madde 36-45', questionCount: 28 },
+            { title: 'İstihdam Şekilleri', articleRange: 'Madde 4-4/B', questionCount: 20 },
+            { title: 'Atama ve Nakil', articleRange: 'Madde 54-76', questionCount: 46 },
+            { title: 'İzinler', articleRange: 'Madde 102-108', questionCount: 38 },
+            { title: 'Disiplin', articleRange: 'Madde 124-136', questionCount: 52 },
+            { title: 'Görevden Uzaklaştırma', articleRange: 'Madde 137-145', questionCount: 24 },
+            { title: 'Sosyal Haklar ve Yardımlar', articleRange: 'Madde 187-213', questionCount: 18 }
+          ]
+        },
         'Türk idare sistemi',
         '5442 sayılı İl İdaresi Kanunu',
         '4982 sayılı Bilgi Edinme Hakkı Kanunu'
@@ -1256,11 +595,130 @@ button{font:inherit}
     scale: '<path d="M12 3v18"/><path d="M6 6h12"/><path d="m6 6-4 7h8L6 6Z"/><path d="m18 6-4 7h8l-4-7Z"/><path d="M8 21h8"/>',
     landmark: '<path d="m3 10 9-6 9 6"/><path d="M5 10h14"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/><path d="M4 18h16M3 22h18"/>',
     schoolbook: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z"/><path d="M8 4v16"/><path d="M12 8h4M12 12h4"/><path d="m14 15 .7 1.4 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2L14 15Z"/>',
-    arrow: '<path d="m9 18 6-6-6-6"/>'
+    gavel: '<path d="m14 13-7.5 7.5a1 1 0 0 1-3-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6 4 4-6 6-4-4Z"/>',
+    arrow: '<path d="m9 18 6-6-6-6"/>',
+    back: '<path d="m15 18-6-6 6-6"/>'
   };
 
   function topicSvg(name, className = 'ui-icon') {
     return `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${topicIconPaths[name]}</svg>`;
+  }
+
+  // Normalize: düz string -> { title } objesine çevir
+  function normalizeTopic(topic) {
+    return typeof topic === 'string' ? { title: topic } : topic;
+  }
+
+  // Şu anki drill-down durumu: kategori + iç içe geçilen madde grubu zinciri
+  let currentCategoryKey = null;
+  let navStack = []; // her eleman: { title, subtitle, icon, iconClass, topics, progress }
+
+  function renderLevel(level) {
+    topicSheetTitle.textContent = level.title;
+    topicSheetSubtitle.textContent = level.subtitle;
+    topicEyebrow.textContent = level.eyebrow || 'KONU KATEGORİSİ';
+    topicHeadingIcon.className = `topic-heading-icon ${level.iconClass || ''}`.trim();
+    topicHeadingIcon.innerHTML = topicSvg(level.icon);
+
+    // Breadcrumb: sadece 1. seviyeden derine inildiyse göster
+    if (navStack.length > 1) {
+      const parentLevel = navStack[navStack.length - 2];
+      topicBreadcrumbWrap.innerHTML = `
+        <div class="topic-breadcrumb" id="topicBackBtn" role="button" tabindex="0">
+          ${topicSvg('back')}
+          <span>${parentLevel.title}</span>
+        </div>
+      `;
+      const backBtn = document.getElementById('topicBackBtn');
+      const goBack = () => {
+        haptic(14);
+        navStack.pop();
+        renderLevel(navStack[navStack.length - 1]);
+      };
+      backBtn.addEventListener('click', goBack);
+      backBtn.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goBack(); }
+      });
+    } else {
+      topicBreadcrumbWrap.innerHTML = '';
+    }
+
+    const progress = level.progress || 0;
+    topicProgressText.textContent = `%${progress} tamamlandı`;
+    topicProgressBar.style.width = `${progress}%`;
+
+    const items = level.topics.map(normalizeTopic);
+    const completedCount = Math.floor((progress / 100) * items.length);
+
+    topicList.innerHTML = items.map((item, index) => {
+      const completed = index < completedCount && !item.children;
+      const hasChildren = !!item.children;
+      const metaLine = hasChildren
+        ? `${item.children.length} bölüm${item.questionCount ? ` • ${item.questionCount} soru` : ''}`
+        : (completed ? 'Tamamlandı' : (item.articleRange ? '' : 'Konu anlatımı ve soru bankası'));
+
+      return `
+        <article class="topic-item ${completed ? 'completed' : ''} ${hasChildren ? 'has-children' : ''}" data-index="${index}" role="button" tabindex="0">
+          <div class="topic-number">${completed ? '✓' : String(index + 1).padStart(2, '0')}</div>
+          <div class="topic-copy">
+            <h4>${item.title}</h4>
+            ${item.articleRange ? `<span class="article-range">${item.articleRange}</span>` : ''}
+            ${metaLine ? `<p>${metaLine}</p>` : ''}
+          </div>
+          ${hasChildren
+            ? `<span class="topic-count-pill">${item.children.length}</span>`
+            : ''}
+        </article>
+      `;
+    }).join('');
+
+    // Has-children satırların sonuna ok ikonunu ayrı ekle (pill'den sonra)
+    topicList.querySelectorAll('.topic-item.has-children').forEach(el => {
+      el.insertAdjacentHTML('beforeend', `<div class="topic-arrow">${topicSvg('arrow')}</div>`);
+      el.style.gridTemplateColumns = '36px minmax(0,1fr) auto 18px';
+    });
+    topicList.querySelectorAll('.topic-item:not(.has-children)').forEach(el => {
+      el.insertAdjacentHTML('beforeend', `<div class="topic-arrow">${topicSvg('arrow')}</div>`);
+    });
+
+    topicSheet.scrollTop = 0;
+
+    topicList.querySelectorAll('.topic-item').forEach(el => {
+      const index = Number(el.dataset.index);
+      const item = items[index];
+
+      const activate = () => {
+        if (item.children) {
+          haptic(20);
+          navStack.push({
+            title: item.title,
+            subtitle: `${item.children.length} bölüm • toplam ${item.questionCount || item.children.reduce((s, c) => s + (c.questionCount || 0), 0)} soru`,
+            icon: 'gavel',
+            iconClass: navStack[navStack.length - 1].iconClass,
+            eyebrow: 'MADDE GRUPLARI',
+            topics: item.children,
+            progress: 0
+          });
+          renderLevel(navStack[navStack.length - 1]);
+        } else {
+          haptic(18);
+          toast.textContent = `${item.title} açılıyor…`;
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), 2200);
+          // Gerçek uygulamada:
+          // topicStore.setSelectedTopic(item);
+          // router.navigate('/topic-detail');
+        }
+      };
+
+      el.addEventListener('click', activate);
+      el.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activate();
+        }
+      });
+    });
   }
 
   function openTopicSheet(categoryKey) {
@@ -1268,56 +726,22 @@ button{font:inherit}
     if (!category) return;
 
     haptic(20);
-    topicSheetTitle.textContent = category.title;
-    topicSheetSubtitle.textContent = category.subtitle;
-    topicHeadingIcon.className = `topic-heading-icon ${category.iconClass}`.trim();
-    topicHeadingIcon.innerHTML = topicSvg(category.icon);
+    currentCategoryKey = categoryKey;
+    navStack = [{
+      title: category.title,
+      subtitle: category.subtitle,
+      icon: category.icon,
+      iconClass: category.iconClass,
+      eyebrow: 'KONU KATEGORİSİ',
+      topics: category.topics,
+      progress: category.progress
+    }];
 
-    topicProgressText.textContent = `%${category.progress} tamamlandı`;
-    topicProgressBar.style.width = `${category.progress}%`;
+    renderLevel(navStack[0]);
 
-    const completedCount = Math.floor((category.progress / 100) * category.topics.length);
-
-    topicList.innerHTML = category.topics.map((topic, index) => {
-      const completed = index < completedCount;
-      return `
-        <article class="topic-item ${completed ? 'completed' : ''}" data-topic="${topic.replace(/"/g, '&quot;')}" role="button" tabindex="0">
-          <div class="topic-number">${completed ? '✓' : String(index + 1).padStart(2, '0')}</div>
-          <div class="topic-copy">
-            <h4>${topic}</h4>
-            <p>${completed ? 'Tamamlandı' : 'Konu anlatımı ve soru bankası'}</p>
-          </div>
-          <div class="topic-arrow">${topicSvg('arrow')}</div>
-        </article>
-      `;
-    }).join('');
-
-    topicSheet.scrollTop = 0;
     topicSheet.classList.add('open');
     topicBackdrop.classList.add('open');
     topicSheet.setAttribute('aria-hidden', 'false');
-
-    topicList.querySelectorAll('.topic-item').forEach(item => {
-      const activate = () => {
-        haptic(18);
-        const topicName = item.dataset.topic;
-        toast.textContent = `${topicName} açılıyor…`;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2200);
-
-        // Gerçek uygulamada:
-        // topicStore.setSelectedTopic(topicName);
-        // router.navigate('/topic-detail');
-      };
-
-      item.addEventListener('click', activate);
-      item.addEventListener('keydown', event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          activate();
-        }
-      });
-    });
   }
 
   function closeTopicSheet() {
