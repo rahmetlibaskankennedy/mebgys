@@ -880,3 +880,82 @@ button{font:inherit}
   cursor:default;
   opacity:.72;
 }
+
+/* Madde kartı (swipe) görünümü — sıralı liste yerine kart bazlı gezinme */
+.swiper-dots{
+  display:flex;
+  justify-content:center;
+  gap:6px;
+  margin:2px 0 14px;
+}
+.swiper-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#dbe1ea;
+  cursor:pointer;
+  transition:background-color .2s ease,transform .2s ease;
+}
+.swiper-dot.active{
+  background:#153b73;
+  transform:scale(1.4);
+}
+.swiper-dot.done{
+  background:#17834b;
+}
+.swiper-dot.active.done{
+  background:#17834b;
+  transform:scale(1.4);
+}
+
+.article-swiper-track{
+  position:relative;
+  padding:2px 2px 4px;
+}
+.swiper-card{
+  transition:transform .26s cubic-bezier(.2,.8,.2,1),opacity .26s ease;
+  touch-action:pan-y;
+  cursor:grab;
+  will-change:transform,opacity;
+}
+.swiper-card:active{
+  cursor:grabbing;
+}
+.swiper-card.exit-next{transform:translateX(-46px) rotate(-3deg);opacity:0}
+.swiper-card.exit-prev{transform:translateX(46px) rotate(3deg);opacity:0}
+.swiper-card.enter-next{transform:translateX(46px) rotate(3deg);opacity:0}
+.swiper-card.enter-prev{transform:translateX(-46px) rotate(-3deg);opacity:0}
+
+.article-toggle-complete{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  border:1px solid #d8e5dc;
+  border-radius:999px;
+  padding:5px 10px;
+  background:#f6faf7;
+  color:#4c566b;
+  font-size:9px;
+  font-weight:800;
+  cursor:pointer;
+  white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .14s ease,background-color .14s ease,border-color .14s ease,color .14s ease;
+}
+.article-toggle-complete:active{
+  transform:scale(.96);
+}
+.article-toggle-complete.done{
+  border-color:#bfe3cd;
+  background:#e9f6ef;
+  color:#17834b;
+}
+.article-toggle-complete .choice-icon{
+  width:12px;
+  height:12px;
+}
+.article-toggle-complete:focus-visible,
+.swiper-dot:focus-visible{
+  outline:3px solid rgba(45,126,247,.25);
+  outline-offset:2px;
+}
