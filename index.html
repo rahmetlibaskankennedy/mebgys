@@ -42,6 +42,16 @@
   .wave{
     position:absolute; bottom:0; left:0; right:0; z-index:0;
   }
+  .blob{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(40px);
+    background:radial-gradient(circle, rgba(21,59,115,0.16) 0%, rgba(21,59,115,0) 72%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .blob.tl{ width:220px; height:220px; top:-70px; left:-70px; }
+  .blob.br{ width:260px; height:260px; bottom:60px; right:-90px; }
 
   .content{
     position:relative; z-index:1;
