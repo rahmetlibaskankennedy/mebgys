@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>SınavRotası — Akıllı Soru Bankası</title>
-  <link rel="stylesheet" href="style1.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="phone">
@@ -168,12 +168,29 @@ function quizView(){
  const q=state.quiz[state.index]; const answered=state.answers[state.index];
  const progress=((state.index+1)/state.quiz.length)*100;
  return `<section class="quiz-screen">
-  <div class="quiz-top"><button onclick="confirmExit()">×</button><div><span>SORU ${state.index+1} / ${state.quiz.length}</span><div class="quiz-progress"><i style="width:${progress}%"></i></div></div><button onclick="toggleBookmark(${q.id})">☆</button></div>
-  <div class="quiz-meta"><span>222 Sayılı Kanun</span><b>Madde ${q.article}</b></div>
-  <h2 class="question">${q.q}</h2>
-  <div class="choices">${q.choices.map((c,i)=>{let cls='';if(answered!==undefined){if(i===q.answer)cls='correct';else if(i===answered)cls='wrong'}return `<button class="${cls}" ${answered!==undefined?'disabled':''} onclick="answer(${i})"><b>${String.fromCharCode(65+i)}</b><span>${c}</span><i>${cls==='correct'?'✓':cls==='wrong'?'×':''}</i></button>`}).join('')}</div>
-  ${answered!==undefined?`<div class="explanation ${answered===q.answer?'ok':'bad'}"><div><b>${answered===q.answer?'Doğru cevap!':'Doğru cevap: '+String.fromCharCode(65+q.answer)}</b><span>Madde ${q.article}</span></div><p>${q.explain}</p><button onclick="openArticle(${q.article},true)">İlgili Maddeyi İncele ${icon('arrow')}</button></div>`:''}
-  <div class="quiz-actions">${answered===undefined?'<span>Bir cevap seç</span>':`<button class="primary-btn" onclick="nextQuestion()">${state.index===state.quiz.length-1?'Testi Bitir':'Sonraki Soru'} ${icon('arrow')}</button>`}</div>
+  <header class="quiz-header">
+    <button class="quiz-back" onclick="confirmExit()" aria-label="Testten çık">‹</button>
+    <div class="quiz-header-copy">
+      <strong>222 Sayılı İlköğretim ve Eğitim Kanunu</strong>
+      <span>Soru ${state.index+1} / ${state.quiz.length}</span>
+    </div>
+    <div class="quiz-timer" aria-label="Kalan süre">08:42</div>
+  </header>
+  <div class="quiz-progress" aria-hidden="true"><i style="width:${progress}%"></i></div>
+
+  <article class="question-card">
+    <div class="question-overline"><span>SORU ${state.index+1}</span><b>Madde ${q.article}</b></div>
+    <h2 class="question">${q.q}</h2>
+  </article>
+
+  <div class="choices">${q.choices.map((c,i)=>{let cls='';if(answered!==undefined){if(i===q.answer)cls='correct';else if(i===answered)cls='wrong'}return `<button class="${cls}" ${answered!==undefined?'disabled':''} onclick="answer(${i})"><b>${String.fromCharCode(65+i)}</b><span>${c}</span><i aria-hidden="true"></i></button>`}).join('')}</div>
+
+  ${answered!==undefined?`<div class="explanation ${answered===q.answer?'ok':'bad'}"><div><b>${answered===q.answer?'Doğru cevap':'Doğru cevap: '+String.fromCharCode(65+q.answer)}</b><span>Madde ${q.article}</span></div><p>${q.explain}</p><button onclick="openArticle(${q.article},true)">İlgili maddeyi incele</button></div>`:''}
+
+  <footer class="quiz-actions">
+    <div class="quiz-footer-progress"><span>${state.index+1} / ${state.quiz.length}</span><div><i style="width:${progress}%"></i></div></div>
+    ${answered===undefined?'<button class="primary-btn" disabled>Sonraki Soru</button>':`<button class="primary-btn" onclick="nextQuestion()">${state.index===state.quiz.length-1?'Testi Bitir':'Sonraki Soru'}</button>`}
+  </footer>
  </section>`
 }
 
