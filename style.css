@@ -1,12 +1,3 @@
-/*
-  SınavRotası — Ana ekran, konu listesi ve 222 madde detay stilleri
-  Revize sürüm:
-  - CSS içine yanlışlıkla eklenen HTML etiketleri kaldırıldı.
-  - Yinelenen stat ve kategori ikon kuralları tekilleştirildi.
-  - Kategori kartı yerleşimi düzeltildi.
-  - Madde detay kontrollerine odak ve basma durumları eklendi.
-*/
-
 :root{
   --navy:#071f49;
   --navy-2:#0b2f68;
@@ -1001,3 +992,11 @@ button{font:inherit}
 .document-overview-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}.document-number{display:inline-grid;place-items:center;min-width:46px;height:30px;padding:0 10px;border-radius:10px;background:rgba(255,255,255,.16);font-weight:800}.document-status{font-size:10px;font-weight:800;letter-spacing:.08em;color:#dcecff}.document-overview-card h4{font-size:19px;line-height:1.25;margin:0 0 8px}.document-overview-card p{font-size:13px;line-height:1.55;color:rgba(255,255,255,.78);margin:0}.document-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:17px}.document-stats span{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:10px 7px;text-align:center;font-size:10px}.document-stats strong{display:block;font-size:15px;margin-bottom:3px}
 .document-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}.document-mode-card{border:1px solid #e4eaf2;background:#fff;border-radius:18px;padding:15px;text-align:left;min-height:132px;box-shadow:0 7px 18px rgba(21,59,115,.06);cursor:pointer}.document-mode-card.primary{background:#eef5ff;border-color:#cfe0f8}.document-mode-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:#edf3fb;color:#153B73;font-weight:900;margin-bottom:12px}.document-mode-card.primary .document-mode-icon{background:#153B73;color:#fff}.document-mode-card strong{display:block;color:#1f2c3d;font-size:13px;margin-bottom:5px}.document-mode-card small{display:block;color:#8290a3;font-size:10.5px;line-height:1.45}
 .document-section-head{display:flex;align-items:end;justify-content:space-between;margin:4px 2px 10px}.document-section-head span{display:block;color:#8b98a9;font-size:10px;font-weight:800;letter-spacing:.08em;margin-bottom:3px}.document-section-head strong{font-size:14px;color:#243247}.document-section-list{display:grid;gap:9px}.document-section-item{display:grid;grid-template-columns:38px minmax(0,1fr) 18px;align-items:center;gap:11px;background:#fff;border:1px solid #e7ecf3;border-radius:16px;padding:13px;cursor:pointer}.document-section-number{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:#f0f5fb;color:#153B73;font-size:11px;font-weight:800}.document-section-item h4{font-size:13px;color:#263449;margin:0 0 4px}.document-section-item p{font-size:10.5px;color:#8b97a8;margin:0}.document-section-arrow{font-size:24px;color:#9ca8b8}
+
+.avatar-fallback{
+  display:grid;
+  place-items:center;
+  background:linear-gradient(145deg,#2d7ef7,#153b73);
+  color:#fff;
+}
+.avatar-fallback svg{width:30px;height:30px}
