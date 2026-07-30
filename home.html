@@ -15,6 +15,13 @@
   .article-nav-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
   .article-nav-actions button{border:1px solid #dfe6ef;border-radius:12px;padding:11px;background:#fff;color:#153b73;font-weight:700;cursor:pointer}.article-nav-actions button:disabled{opacity:.4;cursor:default}
 </style>
+
+<style>
+.document-overview-card{background:linear-gradient(145deg,#153B73,#245a9d);color:#fff;border-radius:22px;padding:20px;margin-bottom:14px;box-shadow:0 14px 30px rgba(21,59,115,.18)}
+.document-overview-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}.document-number{display:inline-grid;place-items:center;min-width:46px;height:30px;padding:0 10px;border-radius:10px;background:rgba(255,255,255,.16);font-weight:800}.document-status{font-size:10px;font-weight:800;letter-spacing:.08em;color:#dcecff}.document-overview-card h4{font-size:19px;line-height:1.25;margin:0 0 8px}.document-overview-card p{font-size:13px;line-height:1.55;color:rgba(255,255,255,.78);margin:0}.document-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:17px}.document-stats span{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:10px 7px;text-align:center;font-size:10px}.document-stats strong{display:block;font-size:15px;margin-bottom:3px}
+.document-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}.document-mode-card{border:1px solid #e4eaf2;background:#fff;border-radius:18px;padding:15px;text-align:left;min-height:132px;box-shadow:0 7px 18px rgba(21,59,115,.06);cursor:pointer}.document-mode-card.primary{background:#eef5ff;border-color:#cfe0f8}.document-mode-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:#edf3fb;color:#153B73;font-weight:900;margin-bottom:12px}.document-mode-card.primary .document-mode-icon{background:#153B73;color:#fff}.document-mode-card strong{display:block;color:#1f2c3d;font-size:13px;margin-bottom:5px}.document-mode-card small{display:block;color:#8290a3;font-size:10.5px;line-height:1.45}
+.document-section-head{display:flex;align-items:end;justify-content:space-between;margin:4px 2px 10px}.document-section-head span{display:block;color:#8b98a9;font-size:10px;font-weight:800;letter-spacing:.08em;margin-bottom:3px}.document-section-head strong{font-size:14px;color:#243247}.document-section-list{display:grid;gap:9px}.document-section-item{display:grid;grid-template-columns:38px minmax(0,1fr) 18px;align-items:center;gap:11px;background:#fff;border:1px solid #e7ecf3;border-radius:16px;padding:13px;cursor:pointer}.document-section-number{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:#f0f5fb;color:#153B73;font-size:11px;font-weight:800}.document-section-item h4{font-size:13px;color:#263449;margin:0 0 4px}.document-section-item p{font-size:10.5px;color:#8b97a8;margin:0}.document-section-arrow{font-size:24px;color:#9ca8b8}
+</style>
 </head>
 <body>
 <div class="phone">
@@ -562,8 +569,14 @@
       topics: [
         'T.C. Anayasası (Genel esaslar, Temel hak ve ödevleri, Devletin Temel Organları)',
         {
+          id: 'law-657',
+          type: 'document',
+          documentType: 'law',
+          documentNumber: '657',
           title: '657 sayılı Devlet Memurları Kanunu',
           questionCount: 340,
+          articleCount: 213,
+          progress: 46,
           children: [
             {
               title: 'Kapsam ve Genel Hükümler',
@@ -739,6 +752,185 @@
   let navStack = []; // her eleman: { title, subtitle, icon, iconClass, topics, progress }
   let swiperState = null; // madde kartı (swipe) modu aktifken: { articles, index, completed, parentLevel, groupTitle }
 
+  function renderDocumentHub(documentItem, parentLevel) {
+    swiperState = null;
+    topicSheetTitle.textContent = documentItem.title;
+    topicSheetSubtitle.textContent = `${documentItem.articleCount || 0} madde • ${documentItem.questionCount || 0} soru`;
+    topicEyebrow.textContent = 'MEVZUAT ÇALIŞMA MERKEZİ';
+    topicHeadingIcon.className = `topic-heading-icon ${parentLevel.iconClass || ''}`.trim();
+    topicHeadingIcon.innerHTML = topicSvg('gavel');
+
+    topicBreadcrumbWrap.innerHTML = `
+      <div class="topic-breadcrumb" id="documentBackBtn" role="button" tabindex="0">
+        ${topicSvg('back')}
+        <span>${parentLevel.title}</span>
+      </div>
+    `;
+
+    const progress = documentItem.progress || 0;
+    topicProgressText.textContent = `%${progress} tamamlandı`;
+    topicProgressBar.style.width = `${progress}%`;
+
+    topicList.innerHTML = `
+      <section class="document-overview-card">
+        <div class="document-overview-top">
+          <span class="document-number">${documentItem.documentNumber || 'MEVZUAT'}</span>
+          <span class="document-status">ÇALIŞMA PLANI HAZIR</span>
+        </div>
+        <h4>${documentItem.title}</h4>
+        <p>Çalışma yöntemini seçebilir veya aşağıdaki bölümlerden doğrudan devam edebilirsin.</p>
+        <div class="document-stats">
+          <span><strong>${documentItem.articleCount || 0}</strong> madde</span>
+          <span><strong>${documentItem.questionCount || 0}</strong> soru</span>
+          <span><strong>%${progress}</strong> ilerleme</span>
+        </div>
+      </section>
+
+      <div class="document-mode-grid">
+        <button class="document-mode-card primary" data-document-mode="articles" type="button">
+          <span class="document-mode-icon">▤</span>
+          <strong>Madde Madde Çalış</strong>
+          <small>Bölüm ve madde listesinden istediğin yere git.</small>
+        </button>
+        <button class="document-mode-card" data-document-mode="sequential" type="button">
+          <span class="document-mode-icon">▶</span>
+          <strong>Sırayla Öğren</strong>
+          <small>İlk hazır bölümde kartlarla adım adım ilerle.</small>
+        </button>
+        <button class="document-mode-card" data-document-mode="questions" type="button">
+          <span class="document-mode-icon">?</span>
+          <strong>Soru Bankası</strong>
+          <small>${documentItem.questionCount || 0} sorudan çalışma seti oluştur.</small>
+        </button>
+        <button class="document-mode-card" data-document-mode="summary" type="button">
+          <span class="document-mode-icon">★</span>
+          <strong>Özet ve Kritik Noktalar</strong>
+          <small>Sınavda öne çıkan maddeleri hızlı tekrar et.</small>
+        </button>
+      </div>
+
+      <div class="document-section-head">
+        <div>
+          <span>KANUN İÇİNDEKİLER</span>
+          <strong>Bölüm seçerek devam et</strong>
+        </div>
+      </div>
+
+      <div class="document-section-list">
+        ${documentItem.children.map((section, index) => `
+          <article class="document-section-item" data-section-index="${index}" role="button" tabindex="0">
+            <span class="document-section-number">${String(index + 1).padStart(2, '0')}</span>
+            <div>
+              <h4>${section.title}</h4>
+              <p>${section.articleRange || 'Madde aralığı hazırlanıyor'}${section.questionCount ? ` • ${section.questionCount} soru` : ''}</p>
+            </div>
+            <span class="document-section-arrow">›</span>
+          </article>
+        `).join('')}
+      </div>
+    `;
+
+    topicSheet.scrollTop = 0;
+
+    const goBack = () => {
+      haptic(14);
+      renderLevel(parentLevel);
+    };
+    const backButton = document.getElementById('documentBackBtn');
+    backButton.addEventListener('click', goBack);
+    backButton.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); goBack(); }
+    });
+
+    function openDocumentSections() {
+      navStack.push({
+        title: documentItem.title,
+        subtitle: `${documentItem.children.length} bölüm • ${documentItem.questionCount || 0} soru`,
+        icon: 'gavel',
+        iconClass: parentLevel.iconClass,
+        eyebrow: 'KANUN İÇİNDEKİLER',
+        topics: documentItem.children,
+        progress,
+        documentTitle: documentItem.title,
+        documentItem
+      });
+      renderLevel(navStack[navStack.length - 1]);
+    }
+
+    topicList.querySelector('[data-document-mode="articles"]').addEventListener('click', () => {
+      haptic(20);
+      openDocumentSections();
+    });
+
+    topicList.querySelector('[data-document-mode="sequential"]').addEventListener('click', () => {
+      const firstReadyGroup = documentItem.children.find(isArticleCardGroup);
+      if (!firstReadyGroup) {
+        toast.textContent = 'Sıralı çalışma için hazırlanmış madde grubu bulunamadı.';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2200);
+        return;
+      }
+      const articleLevel = {
+        title: firstReadyGroup.title,
+        subtitle: `${firstReadyGroup.children.length} madde • ${firstReadyGroup.questionCount || 0} soru`,
+        icon: 'gavel',
+        iconClass: parentLevel.iconClass,
+        eyebrow: 'MADDE LİSTESİ',
+        topics: firstReadyGroup.children,
+        progress: 0,
+        isArticleList: true,
+        sourceGroup: firstReadyGroup,
+        documentTitle: documentItem.title
+      };
+      navStack.push(articleLevel);
+      openArticleSwiper(firstReadyGroup);
+    });
+
+    topicList.querySelector('[data-document-mode="questions"]').addEventListener('click', () => {
+      haptic(20);
+      toast.textContent = `${documentItem.title} soru bankası hazırlanıyor…`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    });
+
+    topicList.querySelector('[data-document-mode="summary"]').addEventListener('click', () => {
+      haptic(20);
+      toast.textContent = 'Özet ve kritik noktalar ekranı hazırlanıyor…';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    });
+
+    topicList.querySelectorAll('.document-section-item').forEach(element => {
+      const openSection = () => {
+        const section = documentItem.children[Number(element.dataset.sectionIndex)];
+        if (!section.children) {
+          toast.textContent = `${section.title} içeriği sonraki aşamada eklenecek.`;
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), 2200);
+          return;
+        }
+        const articleGroup = isArticleCardGroup(section);
+        navStack.push({
+          title: section.title,
+          subtitle: `${section.children.length} ${articleGroup ? 'madde' : 'bölüm'} • ${section.questionCount || 0} soru`,
+          icon: 'gavel',
+          iconClass: parentLevel.iconClass,
+          eyebrow: articleGroup ? 'MADDE LİSTESİ' : 'MADDE GRUPLARI',
+          topics: section.children,
+          progress: 0,
+          isArticleList: articleGroup,
+          sourceGroup: articleGroup ? section : null,
+          documentTitle: documentItem.title
+        });
+        renderLevel(navStack[navStack.length - 1]);
+      };
+      element.addEventListener('click', openSection);
+      element.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openSection(); }
+      });
+    });
+  }
+
   function renderLevel(level) {
     swiperState = null;
     topicSheetTitle.textContent = level.title;
@@ -842,8 +1034,12 @@
       const activate = () => {
         if (item.children) {
           haptic(20);
-          const articleGroup = isArticleCardGroup(item);
           const currentLevel = navStack[navStack.length - 1];
+          if (item.type === 'document') {
+            renderDocumentHub(item, currentLevel);
+            return;
+          }
+          const articleGroup = isArticleCardGroup(item);
           navStack.push({
             title: item.title,
             subtitle: articleGroup
