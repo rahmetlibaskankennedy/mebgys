@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>SınavRotası - Ana Sayfa</title>
 <link rel="stylesheet" href="style.css">
+<style>
+  .article-list-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 10px;padding:14px;border:1px solid #e3e7ee;border-radius:16px;background:#f8fbff}
+  .article-list-toolbar div{min-width:0}.article-list-toolbar strong{display:block;color:#153b73;font-size:14px}.article-list-toolbar span{display:block;margin-top:3px;color:#7b8798;font-size:12px;line-height:1.35}
+  .article-study-button{flex:0 0 auto;border:0;border-radius:12px;padding:11px 14px;background:#153b73;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 8px 18px rgba(21,59,115,.18)}
+  .article-study-button:active{transform:scale(.98)}
+  .swiper-position{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;color:#7b8798;font-size:12px}
+  .swiper-position strong{color:#153b73;font-size:13px}.swiper-position-track{height:5px;flex:1;overflow:hidden;border-radius:999px;background:#e9eef5}.swiper-position-track span{display:block;height:100%;border-radius:inherit;background:#2d7ef7;transition:width .2s ease}
+  .article-nav-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .article-nav-actions button{border:1px solid #dfe6ef;border-radius:12px;padding:11px;background:#fff;color:#153b73;font-weight:700;cursor:pointer}.article-nav-actions button:disabled{opacity:.4;cursor:default}
+</style>
 </head>
 <body>
 <div class="phone">
@@ -695,11 +705,33 @@
     return typeof topic === 'string' ? { title: topic } : topic;
   }
 
-  // Bir madde grubunun tüm çocukları "yaprak" madde ise (alt bölümü yoksa),
-  // bu grup liste yerine kart bazlı (swipe) görünümle açılır.
+  // Bir grubun doğrudan madde yapraklarından oluşup oluşmadığını belirler.
+  // Bu bilgi artık görünümü otomatik değiştirmek için değil; liste etiketi ve
+  // isteğe bağlı "Sırayla Çalış" modu için kullanılır.
   function isArticleCardGroup(item) {
     return !!item.children && item.children.length > 0 &&
       item.children.every(child => (child.articleNumber || child.articleLabel) && !child.children);
+  }
+
+  const ARTICLE_PROGRESS_KEY = 'sinavrotasi.articleProgress.v1';
+  let savedArticleProgress = (() => {
+    try { return JSON.parse(localStorage.getItem(ARTICLE_PROGRESS_KEY) || '{}'); }
+    catch (error) { return {}; }
+  })();
+
+  function articleProgressId(item, documentTitle = '') {
+    return [documentTitle, item.articleLabel || item.articleNumber || item.title].filter(Boolean).join('::');
+  }
+
+  function isArticleCompleted(item, documentTitle = '') {
+    return savedArticleProgress[articleProgressId(item, documentTitle)]?.completed === true;
+  }
+
+  function setArticleCompleted(item, completed, documentTitle = '') {
+    const id = articleProgressId(item, documentTitle);
+    savedArticleProgress[id] = { completed, updatedAt: new Date().toISOString() };
+    try { localStorage.setItem(ARTICLE_PROGRESS_KEY, JSON.stringify(savedArticleProgress)); }
+    catch (error) { /* localStorage kullanılamıyorsa oturum içi durum korunur */ }
   }
 
   // Şu anki drill-down durumu: kategori + iç içe geçilen madde grubu zinciri
@@ -738,29 +770,35 @@
       topicBreadcrumbWrap.innerHTML = '';
     }
 
-    const progress = level.progress || 0;
-    topicProgressText.textContent = `%${progress} tamamlandı`;
+    const items = level.topics.map(normalizeTopic);
+    const articleItems = items.filter(item => item.articleNumber || item.articleLabel);
+    const persistedCompletedCount = articleItems.filter(item => isArticleCompleted(item, level.documentTitle)).length;
+    const progress = level.isArticleList && articleItems.length
+      ? Math.round((persistedCompletedCount / articleItems.length) * 100)
+      : (level.progress || 0);
+    topicProgressText.textContent = progress ? `%${progress} tamamlandı` : 'Henüz çalışılmadı';
     topicProgressBar.style.width = `${progress}%`;
 
-    const items = level.topics.map(normalizeTopic);
     const completedCount = Math.floor((progress / 100) * items.length);
-
-    const groupModeHeader = level.articleGroupMode ? `
-      <button class="article-group-start" id="startGroupSwiper" type="button">
-        ${topicSvg('gavel', 'choice-icon')}
-        <span>Tümünü Sırayla Çalış · ${items.length} madde</span>
-      </button>
+    const toolbar = level.isArticleList ? `
+      <div class="article-list-toolbar">
+        <div>
+          <strong>${articleItems.length} maddeyi sırayla çalış</strong>
+          <span>Liste görünümünü korur; kart modu yalnızca sen başlatınca açılır.</span>
+        </div>
+        <button class="article-study-button" id="startSequentialStudy" type="button">Sırayla Çalış</button>
+      </div>
     ` : '';
 
-    topicList.innerHTML = groupModeHeader + items.map((item, index) => {
-      const isArticleLeaf = !!(item.articleNumber || item.articleLabel);
-      const completed = index < completedCount && !item.children;
+    topicList.innerHTML = toolbar + items.map((item, index) => {
+      const completed = (item.articleNumber || item.articleLabel)
+        ? isArticleCompleted(item, level.documentTitle)
+        : (index < completedCount && !item.children);
       const hasChildren = !!item.children;
+      const childLabel = isArticleCardGroup(item) ? 'madde' : 'bölüm';
       const metaLine = hasChildren
-        ? `${item.children.length} bölüm${item.questionCount ? ` • ${item.questionCount} soru` : ''}`
-        : isArticleLeaf
-          ? `${item.questionCount || 0} soru${completed ? ' • Tamamlandı' : ''}`
-          : (completed ? 'Tamamlandı' : (item.articleRange ? '' : 'Konu anlatımı ve soru bankası'));
+        ? `${item.children.length} ${childLabel}${item.questionCount ? ` • ${item.questionCount} soru` : ''}`
+        : (completed ? 'Tamamlandı' : (item.articleRange ? '' : 'Konu anlatımı ve soru bankası'));
 
       return `
         <article class="topic-item ${completed ? 'completed' : ''} ${hasChildren ? 'has-children' : ''}" data-index="${index}" role="button" tabindex="0">
@@ -789,14 +827,12 @@
 
     topicSheet.scrollTop = 0;
 
-    if (level.articleGroupMode) {
-      const startGroupBtn = document.getElementById('startGroupSwiper');
-      if (startGroupBtn) {
-        startGroupBtn.addEventListener('click', () => {
-          haptic(20);
-          openArticleSwiperAt(items, 0, level, level.title);
-        });
-      }
+    const sequentialButton = document.getElementById('startSequentialStudy');
+    if (sequentialButton && level.sourceGroup) {
+      sequentialButton.addEventListener('click', () => {
+        haptic(20);
+        openArticleSwiper(level.sourceGroup);
+      });
     }
 
     topicList.querySelectorAll('.topic-item').forEach(el => {
@@ -805,35 +841,24 @@
 
       const activate = () => {
         if (item.children) {
-          if (isArticleCardGroup(item)) {
-            haptic(20);
-            navStack.push({
-              title: item.title,
-              subtitle: `${item.children.length} madde • toplam ${item.questionCount || item.children.reduce((s, c) => s + (c.questionCount || 0), 0)} soru`,
-              icon: 'gavel',
-              iconClass: navStack[navStack.length - 1].iconClass,
-              eyebrow: 'MADDE LİSTESİ',
-              topics: item.children,
-              progress: 0,
-              articleGroupMode: true
-            });
-            renderLevel(navStack[navStack.length - 1]);
-            return;
-          }
           haptic(20);
+          const articleGroup = isArticleCardGroup(item);
+          const currentLevel = navStack[navStack.length - 1];
           navStack.push({
             title: item.title,
-            subtitle: `${item.children.length} bölüm • toplam ${item.questionCount || item.children.reduce((s, c) => s + (c.questionCount || 0), 0)} soru`,
+            subtitle: articleGroup
+              ? `${item.children.length} madde • ${item.questionCount || item.children.reduce((s, c) => s + (c.questionCount || 0), 0)} soru`
+              : `${item.children.length} bölüm • toplam ${item.questionCount || item.children.reduce((s, c) => s + (c.questionCount || 0), 0)} soru`,
             icon: 'gavel',
-            iconClass: navStack[navStack.length - 1].iconClass,
-            eyebrow: 'MADDE GRUPLARI',
+            iconClass: currentLevel.iconClass,
+            eyebrow: articleGroup ? 'MADDE LİSTESİ' : 'MADDE GRUPLARI',
             topics: item.children,
-            progress: 0
+            progress: 0,
+            isArticleList: articleGroup,
+            sourceGroup: articleGroup ? item : null,
+            documentTitle: currentLevel.documentTitle || (item.title.includes('sayılı') ? item.title : '')
           });
           renderLevel(navStack[navStack.length - 1]);
-        } else if (level.articleGroupMode && isArticleLeaf) {
-          haptic(18);
-          openArticleSwiperAt(items, index, level, level.title);
         } else if (item.articleNumber || item.articleLabel) {
           haptic(18);
           renderArticleDetail(item);
@@ -901,7 +926,7 @@
         <section class="article-detail-card">
           <div class="article-kicker">
             <span class="article-label">${item.articleLabel || `Madde ${item.articleNumber || ''}`}</span>
-            <span class="article-status">657 SAYILI KANUN</span>
+            <span class="article-status">${parentLevel.documentTitle || 'MEVZUAT'}</span>
           </div>
           <h4>${item.title}</h4>
           <p>${item.summary || 'Bu maddeye ilişkin kısa açıklama daha sonra içerik yönetim sisteminden getirilecektir.'}</p>
@@ -967,8 +992,17 @@
       });
     });
 
-    document.getElementById('markArticleComplete').addEventListener('click', event => {
+    const articleCompleteButton = document.getElementById('markArticleComplete');
+    if (isArticleCompleted(item, parentLevel.documentTitle)) {
+      articleCompleteButton.textContent = 'Tamamlandı';
+      articleCompleteButton.disabled = true;
+      topicProgressText.textContent = '%100 tamamlandı';
+      topicProgressBar.style.width = '100%';
+    }
+
+    articleCompleteButton.addEventListener('click', event => {
       haptic(20);
+      setArticleCompleted(item, true, parentLevel.documentTitle);
       event.currentTarget.textContent = 'Tamamlandı';
       event.currentTarget.disabled = true;
       topicProgressText.textContent = '%100 tamamlandı';
@@ -991,18 +1025,23 @@
 
   // --- Madde kartı (swipe) görünümü ---
   // "Kapsam ve Genel Hükümler" gibi tüm çocukları madde olan gruplar,
-  // önce bir madde LİSTESİ olarak açılır (hangi maddede ne var, kaç soru var
-  // görülür); listeden bir maddeye ya da "Tümünü Sırayla Çalış" butonuna
-  // dokununca sıralı, sağa/sola kaydırılabilen kart görünümüne geçilir.
+  // sıralı bir liste yerine tek seferde bir kart gösteren, sağa/sola
+  // kaydırılabilen bir kart yığını olarak açılır.
 
-  function openArticleSwiperAt(articles, startIndex, parentLevel, groupTitle) {
+  function openArticleSwiper(group) {
+    const parentLevel = navStack[navStack.length - 1];
+    const completedIndexes = new Set();
+    group.children.forEach((article, index) => {
+      if (isArticleCompleted(article, parentLevel.documentTitle)) completedIndexes.add(index);
+    });
     swiperState = {
-      articles,
-      index: startIndex,
-      completed: new Set(),
+      articles: group.children,
+      index: 0,
+      completed: completedIndexes,
       parentLevel,
-      groupTitle,
-      groupIconClass: parentLevel.iconClass
+      groupTitle: group.title,
+      groupIconClass: parentLevel.iconClass,
+      documentTitle: parentLevel.documentTitle
     };
     renderSwiperCard();
   }
@@ -1011,7 +1050,6 @@
     const { articles, index, completed, parentLevel, groupTitle } = swiperState;
     const item = articles[index];
     const isLast = index === articles.length - 1;
-    const isFirst = index === 0;
     const isDone = completed.has(index);
 
     topicEyebrow.textContent = 'MADDE KARTI';
@@ -1047,8 +1085,9 @@
       : ['Madde başlığını öğren', 'Temel kavramları ayırt et', 'Madde sorularıyla pekiştir'];
 
     topicList.innerHTML = `
-      <div class="swiper-dots">
-        ${articles.map((a, i) => `<span class="swiper-dot ${i === index ? 'active' : ''} ${completed.has(i) ? 'done' : ''}"></span>`).join('')}
+      <div class="swiper-position">
+        <strong>Madde ${index + 1} / ${articles.length}</strong>
+        <div class="swiper-position-track"><span style="width:${((index + 1) / articles.length) * 100}%"></span></div>
       </div>
 
       <div class="article-swiper-track" id="swiperTrack">
@@ -1084,10 +1123,13 @@
         <p>${item.summary || 'Madde açıklaması içerik sistemi bağlandığında burada gösterilecektir.'}</p>
       </section>
 
-      <div class="article-actions swiper-actions">
-        <button class="article-action secondary icon-only" id="swiperPrevBtn" type="button" ${isFirst ? 'disabled' : ''} aria-label="Önceki madde">${topicSvg('back', 'choice-icon')}</button>
+      <div class="article-actions">
         <button class="article-action secondary" id="swiperSolveBtn" type="button">${item.questionCount || 0} Madde Sorusunu Çöz</button>
         <button class="article-action primary" id="swiperNextBtn" type="button">${isLast ? 'Listeye Dön' : 'Sıradaki Madde ›'}</button>
+      </div>
+      <div class="article-nav-actions">
+        <button id="swiperPrevBtn" type="button" ${index === 0 ? 'disabled' : ''}>‹ Önceki Madde</button>
+        <button id="swiperVisibleNextBtn" type="button">${isLast ? 'Listeye Dön' : 'Sonraki Madde ›'}</button>
       </div>
     `;
 
@@ -1137,8 +1179,10 @@
       haptic(16);
       if (swiperState.completed.has(swiperState.index)) {
         swiperState.completed.delete(swiperState.index);
+        setArticleCompleted(item, false, swiperState.documentTitle);
       } else {
         swiperState.completed.add(swiperState.index);
+        setArticleCompleted(item, true, swiperState.documentTitle);
       }
       renderSwiperCard();
     });
@@ -1151,38 +1195,30 @@
       setTimeout(() => toast.classList.remove('show'), 2300);
     });
 
-    // Önceki madde
-    const prevBtn = document.getElementById('swiperPrevBtn');
-    prevBtn.addEventListener('click', () => {
-      if (swiperState.index === 0) return;
-      haptic(18);
-      goToIndex(swiperState.index - 1, 'prev');
-    });
-
     // Sıradaki madde (sağ taraf) — geçince otomatik tamamlandı işaretlenir
     document.getElementById('swiperNextBtn').addEventListener('click', () => {
       haptic(24);
       advanceSwiper();
     });
 
-    // Noktalardan doğrudan geçiş
-    topicList.querySelectorAll('.swiper-dot').forEach((dot, i) => {
-      dot.addEventListener('click', () => {
-        if (i === swiperState.index) return;
-        haptic(12);
-        goToIndex(i, i > swiperState.index ? 'next' : 'prev');
-      });
+    document.getElementById('swiperPrevBtn').addEventListener('click', () => {
+      if (swiperState.index <= 0) return;
+      haptic(16);
+      goToIndex(swiperState.index - 1, 'prev');
+    });
+    document.getElementById('swiperVisibleNextBtn').addEventListener('click', () => {
+      haptic(18);
+      advanceSwiper();
     });
 
     attachSwipeHandlers();
   }
 
   function advanceSwiper() {
-    const { index, articles, completed, parentLevel } = swiperState;
-    completed.add(index); // sıradaki maddeye geçince mevcut madde otomatik tamamlandı sayılır
+    const { index, articles, parentLevel } = swiperState;
 
     if (index >= articles.length - 1) {
-      toast.textContent = 'Tüm maddeler tamamlandı! Listeye dönülüyor…';
+      toast.textContent = 'Sıralı çalışma tamamlandı. Madde listesine dönülüyor…';
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 2300);
       swiperState = null;
@@ -1248,7 +1284,7 @@
       const threshold = 70;
 
       if (deltaX <= -threshold) {
-        // Sola kaydırma: sıradaki maddeye geç (son maddedeyse listeye dön)
+        // Sola kaydırma: sıradaki maddeye geç; tamamlanma yalnızca kullanıcı seçimiyle kaydedilir
         haptic(16);
         card.style.transform = '';
         card.style.opacity = '';
