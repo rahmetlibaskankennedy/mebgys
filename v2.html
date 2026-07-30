@@ -11,9 +11,11 @@
     .app-header{position:relative;z-index:10;color:#fff;background:radial-gradient(circle at 82% 10%,rgba(68,126,205,.38),transparent 36%),linear-gradient(155deg,#061a3c,#0a2f67 76%,#082651);padding:18px 18px 20px;border-radius:0 0 30px 30px}
     .app-header.hidden{display:none}.statusbar{display:flex;justify-content:space-between;padding:0 7px 15px;font-size:13px;font-weight:800}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}.eyebrow,.section-title span,.page-head span{margin:0 0 4px;font-size:8px;letter-spacing:1.15px;font-weight:900;color:#ff6d70}.topbar h1{font-size:20px;margin:0 0 5px}.topbar p:last-child{font-size:11.5px;color:rgba(255,255,255,.76);margin:0}.round-btn{width:44px;height:44px;border:0;border-radius:15px;background:rgba(255,255,255,.09);color:#fff;position:relative}.round-btn b{position:absolute;right:2px;top:2px;width:17px;height:17px;border-radius:50%;background:var(--red);display:grid;place-items:center;font-size:9px}.goal-card{margin-top:16px;padding:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);border-radius:19px;display:grid;grid-template-columns:70px 1fr;gap:13px;align-items:center}.goal-ring{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;align-content:center;background:radial-gradient(circle at center,#0b2d63 57%,transparent 58%),conic-gradient(var(--red) 65%,rgba(255,255,255,.12) 0)}.goal-ring span{font-size:17px;font-weight:900}.goal-ring small{font-size:8px;color:rgba(255,255,255,.72)}.goal-line{display:flex;justify-content:space-between;gap:8px;font-size:10px}.goal-line span{color:#ff797c}.progress,.mini-progress,.quiz-progress{height:6px;border-radius:99px;overflow:hidden;background:#e7ebf1}.goal-card .progress{margin:9px 0;background:rgba(255,255,255,.14)}.progress i,.mini-progress i,.quiz-progress i{height:100%;display:block;border-radius:inherit;background:linear-gradient(90deg,var(--blue),#6ba8ff)}.goal-card .progress i{background:linear-gradient(90deg,#ff6c6f,var(--red))}.goal-copy p{font-size:9.5px;color:rgba(255,255,255,.7);margin:0}
     
-    .scroll-area{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding-bottom:94px;scrollbar-width:none}
+    .scroll-area{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
     .scroll-area::-webkit-scrollbar{display:none}
-    .screen{padding:18px 17px 28px}.home-screen{padding-top:16px}
+    .app-scroll{padding-bottom:94px}
+    .screen{padding:18px 17px 28px}
+    .home-screen{padding-top:16px}
     
     .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
     .stat{background:#fff;border-radius:14px;padding:12px 4px;text-align:center;border:1px solid var(--line);box-shadow:0 4px 10px rgba(13,33,68,.03)}
@@ -35,7 +37,7 @@
       .phone{width:100vw;height:100dvh;max-height:none;aspect-ratio:auto;border:0;border-radius:0;box-shadow:none}
       .app-header{padding-top:max(16px,env(safe-area-inset-top))}
       .bottom-nav{height:calc(74px + env(safe-area-inset-bottom));padding-bottom:calc(9px + env(safe-area-inset-bottom))}
-      .scroll-area{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
+      .app-scroll{padding-bottom:calc(88px + env(safe-area-inset-bottom))}
     }
   </style>
 </head>
