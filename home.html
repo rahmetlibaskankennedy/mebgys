@@ -745,12 +745,22 @@
     const items = level.topics.map(normalizeTopic);
     const completedCount = Math.floor((progress / 100) * items.length);
 
-    topicList.innerHTML = items.map((item, index) => {
+    const groupModeHeader = level.articleGroupMode ? `
+      <button class="article-group-start" id="startGroupSwiper" type="button">
+        ${topicSvg('gavel', 'choice-icon')}
+        <span>Tümünü Sırayla Çalış · ${items.length} madde</span>
+      </button>
+    ` : '';
+
+    topicList.innerHTML = groupModeHeader + items.map((item, index) => {
+      const isArticleLeaf = !!(item.articleNumber || item.articleLabel);
       const completed = index < completedCount && !item.children;
       const hasChildren = !!item.children;
       const metaLine = hasChildren
         ? `${item.children.length} bölüm${item.questionCount ? ` • ${item.questionCount} soru` : ''}`
-        : (completed ? 'Tamamlandı' : (item.articleRange ? '' : 'Konu anlatımı ve soru bankası'));
+        : isArticleLeaf
+          ? `${item.questionCount || 0} soru${completed ? ' • Tamamlandı' : ''}`
+          : (completed ? 'Tamamlandı' : (item.articleRange ? '' : 'Konu anlatımı ve soru bankası'));
 
       return `
         <article class="topic-item ${completed ? 'completed' : ''} ${hasChildren ? 'has-children' : ''}" data-index="${index}" role="button" tabindex="0">
@@ -779,6 +789,16 @@
 
     topicSheet.scrollTop = 0;
 
+    if (level.articleGroupMode) {
+      const startGroupBtn = document.getElementById('startGroupSwiper');
+      if (startGroupBtn) {
+        startGroupBtn.addEventListener('click', () => {
+          haptic(20);
+          openArticleSwiperAt(items, 0, level, level.title);
+        });
+      }
+    }
+
     topicList.querySelectorAll('.topic-item').forEach(el => {
       const index = Number(el.dataset.index);
       const item = items[index];
@@ -787,7 +807,17 @@
         if (item.children) {
           if (isArticleCardGroup(item)) {
             haptic(20);
-            openArticleSwiper(item);
+            navStack.push({
+              title: item.title,
+              subtitle: `${item.children.length} madde • toplam ${item.questionCount || item.children.reduce((s, c) => s + (c.questionCount || 0), 0)} soru`,
+              icon: 'gavel',
+              iconClass: navStack[navStack.length - 1].iconClass,
+              eyebrow: 'MADDE LİSTESİ',
+              topics: item.children,
+              progress: 0,
+              articleGroupMode: true
+            });
+            renderLevel(navStack[navStack.length - 1]);
             return;
           }
           haptic(20);
@@ -801,6 +831,9 @@
             progress: 0
           });
           renderLevel(navStack[navStack.length - 1]);
+        } else if (level.articleGroupMode && isArticleLeaf) {
+          haptic(18);
+          openArticleSwiperAt(items, index, level, level.title);
         } else if (item.articleNumber || item.articleLabel) {
           haptic(18);
           renderArticleDetail(item);
@@ -958,17 +991,17 @@
 
   // --- Madde kartı (swipe) görünümü ---
   // "Kapsam ve Genel Hükümler" gibi tüm çocukları madde olan gruplar,
-  // sıralı bir liste yerine tek seferde bir kart gösteren, sağa/sola
-  // kaydırılabilen bir kart yığını olarak açılır.
+  // önce bir madde LİSTESİ olarak açılır (hangi maddede ne var, kaç soru var
+  // görülür); listeden bir maddeye ya da "Tümünü Sırayla Çalış" butonuna
+  // dokununca sıralı, sağa/sola kaydırılabilen kart görünümüne geçilir.
 
-  function openArticleSwiper(group) {
-    const parentLevel = navStack[navStack.length - 1];
+  function openArticleSwiperAt(articles, startIndex, parentLevel, groupTitle) {
     swiperState = {
-      articles: group.children,
-      index: 0,
+      articles,
+      index: startIndex,
       completed: new Set(),
       parentLevel,
-      groupTitle: group.title,
+      groupTitle,
       groupIconClass: parentLevel.iconClass
     };
     renderSwiperCard();
@@ -978,6 +1011,7 @@
     const { articles, index, completed, parentLevel, groupTitle } = swiperState;
     const item = articles[index];
     const isLast = index === articles.length - 1;
+    const isFirst = index === 0;
     const isDone = completed.has(index);
 
     topicEyebrow.textContent = 'MADDE KARTI';
@@ -1050,9 +1084,10 @@
         <p>${item.summary || 'Madde açıklaması içerik sistemi bağlandığında burada gösterilecektir.'}</p>
       </section>
 
-      <div class="article-actions">
+      <div class="article-actions swiper-actions">
+        <button class="article-action secondary icon-only" id="swiperPrevBtn" type="button" ${isFirst ? 'disabled' : ''} aria-label="Önceki madde">${topicSvg('back', 'choice-icon')}</button>
         <button class="article-action secondary" id="swiperSolveBtn" type="button">${item.questionCount || 0} Madde Sorusunu Çöz</button>
-        <button class="article-action primary" id="swiperNextBtn" type="button">${isLast ? 'Kategoriye Dön' : 'Sıradaki Madde ›'}</button>
+        <button class="article-action primary" id="swiperNextBtn" type="button">${isLast ? 'Listeye Dön' : 'Sıradaki Madde ›'}</button>
       </div>
     `;
 
@@ -1116,6 +1151,14 @@
       setTimeout(() => toast.classList.remove('show'), 2300);
     });
 
+    // Önceki madde
+    const prevBtn = document.getElementById('swiperPrevBtn');
+    prevBtn.addEventListener('click', () => {
+      if (swiperState.index === 0) return;
+      haptic(18);
+      goToIndex(swiperState.index - 1, 'prev');
+    });
+
     // Sıradaki madde (sağ taraf) — geçince otomatik tamamlandı işaretlenir
     document.getElementById('swiperNextBtn').addEventListener('click', () => {
       haptic(24);
@@ -1139,7 +1182,7 @@
     completed.add(index); // sıradaki maddeye geçince mevcut madde otomatik tamamlandı sayılır
 
     if (index >= articles.length - 1) {
-      toast.textContent = 'Tüm maddeler tamamlandı! Bölüme dönülüyor…';
+      toast.textContent = 'Tüm maddeler tamamlandı! Listeye dönülüyor…';
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 2300);
       swiperState = null;
@@ -1205,7 +1248,7 @@
       const threshold = 70;
 
       if (deltaX <= -threshold) {
-        // Sola kaydırma: sıradaki maddeye geç (son maddedeyse bölümü tamamla ve geri dön)
+        // Sola kaydırma: sıradaki maddeye geç (son maddedeyse listeye dön)
         haptic(16);
         card.style.transform = '';
         card.style.opacity = '';
