@@ -163,11 +163,17 @@ function homeView(){
     </div>
   </div>
 
-  <div class="section-title"><div><span>BUGÜN</span><h2>Çalışmaya başla</h2></div><button class="text-btn" onclick="go('bank')">Tümü</button></div>
+  <div class="section-title compact" style="margin-top:0;"><div><span>ÖNERİLEN</span><h2>Kaldığın yerden devam et</h2></div></div>
+  <article class="continue-card" onclick="openLaw()">
+    <div class="law-badge">222</div><div class="continue-copy"><h3>İlköğretim ve Eğitim Kanunu</h3><p>84 / 320 soru çözüldü</p><div class="mini-progress"><i style="width:26%"></i></div><small>Son çalışma: Okula Devam</small></div><span>${icon('arrow')}</span>
+  </article>
+
+  <div class="section-title compact"><div><span>BUGÜN</span><h2>Çalışmaya başla</h2></div><button class="text-btn" onclick="go('bank')">Tümü</button></div>
   <button class="daily-test" onclick="startQuiz('daily')">
     <div class="daily-icon">${icon('play')}</div><div><small>SANA ÖZEL</small><h3>Günün Testi</h3><p>Zayıf olduğun maddelerden 10 soru</p></div><span>${icon('arrow')}</span>
     <div class="daily-meta"><b>10 Soru</b><b>8 dk</b><b>+120 XP</b></div>
   </button>
+  
   <div class="quick-grid">
     <button onclick="startQuiz('quick')"><i>${icon('bolt')}</i><strong>Hızlı 10</strong><span>Karışık sorular</span></button>
     <button onclick="go('wrong')"><i class="red">${icon('wrong')}</i><strong>Yanlışlarım</strong><span>${wrongCount} soru bekliyor</span></button>
@@ -178,11 +184,6 @@ function homeView(){
    <button onclick="startSection('attendance')"><span class="weak-rank danger">%48</span><div><strong>Okula Devam</strong><small>Madde 52–59 · 72 soru</small></div><em>Çalış</em></button>
    <button onclick="startSection('registration')"><span class="weak-rank warn">%61</span><div><strong>Kayıt ve Kabul</strong><small>Madde 46–51 · 44 soru</small></div><em>Çalış</em></button>
   </div>
-
-  <div class="section-title compact"><div><span>ÖNERİLEN</span><h2>Kaldığın yerden devam et</h2></div></div>
-  <article class="continue-card" onclick="openLaw()">
-    <div class="law-badge">222</div><div class="continue-copy"><h3>İlköğretim ve Eğitim Kanunu</h3><p>84 / 320 soru çözüldü</p><div class="mini-progress"><i style="width:26%"></i></div><small>Son çalışma: Okula Devam</small></div><span>${icon('arrow')}</span>
-  </article>
 
  </section>`
 }
