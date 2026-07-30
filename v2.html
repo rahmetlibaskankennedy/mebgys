@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>SınavRotası — Akıllı Soru Bankası</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="phone">
+    <header class="app-header">
+      <div class="statusbar"><span>9:41</span><span>▮▮▮  ◉  ▰</span></div>
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">SINAVROTASI</p>
+          <h1>Merhaba, Ahmet 👋</h1>
+          <p>Bugünkü hedefin için 35 soru kaldı.</p>
+        </div>
+        <button class="round-btn" aria-label="Bildirimler">🔔<b>3</b></button>
+      </div>
+      <div class="goal-card">
+        <div class="goal-ring"><span>%65</span><small>Günlük</small></div>
+        <div class="goal-copy">
+          <div class="goal-line"><strong>65 / 100 soru</strong><span>7 gün seri 🔥</span></div>
+          <div class="progress"><i style="width:65%"></i></div>
+          <p>İstikrarlı devam et, hedefin çok yakın.</p>
+        </div>
+      </div>
+    </header>
+
+    <main id="app" class="app-scroll"></main>
+
+    <nav class="bottom-nav" aria-label="Ana menü">
+      <button data-nav="home" class="active">⌂<span>Ana Sayfa</span></button>
+      <button data-nav="bank">▦<span>Soru Bankası</span></button>
+      <button data-nav="wrong">✕<span>Yanlışlarım</span></button>
+      <button data-nav="laws">§<span>Mevzuat</span></button>
+      <button data-nav="profile">○<span>Profil</span></button>
+    </nav>
+
+    <div id="toast" class="toast"></div>
+  </div>
+
+<script>
+const LAW = {
+  id:'law-222', number:'222', title:'İlköğretim ve Eğitim Kanunu',
+  stats:{questions:320, solved:84, correct:68},
+  sections:[
+    {id:'general',title:'Genel Esaslar',range:'Madde 1–5',questions:36},
+    {id:'organization',title:'Teşkilat',range:'Madde 6–13',questions:58},
+    {id:'staff',title:'İlde İlköğretim Görevlileri',range:'Madde 14–25',questions:28},
+    {id:'registration',title:'Kayıt ve Kabul',range:'Madde 46–51',questions:44},
+    {id:'attendance',title:'Okula Devam',range:'Madde 52–59',questions:72},
+    {id:'land',title:'Arsa ve Arazi İşleri',range:'Madde 60–68',questions:34},
+    {id:'finance',title:'Gelir, Gider ve Planlama',range:'Madde 76–84',questions:48}
+  ]
+};
+
+const ARTICLES = {
+  2:{title:'İlköğretimin niteliği',summary:'İlköğretim, öğrenim çağındaki kız ve erkek çocuklar için zorunlu; Devlet okullarında ücretsizdir.',points:['Kız ve erkek çocuklar için mecburidir.','Devlet okullarında parasızdır.','İlköğrenim kurumlarında verilir.'],official:'İlköğretim, ilköğrenim kurumlarında verilir; öğrenim çağında bulunan kız ve erkek çocuklar için mecburi, Devlet okullarında parasızdır.'},
+  3:{title:'Mecburi ilköğretim çağı',summary:'Mecburi ilköğretim çağı 6–14 yaş grubunu kapsar. Birinci sınıf kaydı için esas tarih 31 Aralık ve yaş ölçütü 72 aydır.',points:['Yaş grubu: 6–14','Kayıt ölçütü: 31 Aralık','Birinci sınıf: 72 ay'],official:'Mecburi ilköğretim çağı, 6-14 yaş grubundaki çocukları kapsar. İlkokulların birinci sınıflarına o yılın 31 Aralık tarihinde 72 ayını dolduran çocukların kaydı yapılır. Ancak çocuğun gelişim durumuna bağlı olarak okula erken başlaması veya kaydının ertelenmesi ile ilgili hususlar yönetmelikle düzenlenir.'},
+  6:{title:'İlköğretim kurumları',summary:'Kanun, mecburi ve isteğe bağlı ilköğretim kurumlarını ayrı ayrı düzenler.',points:['Mecburi kurumlar ayrıca sayılmıştır.','Okul öncesi eğitim isteğe bağlıdır.','Özel eğitime ihtiyaç duyan çocuklar için okul ve sınıflar kurulabilir.'],official:'İlköğretim kurumları şunlardır: a) Mecburi olanlar: İlköğretim okulları, yetiştirici ve tamamlayıcı sınıflar ve kurslar, özel eğitime muhtaç çocuklar için kurulacak okullar ve sınıflar. b) İsteğe bağlı olanlar: okul öncesi eğitim kurumları ile tamamlayıcı sınıflar ve kurslar.'},
+  7:{title:'İlköğretimin yapısı',summary:'İlköğretim; dört yıl zorunlu ilkokul ve dört yıl zorunlu ortaokuldan oluşur.',points:['4 yıl ilkokul','4 yıl ortaokul','Her iki kademe de zorunludur.'],official:'İlköğretim; 1 inci maddede belirtilen amacı gerçekleştirmek için kurulmuş dört yıl süreli ve zorunlu ilkokul ile dört yıl süreli ve zorunlu ortaokuldan oluşan bir Milli Eğitim ve Öğretim Kurumudur.'},
+  14:{title:'İlköğretim kurumlarında görevliler',summary:'Okulun yapısına göre yönetici, öğretmen, rehberlik uzmanı ve diğer personel bulunur.',points:['Müdür ve müdür yardımcıları','Öğretmenler ve usta öğreticiler','Rehberlik uzmanları','İdari, teknik ve yardımcı personel'],official:'İlkokullar ve ortaokullar birlikte veya ayrı oluşlarına, büyüklüğüne, anasınıfları ve özel eğitim sınıflarının bulunuşuna göre, ilköğretim kurumlarında müdür ve müdür yardımcıları, öğretmenler, rehberlik uzmanları ile gerekli diğer personel bulunur.'},
+  46:{title:'Kayıt ve kabul',summary:'Çocuk, mecburi ilköğretim çağına girdiği öğretim yılı başında okula kaydedilir. Veli, vasi veya aile başkanı zamanında kayıt yaptırmakla yükümlüdür.',points:['Kayıt öğretim yılı başında yapılır.','Sorumluluk veli, vasi veya aile başkanındadır.','Tamamlayamayanlara en çok iki yıl ek süre verilebilir.'],official:'Her çocuk, mecburi ilköğrenim çağına girdiği öğretim yılı başında 3 üncü madde gereğince ilköğretim okuluna kayıt ve kabul edilir. Her veli yahut vasi veya aile başkanı, çocuğunu zamanında ilköğretim okuluna yazdırmakla yükümlüdür.'},
+  50:{title:'Öğretmen başına öğrenci sayısı',summary:'Birleştirilmiş sınıflar dâhil bir öğretmene düşen öğrenci sayısı 40’tan fazla olamaz.',points:['Azami sayı 40’tır.','Birleştirilmiş sınıflar da kapsamdadır.'],official:'Birleştirilmiş sınıflar da dahil olmak üzere bir öğretmene düşen öğrenci sayısı 40 dan fazla olamaz.'},
+  51:{title:'İlköğretim Haftası',summary:'Her yıl Eylül ayının üçüncü haftası İlköğretim Haftasıdır.',points:['Ay: Eylül','Hafta: Üçüncü hafta','Programı Bakanlık hazırlar.'],official:'Her yıl Eylül ayının üçüncü haftası “İlköğretim haftası”dır. Milli Eğitim Bakanlığınca hazırlanacak programa göre hafta içinde türlü yollarla ilköğretimin önemi belirtilir.'},
+  52:{title:'Devam yükümlülüğü',summary:'Veli, vasi veya aile başkanı çocuğun düzenli devamını sağlamalı; özrü en geç üç gün içinde okul yönetimine bildirmelidir.',points:['Düzenli devam sağlanır.','Bildirim süresi en geç 3 gündür.','Mülki amirler ve ilgili birimler destek olur.'],official:'Her öğrenci velisi yahut vasisi veya aile başkanı çocuğunun mecburi ilköğretim kurumuna muntazaman devamını sağlamakla ve özrü yüzünden okula gidemiyen çocuğun durumunu en geç üç gün içinde okul idaresine bildirmekle yükümlüdür.'},
+  54:{title:'Özel izin süresi',summary:'Kanunda sayılan ailevi ve tarımsal nedenlerle öğrenciye bir yıl içinde toplam 15 günü aşmayan izin verilebilir.',points:['Azami 15 gün','Bir öğretim yılı içinde','İzin okul yönetimince verilir.'],official:'Çocuğun ailesi yanında kalmasını gerektiren ailede ölüm, yaralanma, düğün, askere gitme, bağ, bahçe, tarla ve sürüde tarım ve hastalık savaşı yapılması gibi sebeplerle öğrencilere bir yıl içinde 15 günü geçmemek üzere okul idarelerince izin verilir.'},
+  59:{title:'Çocukların çalıştırılması',summary:'Mecburi ilköğretim çağında olup okula devam etmeyen çocuklar ücretli veya ücretsiz çalıştırılamaz.',points:['Devam etmeyen çocuk çalıştırılamaz.','Devam edenler yalnızca ders saatleri dışında çalışabilir.','Çocuk işçiliği mevzuatı ayrıca uygulanır.'],official:'İlköğrenim çağında olup da mecburi ilköğretim kurumlarına devam etmiyenler, hiçbir resmi ve özel iş yerinde veya her ne surette olursa olsun çalışmayı gerektiren başka yerlerde ücretli veya ücretsiz çalıştırılamazlar.'},
+  61:{title:'Okul çevresindeki işyerleri',summary:'Belirli umuma açık yerler ile okul binaları arasında kapıdan kapıya en az 100 metre mesafe bulunmalıdır.',points:['Ölçüm kapıdan kapıyadır.','Asgari mesafe 100 metredir.','Turizm bölgelerinde tatil dönemine ilişkin istisna vardır.'],official:'Meyhane, kahvehane, kıraathane, bar, elektronik oyun merkezleri gibi umuma açık yerler ile açık alkollü içki satılan yerlerin, okul binalarından kapıdan kapıya en az 100 metre uzaklıkta bulunması zorunludur.'}
+};
+
+const QUESTIONS = [
+ {id:1,article:3,section:'general',q:'222 sayılı Kanuna göre mecburi ilköğretim çağı hangi yaş grubunu kapsar?',choices:['5–13','6–14','7–15','6–15'],answer:1,explain:'Madde 3’e göre mecburi ilköğretim çağı 6–14 yaş grubundaki çocukları kapsar.'},
+ {id:2,article:3,section:'general',q:'İlkokul birinci sınıfa kayıt için çocuğun hangi tarih itibarıyla 72 ayını doldurmuş olması esas alınır?',choices:['1 Eylül','31 Aralık','30 Haziran','15 Eylül'],answer:1,explain:'Madde 3, kayıt ölçütü olarak ilgili yılın 31 Aralık tarihini esas alır.'},
+ {id:3,article:2,section:'general',q:'222 sayılı Kanuna göre aşağıdakilerden hangisi ilköğretimin özelliklerinden biridir?',choices:['Yalnız erkek çocuklar için zorunludur.','Özel okullarda parasızdır.','Devlet okullarında parasızdır.','Sadece şehirlerde zorunludur.'],answer:2,explain:'Madde 2’ye göre ilköğretim kız ve erkek çocuklar için mecburi, Devlet okullarında parasızdır.'},
+ {id:4,article:7,section:'organization',q:'222 sayılı Kanuna göre zorunlu ilköğretim toplam kaç yıldan oluşur?',choices:['4','6','8','12'],answer:2,explain:'Madde 7’ye göre dört yıl ilkokul ve dört yıl ortaokul olmak üzere toplam sekiz yıldır.'},
+ {id:5,article:6,section:'organization',q:'Aşağıdakilerden hangisi isteğe bağlı ilköğretim kurumları arasındadır?',choices:['İlkokul','Ortaokul','Okul öncesi eğitim kurumu','Yatılı ilköğretim bölge okulu'],answer:2,explain:'Madde 6’da okul öncesi eğitim kurumları isteğe bağlı kurumlar arasında sayılır.'},
+ {id:6,article:14,section:'staff',q:'Aşağıdakilerden hangisi ilköğretim kurumlarında bulunabilecek görevliler arasında sayılmamıştır?',choices:['Rehberlik uzmanları','Müdür yardımcıları','Usta öğreticiler','Belediye encümen üyeleri'],answer:3,explain:'Madde 14’te belediye encümen üyeleri okul görevlileri arasında yer almaz.'},
+ {id:7,article:46,section:'registration',q:'Çocuğu zamanında ilköğretim okuluna yazdırmakla kim yükümlüdür?',choices:['Yalnız okul müdürü','Veli, vasi veya aile başkanı','Sadece muhtar','İlçe belediyesi'],answer:1,explain:'Madde 46 bu yükümlülüğü veli, vasi veya aile başkanına verir.'},
+ {id:8,article:50,section:'registration',q:'Birleştirilmiş sınıflar dâhil bir öğretmene düşen öğrenci sayısı en fazla kaç olabilir?',choices:['30','35','40','45'],answer:2,explain:'Madde 50’ye göre bir öğretmene düşen öğrenci sayısı 40’tan fazla olamaz.'},
+ {id:9,article:51,section:'registration',q:'İlköğretim Haftası her yıl ne zaman kutlanır?',choices:['Eylül ayının ilk haftası','Eylül ayının ikinci haftası','Eylül ayının üçüncü haftası','Ekim ayının ilk haftası'],answer:2,explain:'Madde 51’e göre Eylül ayının üçüncü haftası İlköğretim Haftasıdır.'},
+ {id:10,article:52,section:'attendance',q:'Özrü nedeniyle okula gidemeyen çocuğun durumu en geç kaç gün içinde okul yönetimine bildirilmelidir?',choices:['1','2','3','5'],answer:2,explain:'Madde 52’ye göre bildirim en geç üç gün içinde yapılmalıdır.'},
+ {id:11,article:54,section:'attendance',q:'Kanunda belirtilen özel nedenlerle bir öğrenciye bir yıl içinde en fazla kaç gün izin verilebilir?',choices:['10','15','20','30'],answer:1,explain:'Madde 54, okul yönetimince verilecek izni bir yıl içinde en fazla 15 günle sınırlar.'},
+ {id:12,article:61,section:'land',q:'Belirli umuma açık yerler ile okul binaları arasında kapıdan kapıya bulunması gereken asgari mesafe kaç metredir?',choices:['50','75','100','200'],answer:2,explain:'Madde 61’e göre asgari mesafe kapıdan kapıya 100 metredir.'}
+];
+
+const state = {
+  view:'home', quiz:[], index:0, answers:[], wrong:new Set(JSON.parse(localStorage.getItem('sr-wrong')||'[]')),
+  articleTab:'summary', selectedSection:null
+};
+
+const app = document.getElementById('app');
+const toast = document.getElementById('toast');
+const navButtons=[...document.querySelectorAll('[data-nav]')];
+
+function showToast(text){toast.textContent=text;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800)}
+function saveWrong(){localStorage.setItem('sr-wrong',JSON.stringify([...state.wrong]))}
+function icon(name){const map={play:'▶',bolt:'⚡',wrong:'✕',law:'§',book:'▦',chart:'↗',arrow:'›',check:'✓'};return map[name]||'•'}
+function setNav(name){navButtons.forEach(b=>b.classList.toggle('active',b.dataset.nav===name))}
+function go(view){state.view=view;setNav(view==='quiz'||view==='result'?'bank':view);render();app.scrollTop=0}
+
+function homeView(){
+ const wrongCount=state.wrong.size;
+ return `<section class="screen home-screen">
+  <div class="section-title"><div><span>BUGÜN</span><h2>Çalışmaya başla</h2></div><button class="text-btn" onclick="go('bank')">Tümü</button></div>
+  <button class="daily-test" onclick="startQuiz('daily')">
+    <div class="daily-icon">${icon('play')}</div><div><small>SANA ÖZEL</small><h3>Günün Testi</h3><p>Zayıf olduğun maddelerden 10 soru</p></div><span>${icon('arrow')}</span>
+    <div class="daily-meta"><b>10 Soru</b><b>8 dk</b><b>+120 XP</b></div>
+  </button>
+  <div class="quick-grid">
+    <button onclick="startQuiz('quick')"><i>${icon('bolt')}</i><strong>Hızlı 10</strong><span>Karışık sorular</span></button>
+    <button onclick="go('wrong')"><i class="red">${icon('wrong')}</i><strong>Yanlışlarım</strong><span>${wrongCount} soru bekliyor</span></button>
+  </div>
+  <div class="section-title compact"><div><span>ÖNERİLEN</span><h2>Kaldığın yerden devam et</h2></div></div>
+  <article class="continue-card" onclick="openLaw()">
+    <div class="law-badge">222</div><div class="continue-copy"><h3>İlköğretim ve Eğitim Kanunu</h3><p>84 / 320 soru çözüldü</p><div class="mini-progress"><i style="width:26%"></i></div><small>Son çalışma: Okula Devam</small></div><span>${icon('arrow')}</span>
+  </article>
+  <div class="section-title compact"><div><span>ANALİZ</span><h2>Zayıf konuların</h2></div><button class="text-btn" onclick="go('bank')">İncele</button></div>
+  <div class="weak-list">
+   <button onclick="startSection('attendance')"><span class="weak-rank danger">%48</span><div><strong>Okula Devam</strong><small>Madde 52–59 · 72 soru</small></div><em>Çalış</em></button>
+   <button onclick="startSection('registration')"><span class="weak-rank warn">%61</span><div><strong>Kayıt ve Kabul</strong><small>Madde 46–51 · 44 soru</small></div><em>Çalış</em></button>
+  </div>
+ </section>`
+}
+
+function bankView(){
+ return `<section class="screen"><div class="page-head"><button onclick="go('home')">‹</button><div><span>SORU BANKASI</span><h2>Çalışma alanları</h2></div></div>
+ <article class="law-overview"><div class="law-badge large">222</div><div><small>MEB MEVZUATI</small><h3>${LAW.title}</h3><p>${LAW.stats.questions} soru · %${LAW.stats.correct} başarı</p></div></article>
+ <div class="mode-grid">
+  <button onclick="startQuiz('quick')"><i>${icon('bolt')}</i><strong>Hızlı Test</strong><span>10 karışık soru</span></button>
+  <button onclick="startQuiz('daily')"><i>${icon('chart')}</i><strong>Akıllı Test</strong><span>Zayıf maddelerden</span></button>
+  <button onclick="go('wrong')"><i>${icon('wrong')}</i><strong>Yanlışlarım</strong><span>${state.wrong.size} soruyu tekrar et</span></button>
+  <button onclick="go('laws')"><i>${icon('law')}</i><strong>Kanunu İncele</strong><span>Madde ve açıklamalar</span></button>
+ </div>
+ <div class="section-title compact"><div><span>BÖLÜMLER</span><h2>Madde bazlı sorular</h2></div></div>
+ <div class="section-list">${LAW.sections.map((s,i)=>`<button onclick="startSection('${s.id}')"><b>${String(i+1).padStart(2,'0')}</b><div><strong>${s.title}</strong><small>${s.range} · ${s.questions} soru</small></div><span>${icon('arrow')}</span></button>`).join('')}</div>
+ </section>`
+}
+
+function wrongView(){
+ const wrongQs=QUESTIONS.filter(q=>state.wrong.has(q.id));
+ return `<section class="screen"><div class="page-head"><button onclick="go('home')">‹</button><div><span>TEKRAR MODU</span><h2>Yanlışlarım</h2></div></div>
+ ${wrongQs.length?`<div class="wrong-summary"><strong>${wrongQs.length}</strong><div><h3>Tekrar bekleyen soru</h3><p>Doğru cevapladıkça listeden çıkar.</p></div></div><button class="primary-btn" onclick="startQuiz('wrong')">Yanlışları Yeniden Çöz</button><div class="wrong-cards">${wrongQs.map(q=>`<button onclick="openArticle(${q.article})"><span>Madde ${q.article}</span><strong>${q.q}</strong><small>Maddeyi incele ${icon('arrow')}</small></button>`).join('')}</div>`:`<div class="empty-state"><i>${icon('check')}</i><h3>Harika, bekleyen yanlış yok!</h3><p>Yeni test çözdükçe yanlış yaptığın sorular burada toplanır.</p><button class="primary-btn" onclick="startQuiz('quick')">10 Soru Çöz</button></div>`}
+ </section>`
+}
+
+function lawsView(){
+ return `<section class="screen"><div class="page-head"><button onclick="go('home')">‹</button><div><span>AKILLI MEVZUAT</span><h2>222 sayılı Kanun</h2></div></div>
+ <article class="law-reader-head"><div class="law-badge large">222</div><div><h3>${LAW.title}</h3><p>Yanlış yaptığın soruların dayandığı maddeleri öğren.</p></div></article>
+ <div class="reader-note"><b>Nasıl kullanılır?</b><p>Önce soru çöz. Yanlış yaptığında ilgili maddenin sade anlatımına ve resmî metnine buradan ulaş.</p></div>
+ <div class="article-list">${Object.entries(ARTICLES).map(([n,a])=>`<button onclick="openArticle(${n})"><span>Madde ${n}</span><div><strong>${a.title}</strong><small>${QUESTIONS.filter(q=>q.article==n).length} örnek soru</small></div><em>${icon('arrow')}</em></button>`).join('')}</div>
+ </section>`
+}
+
+function startQuiz(mode){
+ let pool=[];
+ if(mode==='wrong') pool=QUESTIONS.filter(q=>state.wrong.has(q.id));
+ else if(mode==='daily') pool=[...QUESTIONS].sort((a,b)=>(state.wrong.has(b.id)?1:0)-(state.wrong.has(a.id)?1:0)).slice(0,10);
+ else pool=[...QUESTIONS].sort(()=>Math.random()-.5).slice(0,10);
+ if(!pool.length){showToast('Tekrar edilecek yanlış soru bulunmuyor.');return}
+ state.quiz=pool;state.index=0;state.answers=[];state.view='quiz';setNav('bank');render();
+}
+function startSection(id){const pool=QUESTIONS.filter(q=>q.section===id);if(!pool.length){showToast('Bu bölümün demo soruları henüz eklenmedi.');return}state.quiz=pool;state.index=0;state.answers=[];state.view='quiz';state.selectedSection=id;setNav('bank');render()}
+
+function quizView(){
+ const q=state.quiz[state.index]; const answered=state.answers[state.index];
+ const progress=((state.index+1)/state.quiz.length)*100;
+ return `<section class="quiz-screen">
+  <div class="quiz-top"><button onclick="confirmExit()">×</button><div><span>SORU ${state.index+1} / ${state.quiz.length}</span><div class="quiz-progress"><i style="width:${progress}%"></i></div></div><button onclick="toggleBookmark(${q.id})">☆</button></div>
+  <div class="quiz-meta"><span>222 Sayılı Kanun</span><b>Madde ${q.article}</b></div>
+  <h2 class="question">${q.q}</h2>
+  <div class="choices">${q.choices.map((c,i)=>{let cls='';if(answered!==undefined){if(i===q.answer)cls='correct';else if(i===answered)cls='wrong'}return `<button class="${cls}" ${answered!==undefined?'disabled':''} onclick="answer(${i})"><b>${String.fromCharCode(65+i)}</b><span>${c}</span><i>${cls==='correct'?'✓':cls==='wrong'?'×':''}</i></button>`}).join('')}</div>
+  ${answered!==undefined?`<div class="explanation ${answered===q.answer?'ok':'bad'}"><div><b>${answered===q.answer?'Doğru cevap!':'Doğru cevap: '+String.fromCharCode(65+q.answer)}</b><span>Madde ${q.article}</span></div><p>${q.explain}</p><button onclick="openArticle(${q.article},true)">İlgili Maddeyi İncele ${icon('arrow')}</button></div>`:''}
+  <div class="quiz-actions">${answered===undefined?'<span>Bir cevap seç</span>':`<button class="primary-btn" onclick="nextQuestion()">${state.index===state.quiz.length-1?'Testi Bitir':'Sonraki Soru'} ${icon('arrow')}</button>`}</div>
+ </section>`
+}
+
+function answer(i){
+ const q=state.quiz[state.index];state.answers[state.index]=i;
+ if(i===q.answer) state.wrong.delete(q.id); else state.wrong.add(q.id);
+ saveWrong();render();
+}
+function nextQuestion(){if(state.index<state.quiz.length-1){state.index++;render();app.scrollTop=0}else{state.view='result';render();app.scrollTop=0}}
+function confirmExit(){if(confirm('Testten çıkmak istediğine emin misin?'))go('home')}
+function toggleBookmark(){showToast('Soru kaydedildi.')}
+
+function resultView(){
+ const correct=state.quiz.reduce((n,q,i)=>n+(state.answers[i]===q.answer),0); const wrong=state.quiz.length-correct; const score=Math.round(correct/state.quiz.length*100);
+ return `<section class="screen result-screen"><div class="result-hero"><div class="score-ring" style="--score:${score}"><span>%${score}</span><small>Başarı</small></div><h2>${score>=70?'Harika gidiyorsun!':'Bir tekrar daha iyi olacak'}</h2><p>Her yanlış, hangi maddeyi çalışman gerektiğini gösterir.</p></div>
+ <div class="result-stats"><div><strong>${correct}</strong><span>Doğru</span></div><div><strong>${wrong}</strong><span>Yanlış</span></div><div><strong>${state.quiz.length}</strong><span>Toplam</span></div></div>
+ <div class="result-actions"><button class="primary-btn" onclick="go('wrong')">Yanlışları İncele</button><button class="secondary-btn" onclick="go('home')">Ana Sayfaya Dön</button></div>
+ ${wrong?`<div class="section-title compact"><div><span>ÖNERİ</span><h2>Tekrar etmen gereken maddeler</h2></div></div><div class="review-list">${[...new Set(state.quiz.filter((q,i)=>state.answers[i]!==q.answer).map(q=>q.article))].map(n=>`<button onclick="openArticle(${n})"><span>Madde ${n}</span><strong>${ARTICLES[n]?.title||'İlgili hüküm'}</strong><em>${icon('arrow')}</em></button>`).join('')}</div>`:''}
+ </section>`
+}
+
+function openLaw(){go('bank')}
+function openArticle(number,fromQuiz=false){state.article=Number(number);state.articleTab='summary';state.returnToQuiz=fromQuiz;state.view='article';render();app.scrollTop=0}
+function articleView(){
+ const n=state.article,a=ARTICLES[n]; if(!a)return lawsView();
+ const content=state.articleTab==='summary'?`<div class="article-content"><h3>Sade anlatım</h3><p class="lead">${a.summary}</p><div class="key-box"><b>Sınavda dikkat</b>${a.points.map(p=>`<p>✓ ${p}</p>`).join('')}</div></div>`:state.articleTab==='official'?`<div class="article-content"><h3>Resmî metin</h3><p class="official-text">${a.official}</p><small class="source-note">Kanun metnindeki yazım biçimi sadeleştirilmeden anlam korunarak gösterilmiştir.</small></div>`:`<div class="article-content"><h3>Kritik noktalar</h3><div class="point-list">${a.points.map((p,i)=>`<div><b>${i+1}</b><p>${p}</p></div>`).join('')}</div></div>`;
+ return `<section class="screen article-screen"><div class="page-head"><button onclick="articleBack()">‹</button><div><span>222 SAYILI KANUN</span><h2>Madde ${n}</h2></div></div>
+ <article class="article-title-card"><span>Madde ${n}</span><h3>${a.title}</h3><p>${QUESTIONS.filter(q=>q.article===n).length} bağlantılı örnek soru</p></article>
+ <div class="tabs"><button class="${state.articleTab==='summary'?'active':''}" onclick="setArticleTab('summary')">Sade Anlatım</button><button class="${state.articleTab==='official'?'active':''}" onclick="setArticleTab('official')">Resmî Metin</button><button class="${state.articleTab==='points'?'active':''}" onclick="setArticleTab('points')">Kritik Noktalar</button></div>
+ ${content}
+ <button class="primary-btn full" onclick="startArticleQuestions(${n})">Bu Maddeden Soru Çöz</button>
+ </section>`
+}
+function setArticleTab(t){state.articleTab=t;render()}
+function articleBack(){if(state.returnToQuiz){state.view='quiz';state.returnToQuiz=false;render()}else go('laws')}
+function startArticleQuestions(n){const pool=QUESTIONS.filter(q=>q.article===n);if(!pool.length){showToast('Bu madde için demo sorusu bulunmuyor.');return}state.quiz=pool;state.index=0;state.answers=[];state.view='quiz';render()}
+
+function profileView(){return `<section class="screen"><div class="page-head"><button onclick="go('home')">‹</button><div><span>HESABIM</span><h2>Profil</h2></div></div><div class="empty-state"><i>👤</i><h3>Profil ekranı</h3><p>Demo sürümde çalışma istatistikleri ana sayfada gösteriliyor.</p></div></section>`}
+
+function render(){
+ const views={home:homeView,bank:bankView,wrong:wrongView,laws:lawsView,quiz:quizView,result:resultView,article:articleView,profile:profileView};
+ app.innerHTML=(views[state.view]||homeView)();
+ document.querySelector('.app-header').classList.toggle('hidden',['quiz','article','result','bank','wrong','laws','profile'].includes(state.view));
+ document.querySelector('.bottom-nav').classList.toggle('hidden',state.view==='quiz'||state.view==='article');
+}
+
+navButtons.forEach(b=>b.addEventListener('click',()=>go(b.dataset.nav)));
+render();
+</script>
+</body>
+</html>
