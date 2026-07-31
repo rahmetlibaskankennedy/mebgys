@@ -406,8 +406,8 @@ function bindRouteSheetEvents() {
   closeRouteSheetButton?.addEventListener('click', closeRouteSheet);
   
   startRouteButton?.addEventListener('click', () => {
-    closeRouteSheet();
-    startSmartPractice(); // Seçili ayarları kullanarak testi başlat
+  routeSheet.classList.remove('open');
+  startSmartPractice();
   });
 }
 // ------------------------------
@@ -630,7 +630,10 @@ async function openRandomQuiz(documentItem, categoryKey) {
 // --- GÜNCELLENEN ROTA BAŞLATMA FONKSİYONU ---
 async function startSmartPractice() {
   const activeDocuments = getActiveDocuments();
-  if (!activeDocuments.length) return showToast('Henüz aktif soru paketi bulunmuyor.');
+  if (!activeDocuments.length) {
+    closeRouteSheet();
+    return showToast('Henüz aktif soru paketi bulunmuyor.');
+  }
   
   // Şimdilik Rota için de rastgele aktif bir paketten soruyoruz.
   // İleride "Sana Özel" vs. logicleri buraya eklenebilir.
@@ -639,7 +642,10 @@ async function startSmartPractice() {
   try {
     showToast('Rota hazırlanıyor…');
     const bank = await loadQuestionBank(selected.item);
-    if (!bank.length) return showToast('Bu başlık için henüz soru bulunmuyor.');
+    if (!bank.length) {
+      closeRouteSheet();
+      return showToast('Bu başlık için henüz soru bulunmuyor.');
+    }
     
     // topicSheet'i arkada açık bırak, return olunca oraya dönecek
     topicSheet.classList.add('open');
@@ -654,6 +660,7 @@ async function startSmartPractice() {
       returnView: closeTopicSheet
     });
   } catch (error) {
+    closeRouteSheet();
     showToast(error.message || 'Sorular yüklenemedi.');
   }
 }
