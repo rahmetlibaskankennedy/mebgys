@@ -439,8 +439,6 @@ function closeTopicSheet() {
   }
 }
 
-// ... (applySheetHeader, renderBreadcrumb, setSheetProgress, renderCategoryLevel, statusLabel, renderDocumentHub, modeCard, renderTopicPlan, renderSections, renderSummary, loadQuestionBank, shuffle, openSectionQuiz, openRandomQuiz fonksiyonları aynı kalır) ...
-
 function applySheetHeader({ title, subtitle, eyebrow, icon = 'book', iconClass = '' }) {
   topicSheetTitle.textContent = title;
   topicSheetSubtitle.textContent = subtitle;
@@ -626,7 +624,6 @@ async function openRandomQuiz(documentItem, categoryKey) {
   }
 }
 
-
 // --- GÜNCELLENEN ROTA BAŞLATMA FONKSİYONU ---
 async function startSmartPractice() {
   const activeDocuments = getActiveDocuments();
@@ -664,8 +661,6 @@ async function startSmartPractice() {
     showToast(error.message || 'Sorular yüklenemedi.');
   }
 }
-// ---------------------------------------------
-
 
 async function startMixedMock() {
   const activeDocuments = getActiveDocuments();
@@ -734,19 +729,106 @@ function renderQuiz() {
   const total = quiz.questions.length;
   const letters = ['A', 'B', 'C', 'D', 'E'];
   
-  // Süre UI'ı
+  // Süre UI'ı (Görseldeki gibi MM:SS formatı)
   const timerDisplay = quiz.isTimed ? 
-    `<div class="quiz-modern-timer" id="quizTimer">${svg('clock')} 00:${String(current.timeLeft).padStart(2, '0')}</div>` : 
-    `<div class="quiz-modern-timer" style="background:#eaf8f0; color:#1f9d62;">Süresiz</div>`;
+    `<div class="quiz-premium-timer" id="quizTimer">${svg('clock')} ${String(Math.floor(current.timeLeft / 60)).padStart(2, '0')}:${String(current.timeLeft % 60).padStart(2, '0')}</div>` : 
+    `<div class="quiz-premium-timer" style="color:#1f9d62;">Süresiz</div>`;
 
-  topicList.innerHTML = `<div class="quiz-modern-container"><div class="quiz-modern-topbar"><button id="quizBackButton" type="button" aria-label="Geri">${svg('back')}</button><h2>${quiz.kind === 'mock' ? 'Deneme' : quiz.kind === 'route' ? 'Rota' : 'Mevzuat'}</h2><button type="button" aria-label="Yer işareti">${svg('bookmark')}</button></div><div class="quiz-modern-progress-area"><div class="quiz-modern-progress-info">Soru ${quiz.index + 1} / ${total}<div class="quiz-modern-progress-bar"><div class="quiz-modern-progress-fill" style="width:${Math.round(((quiz.index + 1) / total) * 100)}%"></div></div></div>${timerDisplay}</div><div class="quiz-modern-card"><span class="quiz-modern-badge">${escapeHtml(quiz.subtitle)}</span><h3 class="quiz-modern-question">${escapeHtml(current.prompt)}</h3><div class="quiz-modern-options">${current.options.map((option, index) => {
-    let className = 'quiz-modern-option';
-    if (current.userSelected !== null) {
-      if (index === current.answerIndex) className += ' correct';
-      else if (index === current.userSelected) className += ' wrong';
-    }
-    return `<button class="${className}" data-answer-index="${index}" type="button"><span class="quiz-modern-option-letter">${letters[index] || index + 1}</span><span class="quiz-modern-option-text">${escapeHtml(option)}</span></button>`;
-  }).join('')}</div></div><div class="quiz-modern-footer"><button class="quiz-modern-btn quiz-modern-btn-prev" id="quizPrevButton" type="button" ${quiz.index === 0 ? 'disabled' : ''}>${svg('arrowLeft')} Önceki</button><button class="quiz-modern-btn quiz-modern-btn-next" id="quizNextButton" type="button">${quiz.index === total - 1 ? 'Sonucu Gör' : 'Sonraki'} ${svg('arrowRight')}</button></div></div>`;
+  const titleText = quiz.kind === 'mock' ? 'Deneme' : quiz.kind === 'route' ? 'Rota' : 'MEB GYS';
+
+  topicList.innerHTML = `
+    <div class="quiz-premium-layout">
+      <!-- Koyu Lacivert Üst Alan -->
+      <div class="quiz-premium-header">
+        <div class="quiz-premium-topbar">
+          <button id="quizBackButton" type="button" aria-label="Geri">${svg('back')}</button>
+          <div class="quiz-premium-titles">
+            <h2>${escapeHtml(titleText)}</h2>
+            <span>${escapeHtml(quiz.title)}</span>
+          </div>
+          <div class="quiz-premium-top-actions">
+            ${timerDisplay}
+            <button type="button" aria-label="Menü">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="quiz-premium-progress">
+          <span class="progress-text"><strong>${quiz.index + 1}</strong> / ${total}</span>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${Math.round(((quiz.index + 1) / total) * 100)}%"></div>
+            <div class="progress-handle" style="left:${Math.round(((quiz.index + 1) / total) * 100)}%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Beyaz Soru Kartı (Üst alana biniyor) -->
+      <div class="quiz-premium-card-wrapper">
+        <div class="quiz-premium-card">
+          <div class="quiz-card-header">
+            <span class="quiz-badge">${escapeHtml(quiz.subtitle)}</span>
+            <div class="quiz-card-actions">
+              <button type="button" class="action-btn">${svg('bookmark')}<span>Soruyu İşaretle</span></button>
+              <button type="button" class="action-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                <span>Soruyu Bildir</span>
+              </button>
+            </div>
+          </div>
+
+          <h3 class="quiz-question-text">${escapeHtml(current.prompt)}</h3>
+
+          <div class="quiz-options">
+            ${current.options.map((option, index) => {
+              let className = 'quiz-option';
+              let iconHtml = '';
+              if (current.userSelected !== null) {
+                if (index === current.answerIndex) {
+                  className += ' correct';
+                  iconHtml = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                } else if (index === current.userSelected) {
+                  className += ' wrong';
+                  iconHtml = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+                }
+              }
+              return `
+              <button class="${className}" data-answer-index="${index}" type="button">
+                <span class="quiz-option-letter">${letters[index] || index + 1}</span>
+                <span class="quiz-option-text">${escapeHtml(option)}</span>
+                ${iconHtml}
+              </button>`;
+            }).join('')}
+          </div>
+          
+          <div class="quiz-hint">
+            <div class="hint-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v1"/><path d="M12 7a5 5 0 1 0 5 5c0 1.5-1 3-3 4H10c-2-1-3-2.5-3-4a5 5 0 1 0 5-5z"/></svg>
+            </div>
+            <div class="hint-text">
+              <strong>İpucu</strong>
+              <span>Doğru cevabı düşünmeden önce sorudaki anahtar kelimelere odaklanın.</span>
+            </div>
+            <div class="hint-arrow">${svg('arrowRight')}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alt Butonlar -->
+      <div class="quiz-premium-footer">
+        <button class="footer-btn btn-prev" id="quizPrevButton" type="button" ${quiz.index === 0 ? 'disabled' : ''}>
+          ${svg('arrowLeft')} Önceki
+        </button>
+        <button class="footer-btn btn-grid" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          Sorular
+        </button>
+        <button class="footer-btn btn-next" id="quizNextButton" type="button">
+          ${quiz.index === total - 1 ? 'Sonucu Gör' : 'Sonraki Soru'} ${svg('arrowRight')}
+        </button>
+      </div>
+    </div>`;
+    
   topicSheet.scrollTop = 0;
   bindQuizEvents();
   if(quiz.isTimed) startQuizTimer();
@@ -762,7 +844,9 @@ function startQuizTimer() {
     if (!state.quiz || state.quiz !== quiz) return clearInterval(timerInterval);
     if (current.timeLeft <= 0 || current.userSelected !== null) return clearInterval(timerInterval);
     current.timeLeft -= 1;
-    timer.innerHTML = `${svg('clock')} 00:${String(current.timeLeft).padStart(2, '0')}`;
+    const m = String(Math.floor(current.timeLeft / 60)).padStart(2, '0');
+    const s = String(current.timeLeft % 60).padStart(2, '0');
+    timer.innerHTML = `${svg('clock')} ${m}:${s}`;
     if (current.timeLeft === 0) {
       clearInterval(timerInterval);
       showToast('Bu sorunun süresi doldu.');
