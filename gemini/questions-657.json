@@ -1,90 +1,146 @@
 {
   "lawId": "law-657",
-  "title": "657 sayılı Devlet Memurları Kanunu — örnek soru seti",
+  "title": "657 sayılı Devlet Memurları Kanunu Soru Seti",
   "questions": [
     {
-      "id": "657-kapsam-01",
+      "id": "657-q01",
       "sectionId": "law-657-section-kapsam-amac-ilkeler",
-      "prompt": "657 sayılı Devlet Memurları Kanununun temel ilkeleri aşağıdakilerden hangisinde birlikte verilmiştir?",
-      "options": ["Eşitlik, adalet, tarafsızlık", "Sınıflandırma, kariyer, liyakat", "Gizlilik, temsil, verimlilik", "Yetki, hiyerarşi, denetim"],
-      "answerIndex": 1
-    },
-    {
-      "id": "657-kapsam-02",
-      "sectionId": "law-657-section-kapsam-amac-ilkeler",
-      "prompt": "657 sayılı Kanunun amacı aşağıdakilerden hangisini düzenlemektir?",
-      "options": ["Yalnızca memurların disiplin cezalarını", "Yalnızca kamu kurumlarının bütçesini", "Devlet memurlarının hizmet şartları ve özlük işlerini", "Sadece sözleşmeli personelin ücretlerini"],
-      "answerIndex": 2
-    },
-    {
-      "id": "657-kapsam-03",
-      "sectionId": "law-657-section-kapsam-amac-ilkeler",
-      "prompt": "657 sayılı Kanunda öngörülen yönetmelikleri yürürlüğe koyma yetkisi kime aittir?",
-      "options": ["Türkiye Büyük Millet Meclisine", "Cumhurbaşkanına", "Danıştaya", "Yalnızca ilgili bakana"],
-      "answerIndex": 1
-    },
-    {
-      "id": "657-kapsam-04",
-      "sectionId": "law-657-section-kapsam-amac-ilkeler",
-      "prompt": "Sınıflandırma ilkesi, kamu hizmetleri ve bu hizmetlerde çalışan memurların hangi ölçüte göre sınıflara ayrılmasını ifade eder?",
-      "options": ["Yaş ve kıdeme göre", "Görevlerin gerektirdiği niteliklere ve mesleklere göre", "Sadece öğrenim durumuna göre", "İkamet ettikleri yere göre"],
-      "answerIndex": 1
-    },
-    {
-      "id": "657-istihdam-01",
-      "sectionId": "law-657-section-istihdam-sekilleri",
-      "prompt": "657 sayılı Kanuna göre kamu hizmetleri hangi istihdam şekilleri eliyle gördürülür?",
-      "options": ["Memurlar, sözleşmeli personel, geçici personel ve işçiler", "Yalnızca memurlar ve işçiler", "Memurlar, stajyerler ve gönüllüler", "Sadece sözleşmeli personel"],
+      "prompt": "657 sayılı Devlet Memurları Kanunu'nun temel ilkeleri hangisinde tam olarak sayılmıştır?",
+      "options": ["Kariyer, Liyakat, Sınıflandırma", "Eşitlik, Adalet, Tarafsızlık", "Sadakat, Hizmet, Kariyer", "Liyakat, Disiplin, Tarafsızlık"],
       "answerIndex": 0
     },
     {
-      "id": "657-istihdam-02",
+      "id": "657-q02",
       "sectionId": "law-657-section-istihdam-sekilleri",
-      "prompt": "657 sayılı Kanuna tabi kurumlar, dördüncü maddede yazılı istihdam şekilleri dışında personel çalıştırabilir mi?",
-      "options": ["Evet, kurum amirinin onayıyla", "Evet, bütçe imkânı varsa", "Hayır, çalıştıramazlar", "Yalnızca valilik izniyle"],
-      "answerIndex": 2
-    },
-    {
-      "id": "657-istihdam-03",
-      "sectionId": "law-657-section-istihdam-sekilleri",
-      "prompt": "Aşağıdakilerden hangisi 657 sayılı Kanunun dördüncü maddesinde sayılan istihdam şekillerinden biri değildir?",
-      "options": ["Memur", "Sözleşmeli personel", "Geçici personel", "Gönüllü danışman"],
+      "prompt": "657 sayılı Kanun'un 4. maddesine göre aşağıdakilerden hangisi temel istihdam şekillerinden biri değildir?",
+      "options": ["Memur", "Sözleşmeli Personel", "İşçi", "Geçici Personel"],
       "answerIndex": 3
     },
     {
-      "id": "657-istihdam-04",
-      "sectionId": "law-657-section-istihdam-sekilleri",
-      "prompt": "Kamu hizmetlerinin istihdam biçimlerini düzenleyen hüküm 657 sayılı Kanunun hangi maddesindedir?",
-      "options": ["Madde 2", "Madde 3", "Madde 4", "Madde 5"],
-      "answerIndex": 2
-    },
-    {
-      "id": "657-odev-01",
+      "id": "657-q03",
       "sectionId": "law-657-section-odevler-sorumluluklar",
-      "prompt": "657 sayılı Kanuna göre devlet memurları, Türkiye Cumhuriyeti Anayasasına ve kanunlarına karşı nasıl davranmak zorundadır?",
-      "options": ["Sadece görev saatlerinde uymakla", "Sadakatle bağlı kalmakla", "İdarenin takdirine göre", "Yazılı talimat verilirse"],
+      "prompt": "Devlet memurlarının siyasi partilere üye olmalarına ilişkin kural aşağıdakilerden hangisidir?",
+      "options": ["Adaylık sürecinde üye olabilirler", "Siyasi partilere üye olamazlar", "Kurum amirinin izniyle üye olabilirler", "Sadece yerel teşkilatlara üye olabilirler"],
       "answerIndex": 1
     },
     {
-      "id": "657-odev-02",
-      "sectionId": "law-657-section-odevler-sorumluluklar",
-      "prompt": "Devlet memurlarının siyasi partiye üye olmalarına ilişkin kural aşağıdakilerden hangisidir?",
-      "options": ["Görev sonrası serbesttir", "Kurum amirinin izniyle mümkündür", "Üye olamazlar", "Sadece yerel siyasi partilere üye olabilirler"],
-      "answerIndex": 2
+      "id": "657-q04",
+      "sectionId": "law-657-section-disiplin",
+      "prompt": "Aşağıdaki disiplin cezalarından hangisi 657 sayılı Kanunda düzenlenmemiştir?",
+      "options": ["Uyarma", "Kınama", "Aylıktan Kesme", "Sürgün Etme"],
+      "answerIndex": 3
     },
     {
-      "id": "657-odev-03",
-      "sectionId": "law-657-section-odevler-sorumluluklar",
-      "prompt": "657 sayılı Kanunun tarafsızlık ve devlete bağlılık hükmüne göre memurların siyasi ve ideolojik amaçlı beyan ve eylemleri için hangisi doğrudur?",
-      "options": ["Görev yerinde serbesttir", "Yalnızca yazılı izinle serbesttir", "Yasaktır", "Sadece sosyal medyada serbesttir"],
-      "answerIndex": 2
-    },
-    {
-      "id": "657-odev-04",
-      "sectionId": "law-657-section-odevler-sorumluluklar",
-      "prompt": "Devlet memurları görevlerini yerine getirirken dil, ırk, cinsiyet, siyasi düşünce, felsefi inanç, din ve mezhep gibi nedenlerle nasıl davranamaz?",
-      "options": ["Taraf tutamaz ve ayrım yapamaz", "Yalnızca yazılı emirle davranabilir", "Kurumun görüşünü açıklayamaz", "Vekâlet görevi alamaz"],
+      "id": "657-q05",
+      "sectionId": "law-657-section-disiplin",
+      "prompt": "Aylıktan kesme cezasında memurun brüt aylığından yapılacak kesinti oranı nedir?",
+      "options": ["1/30 - 1/8", "1/10 - 1/5", "1/2 - 1/4", "1/50 - 1/10"],
       "answerIndex": 0
+    },
+    {
+      "id": "657-q06",
+      "sectionId": "law-657-section-genel-haklar-yasaklar",
+      "prompt": "Devlet memurları için grev kararı alma ve greve katılma hakkı için aşağıdakilerden hangisi doğrudur?",
+      "options": ["Yasağadır", "Sendika kararıyla serbesttir", "Valilik izniyle yapılabilir", "Hafta sonları serbesttir"],
+      "answerIndex": 0
+    },
+    {
+      "id": "657-q07",
+      "sectionId": "law-657-section-genel-haklar-yasaklar",
+      "prompt": "Memura verilecek mazeret izni kapsamında, eşinin doğum yapması halinde kaç gün babalık izni verilir?",
+      "options": ["5 gün", "7 gün", "10 gün", "15 gün"],
+      "answerIndex": 2
+    },
+    {
+      "id": "657-q08",
+      "sectionId": "law-657-section-genel-haklar-yasaklar",
+      "prompt": "Hizmet süresi 1 yıldan 10 yıla kadar (10 yıl dahil) olan memurların yıllık izin süresi kaç gündür?",
+      "options": ["15 gün", "20 gün", "25 gün", "30 gün"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-q09",
+      "sectionId": "law-657-section-genel-haklar-yasaklar",
+      "prompt": "Hizmet süresi 10 yıldan fazla olan memurların yıllık izin süresi kaç gündür?",
+      "options": ["20 gün", "25 gün", "30 gün", "40 gün"],
+      "answerIndex": 2
+    },
+    {
+      "id": "657-q10",
+      "sectionId": "law-657-section-disiplin",
+      "prompt": "Uyarma ve kınama cezalarına karşı itiraz süresi, cezanın tebliğinden itibaren kaç gündür?",
+      "options": ["7 gün", "10 gün", "15 gün", "30 gün"],
+      "answerIndex": 0
+    },
+    {
+      "id": "657-q11",
+      "sectionId": "law-657-section-disiplin",
+      "prompt": "Disiplin cezalarına karşı yapılan itirazı inceleyen merci kararını kaç gün içinde vermek zorundadır?",
+      "options": ["15 gün", "30 gün", "45 gün", "60 gün"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-q12",
+      "sectionId": "law-657-section-odevler-sorumluluklar",
+      "prompt": "Devlet memurunun amirinden aldığı emri Anayasa veya kanuna aykırı bulması durumunda izleyeceği yol hangisidir?",
+      "options": ["Emri derhal uygular", "Emri yerine getirmez ve durumu o emri verene bildirir", "Polise haber verir", "İstifa eder"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-q13",
+      "sectionId": "law-657-section-odevler-sorumluluklar",
+      "prompt": "Anayasaya veya kanuna aykırı olan emri veren amir emrini yazılı olarak yenilerse memur ne yapar?",
+      "options": ["Yine de yapmaz", "Emri yerine getirir ve sorumluluk emri verene ait olur", "İlçe kaymakamına başvurur", "Sendikaya bildirir"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-q14",
+      "sectionId": "law-657-section-odevler-sorumluluklar",
+      "prompt": "Konusu suç teşkil eden bir emirle karşılaşan memurun tutumu ne olmalıdır?",
+      "options": ["Yazılı verilirse yerine getirir", "Hiçbir şekilde yerine getirmez", "Sözlü ise yapar", "Müdürüne danışır"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-q15",
+      "sectionId": "law-657-section-kapsam-amac-ilkeler",
+      "prompt": "Memurlar için yeterlik esas alınarak en yüksek derecelere kadar ilerleme imkanı sağlayan ilke hangisidir?",
+      "options": ["Sınıflandırma", "Kariyer", "Liyakat", "Tarafsızlık"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-q16",
+      "sectionId": "law-657-section-genel-haklar-yasaklar",
+      "prompt": "Memurlara verilecek hastalık izin süresi, kanser ve ağır hastalıklarda en fazla ne kadardır?",
+      "options": ["6 ay", "12 ay", "18 ay", "24 ay"],
+      "answerIndex": 2
+    },
+    {
+      "id": "657-q17",
+      "sectionId": "law-657-section-genel-haklar-yasaklar",
+      "prompt": "Aday memurluk süresi en az ve en çok ne kadardır?",
+      "options": ["6 ay - 1 yıl", "1 yıl - 2 yıl", "1 yıl - 3 yıl", "2 yıl - 3 yıl"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-q18",
+      "sectionId": "law-657-section-disiplin",
+      "prompt": "Memurluktan çıkarma cezası vermeye yetkili organ hangisidir?",
+      "options": ["Atamaya yetkili amir", "Yüksek Disiplin Kurulu", "İl Disiplin Kurulu", "Okul Müdürü"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-q19",
+      "sectionId": "law-657-section-genel-haklar-yasaklar",
+      "prompt": "Devlet memurları hediye alma yasağı kapsamında hangi kurum tarafından belirlenen ilkelere uymak zorundadır?",
+      "options": ["Kamu Görevlileri Etik Kurulu", "Devlet Personel Başkanlığı", "TBMM", "Cumhurbaşkanlığı"],
+      "answerIndex": 0
+    },
+    {
+      "id": "657-q20",
+      "sectionId": "law-657-section-disiplin",
+      "prompt": "Cezai kovuşturma yapılması disiplin cezası uygulanmasına engel oluşturur mu?",
+      "options": ["Evet, oluşturur", "Hayır, engel oluşturmaz", "Sadece ağır ceza mahkemelerinde oluşturur", "Hakim iznine bağlıdır"],
+      "answerIndex": 1
     }
   ]
 }
