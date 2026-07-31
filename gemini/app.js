@@ -965,8 +965,3 @@ bindRouteSheetEvents();
 
 render();
 loadCatalogue();
-```[cite: 1]
-
----
-
-### 2. style(11).css
