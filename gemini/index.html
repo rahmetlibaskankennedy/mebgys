@@ -3,133 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>V2</title>
-  <link rel="stylesheet" href="style.css">
+  <title>SınavRotası</title>
+  <link rel="stylesheet" href="style(11).css">
 </head>
 <body>
   <div class="phone">
-    
     <div class="scroll-area" id="scroll-area">
       <header class="app-header">
         <div class="statusbar"><span>9:41</span><span>▮▮▮  ◉  ▰</span></div>
         <div class="topbar">
           <div class="topbar-user">
-            <div class="avatar-wrap">
-              <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=120&h=120&fit=crop&crop=faces" alt="Ahmet">
-              <span class="avatar-dot"></span>
-            </div>
-            <div class="user-text">
-              <h1>Merhaba, <b>Ahmet!</b></h1>
-              <p>Bugün harika bir gün, hedeflerine<br>bir adım daha yaklaş!</p>
-            </div>
+            <div class="avatar-wrap"><img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=120&h=120&fit=crop&crop=faces" alt="Ahmet"><span class="avatar-dot"></span></div>
+            <div class="user-text"><h1>Merhaba, <b>Ahmet!</b></h1><p>Bugün harika bir gün, hedeflerine<br>bir adım daha yaklaş!</p></div>
           </div>
           <div class="topbar-actions">
-            <button class="round-btn" aria-label="Bildirimler">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              <b>3</b>
-            </button>
-            <button class="round-btn" aria-label="Ara" onclick="showToast('Arama yakında')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            </button>
+            <button class="round-btn" aria-label="Bildirimler" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><b>3</b></button>
+            <button class="round-btn" aria-label="Ara" type="button" onclick="showToast('Arama yakında')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
           </div>
         </div>
-        
         <div class="goal-card">
           <div class="goal-card-top">
-            
-            <div class="goal-ring-wrap">
-              <svg class="circular-chart" viewBox="0 0 36 36">
-                <path class="circle-bg"
-                  d="M18 2.0845
-                    a 15.9155 15.9155 0 0 1 0 31.831
-                    a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-                <path class="circle"
-                  stroke-dasharray="65, 100"
-                  d="M18 2.0845
-                    a 15.9155 15.9155 0 0 1 0 31.831
-                    a 15.9155 15.9155 0 0 1 0 -31.831"
-                />
-              </svg>
-              <div class="ring-content">
-                <span>%65</span>
-                <small>Günlük Hedef</small>
-              </div>
-            </div>
-
-            <div class="goal-copy">
-              <h3>Günlük Çalışma İlerlemesi</h3>
-              <p>Harika gidiyorsun! Hedefine ulaşmak için istikrarlı devam et.</p>
-              <div class="progress-wrap">
-                <div class="progress"><i style="width:65%"></i></div>
-                <div class="goal-line">
-                  <span class="count"><strong>65</strong> / 100 soru</span>
-                  <span class="deadline">Bitiş 22:30</span>
-                </div>
-              </div>
-            </div>
-            
+            <div class="goal-ring-wrap"><svg class="circular-chart" viewBox="0 0 36 36"><path class="circle-bg" d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"/><path class="circle" id="dailyGoalCircle" stroke-dasharray="0, 100" d="M18 2.0845a 15.9155 15.9155 0 0 1 0 31.831a 15.9155 15.9155 0 0 1 0 -31.831"/></svg><div class="ring-content"><span id="dailyGoalPercent">%0</span><small>Günlük Hedef</small></div></div>
+            <div class="goal-copy"><h3>Günlük Çalışma İlerlemesi</h3><p id="dailyGoalMessage">İlk soruyla günlük hedefini başlat.</p><div class="progress-wrap"><div class="progress"><i id="dailyProgressFill" style="width:0%"></i></div><div class="goal-line"><span class="count"><strong id="dailySolvedCount">0</strong> / <span id="dailyGoalTotal">20</span> soru</span><span class="deadline">Günlük hedef</span></div></div></div>
           </div>
         </div>
       </header>
-
       <main id="app" class="app-scroll"></main>
     </div>
-
     <nav class="bottom-nav" aria-label="Ana menü">
-      <button data-nav="home" class="active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Ana Sayfa</span>
-      </button>
-      <button data-nav="bank">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        <span>Denemeler</span>
-      </button>
-      <button data-nav="wrong">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M13 8h4"/><path d="M13 12h4"/><path d="M13 16h4"/></svg>
-        <span>Çalışmalarım</span>
-      </button>
-      <button data-nav="laws">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
-        <span>Kitaplık</span>
-      </button>
-      <button data-nav="profile">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profil</span>
-      </button>
+      <button data-nav="home" class="active" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Ana Sayfa</span></button>
+      <button data-nav="bank" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg><span>Denemeler</span></button>
+      <button data-nav="wrong" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M13 8h4"/><path d="M13 12h4"/><path d="M13 16h4"/></svg><span>Çalışmalarım</span></button>
+      <button data-nav="laws" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg><span>Kitaplık</span></button>
+      <button data-nav="profile" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profil</span></button>
     </nav>
-
-    <div id="toast" class="toast"></div>
-
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <div class="topic-backdrop" id="topicBackdrop"></div>
     <section class="topic-sheet" id="topicSheet" aria-hidden="true" aria-label="Konu başlıkları">
       <div class="topic-handle"></div>
-      <div class="topic-sheet-head">
-        <div class="topic-heading-wrap">
-          <div class="topic-heading-icon" id="topicHeadingIcon"></div>
-          <div>
-            <span class="topic-eyebrow" id="topicEyebrow">KONU KATEGORİSİ</span>
-            <h3 id="topicSheetTitle">Genel Mevzuat</h3>
-            <p id="topicSheetSubtitle">Çalışmak istediğin başlığı seç.</p>
-          </div>
-        </div>
-        <button class="topic-close" id="closeTopicSheet" type="button" aria-label="Konu panelini kapat">×</button>
-      </div>
+      <div class="topic-sheet-head"><div class="topic-heading-wrap"><div class="topic-heading-icon" id="topicHeadingIcon"></div><div><span class="topic-eyebrow" id="topicEyebrow">KONU KATEGORİSİ</span><h3 id="topicSheetTitle">Genel Mevzuat</h3><p id="topicSheetSubtitle">Çalışmak istediğin başlığı seç.</p></div></div><button class="topic-close" id="closeTopicSheet" type="button" aria-label="Konu panelini kapat">×</button></div>
       <div id="topicBreadcrumbWrap"></div>
-      <div class="topic-progress-card">
-        <div>
-          <span>Kategori ilerlemesi</span>
-          <strong id="topicProgressText">%0 tamamlandı</strong>
-        </div>
-        <div class="topic-progress-track">
-          <span id="topicProgressBar"></span>
-        </div>
-      </div>
+      <div class="topic-progress-card"><div><span>Kategori ilerlemesi</span><strong id="topicProgressText">Henüz çalışılmadı</strong></div><div class="topic-progress-track"><span id="topicProgressBar"></span></div></div>
       <div class="topic-list" id="topicList"></div>
     </section>
-
   </div>
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

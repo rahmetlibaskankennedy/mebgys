@@ -1,0 +1,90 @@
+{
+  "lawId": "law-657",
+  "title": "657 sayılı Devlet Memurları Kanunu — örnek soru seti",
+  "questions": [
+    {
+      "id": "657-kapsam-01",
+      "sectionId": "law-657-section-kapsam-amac-ilkeler",
+      "prompt": "657 sayılı Devlet Memurları Kanununun temel ilkeleri aşağıdakilerden hangisinde birlikte verilmiştir?",
+      "options": ["Eşitlik, adalet, tarafsızlık", "Sınıflandırma, kariyer, liyakat", "Gizlilik, temsil, verimlilik", "Yetki, hiyerarşi, denetim"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-kapsam-02",
+      "sectionId": "law-657-section-kapsam-amac-ilkeler",
+      "prompt": "657 sayılı Kanunun amacı aşağıdakilerden hangisini düzenlemektir?",
+      "options": ["Yalnızca memurların disiplin cezalarını", "Yalnızca kamu kurumlarının bütçesini", "Devlet memurlarının hizmet şartları ve özlük işlerini", "Sadece sözleşmeli personelin ücretlerini"],
+      "answerIndex": 2
+    },
+    {
+      "id": "657-kapsam-03",
+      "sectionId": "law-657-section-kapsam-amac-ilkeler",
+      "prompt": "657 sayılı Kanunda öngörülen yönetmelikleri yürürlüğe koyma yetkisi kime aittir?",
+      "options": ["Türkiye Büyük Millet Meclisine", "Cumhurbaşkanına", "Danıştaya", "Yalnızca ilgili bakana"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-kapsam-04",
+      "sectionId": "law-657-section-kapsam-amac-ilkeler",
+      "prompt": "Sınıflandırma ilkesi, kamu hizmetleri ve bu hizmetlerde çalışan memurların hangi ölçüte göre sınıflara ayrılmasını ifade eder?",
+      "options": ["Yaş ve kıdeme göre", "Görevlerin gerektirdiği niteliklere ve mesleklere göre", "Sadece öğrenim durumuna göre", "İkamet ettikleri yere göre"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-istihdam-01",
+      "sectionId": "law-657-section-istihdam-sekilleri",
+      "prompt": "657 sayılı Kanuna göre kamu hizmetleri hangi istihdam şekilleri eliyle gördürülür?",
+      "options": ["Memurlar, sözleşmeli personel, geçici personel ve işçiler", "Yalnızca memurlar ve işçiler", "Memurlar, stajyerler ve gönüllüler", "Sadece sözleşmeli personel"],
+      "answerIndex": 0
+    },
+    {
+      "id": "657-istihdam-02",
+      "sectionId": "law-657-section-istihdam-sekilleri",
+      "prompt": "657 sayılı Kanuna tabi kurumlar, dördüncü maddede yazılı istihdam şekilleri dışında personel çalıştırabilir mi?",
+      "options": ["Evet, kurum amirinin onayıyla", "Evet, bütçe imkânı varsa", "Hayır, çalıştıramazlar", "Yalnızca valilik izniyle"],
+      "answerIndex": 2
+    },
+    {
+      "id": "657-istihdam-03",
+      "sectionId": "law-657-section-istihdam-sekilleri",
+      "prompt": "Aşağıdakilerden hangisi 657 sayılı Kanunun dördüncü maddesinde sayılan istihdam şekillerinden biri değildir?",
+      "options": ["Memur", "Sözleşmeli personel", "Geçici personel", "Gönüllü danışman"],
+      "answerIndex": 3
+    },
+    {
+      "id": "657-istihdam-04",
+      "sectionId": "law-657-section-istihdam-sekilleri",
+      "prompt": "Kamu hizmetlerinin istihdam biçimlerini düzenleyen hüküm 657 sayılı Kanunun hangi maddesindedir?",
+      "options": ["Madde 2", "Madde 3", "Madde 4", "Madde 5"],
+      "answerIndex": 2
+    },
+    {
+      "id": "657-odev-01",
+      "sectionId": "law-657-section-odevler-sorumluluklar",
+      "prompt": "657 sayılı Kanuna göre devlet memurları, Türkiye Cumhuriyeti Anayasasına ve kanunlarına karşı nasıl davranmak zorundadır?",
+      "options": ["Sadece görev saatlerinde uymakla", "Sadakatle bağlı kalmakla", "İdarenin takdirine göre", "Yazılı talimat verilirse"],
+      "answerIndex": 1
+    },
+    {
+      "id": "657-odev-02",
+      "sectionId": "law-657-section-odevler-sorumluluklar",
+      "prompt": "Devlet memurlarının siyasi partiye üye olmalarına ilişkin kural aşağıdakilerden hangisidir?",
+      "options": ["Görev sonrası serbesttir", "Kurum amirinin izniyle mümkündür", "Üye olamazlar", "Sadece yerel siyasi partilere üye olabilirler"],
+      "answerIndex": 2
+    },
+    {
+      "id": "657-odev-03",
+      "sectionId": "law-657-section-odevler-sorumluluklar",
+      "prompt": "657 sayılı Kanunun tarafsızlık ve devlete bağlılık hükmüne göre memurların siyasi ve ideolojik amaçlı beyan ve eylemleri için hangisi doğrudur?",
+      "options": ["Görev yerinde serbesttir", "Yalnızca yazılı izinle serbesttir", "Yasaktır", "Sadece sosyal medyada serbesttir"],
+      "answerIndex": 2
+    },
+    {
+      "id": "657-odev-04",
+      "sectionId": "law-657-section-odevler-sorumluluklar",
+      "prompt": "Devlet memurları görevlerini yerine getirirken dil, ırk, cinsiyet, siyasi düşünce, felsefi inanç, din ve mezhep gibi nedenlerle nasıl davranamaz?",
+      "options": ["Taraf tutamaz ve ayrım yapamaz", "Yalnızca yazılı emirle davranabilir", "Kurumun görüşünü açıklayamaz", "Vekâlet görevi alamaz"],
+      "answerIndex": 0
+    }
+  ]
+}

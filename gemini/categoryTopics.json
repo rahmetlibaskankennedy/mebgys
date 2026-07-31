@@ -21,7 +21,132 @@
     "progress": 20,
     "topics": [
       "T.C. Anayasası",
-      "657 sayılı Devlet Memurları Kanunu",
+      {
+        "id": "law-657",
+        "type": "document",
+        "documentType": "law",
+        "documentNumber": "657",
+        "title": "657 sayılı Devlet Memurları Kanunu",
+        "contentStatus": "sample",
+        "articleCount": 7,
+        "questionCount": 12,
+        "questionFile": "questions-657.json",
+        "meta": {
+          "scope": "Birinci Kısım seçili başlangıç maddeleri",
+          "note": "Demo için 7 madde ve 12 soruluk örnek içerik seti"
+        },
+        "children": [
+          {
+            "id": "law-657-section-kapsam-amac-ilkeler",
+            "type": "section",
+            "title": "Kapsam, Amaç ve Temel İlkeler",
+            "articleRange": "Madde 1 – Madde 3",
+            "children": [
+              {
+                "id": "law-657-madde-1",
+                "type": "article",
+                "articleLabel": "Madde 1",
+                "articleNumber": "1",
+                "title": "Kanunun kapsamı",
+                "summary": "Kanun; genel ve katma bütçeli kurumlar, mahallî idareler ve kanunda sayılan bağlı kuruluşlarda çalışan devlet memurları hakkında uygulanır.",
+                "keyPoints": [
+                  "Kapsam, devlet memurlarını ve kanunda sayılan kamu kurumlarını esas alır.",
+                  "Kamu görevlilerinin tamamı değil, kanunun kapsamındaki memurlar bu hükümlere tabidir."
+                ]
+              },
+              {
+                "id": "law-657-madde-2",
+                "type": "article",
+                "articleLabel": "Madde 2",
+                "articleNumber": "2",
+                "title": "Kanunun amacı",
+                "summary": "Kanun; devlet memurlarının hizmet şartlarını, niteliklerini, atanma ve yetiştirilmelerini, ilerleme ve yükselmelerini, ödevlerini, haklarını, yüküm ve sorumluluklarını ve özlük işlerini düzenler.",
+                "keyPoints": [
+                  "Amaç maddesi, memurun göreve girişinden özlük haklarına kadar geniş bir alanı kapsar.",
+                  "Kanunda öngörülen yönetmelikler Cumhurbaşkanınca yürürlüğe konulur."
+                ]
+              },
+              {
+                "id": "law-657-madde-3",
+                "type": "article",
+                "articleLabel": "Madde 3",
+                "articleNumber": "3",
+                "title": "Temel ilkeler",
+                "summary": "Devlet memurluğunun temel ilkeleri sınıflandırma, kariyer ve liyakattir.",
+                "keyPoints": [
+                  "Sınıflandırma: görevlerin gerektirdiği nitelik ve mesleğe göre sınıflara ayırma.",
+                  "Kariyer: memurlara sınıfları içinde ilerleme imkânı sağlama.",
+                  "Liyakat: hizmete giriş ve ilerlemede eşit imkânlarla yeterlik esasını gözetme."
+                ]
+              }
+            ]
+          },
+          {
+            "id": "law-657-section-istihdam-sekilleri",
+            "type": "section",
+            "title": "İstihdam Şekilleri",
+            "articleRange": "Madde 4 – Madde 5",
+            "children": [
+              {
+                "id": "law-657-madde-4",
+                "type": "article",
+                "articleLabel": "Madde 4",
+                "articleNumber": "4",
+                "title": "Kamu hizmetlerinin gördürülmesi",
+                "summary": "Kamu hizmetleri; memurlar, sözleşmeli personel, geçici personel ve işçiler eliyle gördürülür.",
+                "keyPoints": [
+                  "Madde 4, dört temel istihdam şeklini birlikte sayar.",
+                  "Sorularda istihdam şekillerinden biri olmayan seçenek sık kullanılır."
+                ]
+              },
+              {
+                "id": "law-657-madde-5",
+                "type": "article",
+                "articleLabel": "Madde 5",
+                "articleNumber": "5",
+                "title": "İstihdam şekilleri dışında personel çalıştırılamaması",
+                "summary": "Kanuna tabi kurumlar, dördüncü maddede yazılı dört istihdam şekli dışında personel çalıştıramazlar.",
+                "keyPoints": [
+                  "Madde 5, Madde 4'teki dört istihdam biçimiyle doğrudan bağlantılıdır.",
+                  "Kurum amirinin takdiri, dördüncü madde dışındaki bir istihdam türüne tek başına dayanak oluşturmaz."
+                ]
+              }
+            ]
+          },
+          {
+            "id": "law-657-section-odevler-sorumluluklar",
+            "type": "section",
+            "title": "Ödevler ve Sorumluluklar",
+            "articleRange": "Madde 6 – Madde 7",
+            "children": [
+              {
+                "id": "law-657-madde-6",
+                "type": "article",
+                "articleLabel": "Madde 6",
+                "articleNumber": "6",
+                "title": "Sadakat",
+                "summary": "Devlet memurları Türkiye Cumhuriyeti Anayasasına ve kanunlarına sadakatle bağlı kalmak ve milletin hizmetinde bu kanunları sadakatle uygulamak zorundadır.",
+                "keyPoints": [
+                  "Sadakat yükümlülüğü hem Anayasaya hem kanunlara bağlılığı içerir.",
+                  "Yükümlülük yalnızca görev saatleriyle sınırlı bir kural olarak düzenlenmemiştir."
+                ]
+              },
+              {
+                "id": "law-657-madde-7",
+                "type": "article",
+                "articleLabel": "Madde 7",
+                "articleNumber": "7",
+                "title": "Tarafsızlık ve devlete bağlılık",
+                "summary": "Devlet memurları siyasi partiye üye olamaz; görevlerini yerine getirirken taraf tutamaz ve ayrım yapamazlar.",
+                "keyPoints": [
+                  "Siyasi ve ideolojik amaçlı beyan ve eylemler ile bu eylemlere katılma yasaktır.",
+                  "Dil, ırk, cinsiyet, siyasi düşünce, felsefi inanç, din ve mezhep gibi nedenlerle ayrım yapılamaz."
+                ]
+              }
+            ]
+          }
+        ]
+      },
       "4483 sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması",
       "5442 sayılı İl İdaresi Kanunu",
       "4982 sayılı Bilgi Edinme Hakkı Kanunu",
@@ -42,7 +167,9 @@
         "documentType": "law",
         "documentNumber": "222",
         "title": "222 sayılı İlköğretim ve Eğitim Kanunu",
-        "questionCount": 0,
+        "contentStatus": "active",
+        "questionCount": 61,
+        "questionFile": "questions-222(1).json",
         "articleCount": 84,
         "progress": 0,
         "meta": {
