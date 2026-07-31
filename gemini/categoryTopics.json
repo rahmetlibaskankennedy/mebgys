@@ -64,34 +64,24 @@
         "questionFile": "questions-657.json",
         "children": [
           {
-            "id": "law-657-section-kapsam-amac-ilkeler",
+            "id": "law-657-s1",
             "type": "section",
-            "title": "Kapsam, Amaç ve Temel İlkeler",
-            "articleRange": "Madde 1 – 3"
+            "title": "Kapsam, Amaç ve Temel İlkeler"
           },
           {
-            "id": "law-657-section-istihdam-sekilleri",
+            "id": "law-657-s2",
             "type": "section",
-            "title": "İstihdam Şekilleri",
-            "articleRange": "Madde 4 – 5"
+            "title": "İstihdam Şekilleri"
           },
           {
-            "id": "law-657-section-odevler-sorumluluklar",
+            "id": "law-657-s3",
             "type": "section",
-            "title": "Ödevler ve Sorumluluklar",
-            "articleRange": "Madde 6 – 16"
+            "title": "Ödevler ve Sorumluluklar"
           },
           {
-            "id": "law-657-section-genel-haklar-yasaklar",
+            "id": "law-657-s4",
             "type": "section",
-            "title": "Genel Haklar ve Yasaklar",
-            "articleRange": "Madde 17 – 31"
-          },
-          {
-            "id": "law-657-section-disiplin",
-            "type": "section",
-            "title": "Disiplin Cezaları ve Soruşturma",
-            "articleRange": "Madde 124 – 136"
+            "title": "Disiplin Cezaları ve Soruşturma"
           }
         ]
       },
@@ -154,28 +144,19 @@
         "questionFile": "questions-222.json",
         "children": [
           {
-            "id": "law-222-section-genel-esaslar",
+            "id": "law-222-s1",
             "type": "section",
-            "title": "Genel Esaslar",
-            "articleRange": "Madde 1 – 5"
+            "title": "Genel Esaslar"
           },
           {
-            "id": "law-222-section-te-kilat",
+            "id": "law-222-s2",
             "type": "section",
-            "title": "Teşkilat ve İlde İlköğretim Görevlileri",
-            "articleRange": "Madde 6 – 25"
+            "title": "Teşkilat ve İlköğretim Görevlileri"
           },
           {
-            "id": "law-222-section-kay-t-ve-kabul",
+            "id": "law-222-s3",
             "type": "section",
-            "title": "Kayıt, Kabul ve Okula Devam",
-            "articleRange": "Madde 46 – 59"
-          },
-          {
-            "id": "law-222-section-gelir-gider-ve-planlama",
-            "type": "section",
-            "title": "Gelir, Giderler ve Planlama",
-            "articleRange": "Madde 76 – 84"
+            "title": "Kayıt, Kabul ve Okula Devam"
           }
         ]
       },
