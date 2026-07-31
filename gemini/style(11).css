@@ -502,3 +502,45 @@ body{background:var(--bg)}
 .profile-notice{padding:12px;margin-top:10px;border-radius:12px;background:#edf3fb;color:var(--navy2);font-size:9.5px;line-height:1.5}
 .quiz-modern-badge{max-width:100%;line-height:1.35}
 @media(max-width:370px){.practice-card{grid-template-columns:38px 1fr}.practice-card .reader-primary{grid-column:2;justify-self:start}.document-flow .document-mode-grid{grid-template-columns:1fr}.topic-sheet{padding-left:14px;padding-right:14px}}
+
+/* BUGÜNKÜ ROTA PANELİ (bottom-sheet) */
+.bottom-sheet{
+  position:absolute; bottom:0; left:0; right:0;
+  background:#fff; border-radius:28px 28px 0 0;
+  padding:20px 18px;
+  transform:translateY(100%);
+  transition:0.35s cubic-bezier(0.3, 0.9, 0.4, 1);
+  z-index:110; max-height:88%; overflow-y:auto;
+  box-shadow:0 -15px 30px rgba(0,0,0,0.15);
+}
+.bottom-sheet.open{ transform:translateY(0); }
+
+.sheet-handle{ width:40px; height:5px; background:#d0d6e0; border-radius:10px; margin:0 auto 16px; }
+
+.sheet-head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+.sheet-title{ display:flex; align-items:center; gap:8px; font-size:16px; margin:0 0 4px; color:var(--navy); }
+.sheet-title-icon{ width:20px; height:20px; color:var(--red); flex-shrink:0; }
+.sheet-head p{ margin:0; font-size:10.5px; color:var(--muted); line-height:1.4; }
+.sheet-close{ width:30px; height:30px; border-radius:50%; border:0; background:#f0f4f8; color:var(--navy); font-size:16px; display:grid; place-items:center; cursor:pointer; flex-shrink:0; }
+
+.sheet-section{ margin-bottom:18px; }
+.sheet-label{ display:block; font-size:9px; font-weight:800; letter-spacing:1px; color:var(--red); margin-bottom:10px; text-transform:uppercase; }
+
+.mode-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.mode-option{ display:flex; flex-direction:column; gap:4px; text-align:left; padding:12px; border:1.5px solid var(--line); border-radius:13px; background:#fff; cursor:pointer; }
+.mode-option strong{ display:flex; align-items:center; gap:6px; font-size:11px; color:var(--navy); font-weight:700; }
+.mode-option .option-icon{ width:15px; height:15px; color:var(--navy2); flex-shrink:0; }
+.mode-option > span{ font-size:9px; color:var(--muted); line-height:1.3; }
+.mode-option.selected{ border-color:var(--navy); background:#f7faff; }
+.mode-option.selected .option-icon{ color:var(--navy); }
+
+.choice-row{ display:flex; gap:8px; }
+.choice{ flex:1; padding:10px; border:1.5px solid var(--line); border-radius:11px; background:#fff; font-size:12px; font-weight:700; color:var(--navy2); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+.choice-icon{ width:14px; height:14px; }
+.choice.selected{ border-color:var(--navy); background:var(--navy); color:#fff; }
+
+.sheet-summary{ display:flex; justify-content:space-between; align-items:center; padding:12px; background:#f8f9fc; border:1px solid var(--line); border-radius:14px; margin-bottom:16px; }
+.sheet-summary span{ display:block; font-size:8.5px; color:var(--muted); font-weight:700; letter-spacing:.4px; margin-bottom:3px; text-transform:uppercase; }
+.sheet-summary strong{ font-size:13px; color:var(--navy); }
+
+.sheet-primary{ width:100%; border:0; border-radius:14px; padding:15px; background:var(--navy); color:#fff; font-size:14px; font-weight:700; cursor:pointer; }
