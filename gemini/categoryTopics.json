@@ -29,7 +29,7 @@
       {
         "id": "topic-yurttaslik",
         "type": "topic",
-        "title": "Yurttaşlık Bilgisi ve Demokrasi",
+        "title": "Yurttaşlık Bilgisi ve Temel Hukuk",
         "questionCount": 20,
         "questionFile": "questions-yurttaslik.json"
       },
@@ -49,9 +49,9 @@
     "iconClass": "",
     "topics": [
       {
-        "id": "law-anayasasi",
+        "id": "law-anayasa",
         "type": "document",
-        "title": "T.C. Anayasası (Eğitme İlişkin Hükümler)",
+        "title": "T.C. Anayasası",
         "questionCount": 20,
         "questionFile": "questions-anayasa.json"
       },
@@ -98,7 +98,7 @@
       {
         "id": "law-4483",
         "type": "document",
-        "title": "4483 sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması",
+        "title": "4483 sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması Hakkında Kanun",
         "questionCount": 20,
         "questionFile": "questions-4483.json"
       },
@@ -134,7 +134,7 @@
   },
   "meb-legislation": {
     "title": "MEB Mevzuatı",
-    "subtitle": "Milli Eğitim Bakanlığı Özel Mevzuatı ve Düzenlemeleri",
+    "subtitle": "Millî Eğitim Bakanlığı Özel Mevzuatı ve Düzenlemeleri",
     "icon": "schoolbook",
     "iconClass": "red",
     "topics": [
