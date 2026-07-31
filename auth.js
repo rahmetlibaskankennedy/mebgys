@@ -60,6 +60,11 @@ signupForm.addEventListener('submit', async event => {
   const fullName = document.getElementById('signupName').value.trim();
   const email = document.getElementById('signupEmail').value.trim();
   const password = document.getElementById('signupPassword').value;
+  const termsAccepted = document.getElementById('signupTerms')?.checked;
+  if (!termsAccepted) {
+    signupError.textContent = 'Devam etmek için Kullanım Koşulları ve Gizlilik Politikası\'nı kabul etmelisin.';
+    return;
+  }
   const submitButton = document.getElementById('signupSubmit');
   setFormBusy(submitButton, true, 'Kayıt Ol');
   const { data, error } = await supabaseClient.auth.signUp({
@@ -84,6 +89,38 @@ signupForm.addEventListener('submit', async event => {
 window.signOut = async function signOut() {
   await supabaseClient.auth.signOut();
 };
+
+// Şifre alanlarındaki göz ikonuna tıklayınca şifreyi göster/gizle.
+document.querySelectorAll('.eye[data-toggle-for]').forEach(icon => {
+  icon.addEventListener('click', () => {
+    const input = document.getElementById(icon.dataset.toggleFor);
+    if (!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+  });
+});
+
+// "Şifremi Unuttum?" — giriş ekranındaki e-posta alanına göre sıfırlama bağlantısı gönderir.
+document.getElementById('forgotPasswordLink')?.addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) {
+    loginError.textContent = 'Sıfırlama bağlantısı gönderebilmemiz için önce e-postanı yaz.';
+    return;
+  }
+  loginError.textContent = '';
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+  loginError.textContent = error
+    ? friendlyAuthError(error.message)
+    : '';
+  if (!error) alert(`${email} adresine bir şifre sıfırlama bağlantısı gönderdik.`);
+});
+
+// Sosyal giriş butonları: Supabase projesinde ilgili sağlayıcı (Google/Apple/Microsoft)
+// henüz yapılandırılmadığı için şimdilik bilgilendirme veriyor.
+document.querySelectorAll('.social-box[data-provider]').forEach(button => {
+  button.addEventListener('click', () => {
+    alert('Bu giriş yöntemi yakında eklenecek. Şimdilik e-posta ile devam edebilirsin.');
+  });
+});
 
 function showAuthScreen() {
   authPhone.hidden = false;
