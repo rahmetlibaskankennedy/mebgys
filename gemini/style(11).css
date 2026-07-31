@@ -208,7 +208,7 @@ body{background:var(--bg)}
 /* Üst Lacivert Alan */
 .quiz-premium-header {
   background: #0B1939;
-  padding: 16px 20px 42px; /* İçerik kartının binebilmesi için alttan geniş boşluk */
+  padding: 14px 20px 34px;
   color: #fff;
 }
 
@@ -306,18 +306,20 @@ body{background:var(--bg)}
 .quiz-premium-card {
   background: #fff;
   border-radius: 24px 24px 0 0;
-  padding: 24px 20px;
+  padding: 18px 18px 16px;
   position: absolute;
   top: -24px; left: 0; right: 0; bottom: 0;
   overflow-y: auto;
   box-shadow: 0 -4px 24px rgba(0,0,0,0.1);
+  scrollbar-width: none;
 }
+.quiz-premium-card::-webkit-scrollbar { display: none; }
 
 .quiz-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 .quiz-badge {
   background: #FFF0F1;
@@ -348,11 +350,11 @@ body{background:var(--bg)}
 .action-btn svg { width: 22px; height: 22px; stroke-width: 1.5; }
 
 .quiz-question-text {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   color: #10213F;
   line-height: 1.5;
-  margin: 0 0 24px;
+  margin: 0 0 16px;
   letter-spacing: -0.2px;
 }
 
@@ -360,12 +362,12 @@ body{background:var(--bg)}
 .quiz-options {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 .quiz-option {
   display: flex;
   align-items: center;
-  padding: 14px 16px;
+  padding: 12px 14px;
   border: 1.5px solid #E5E9F0;
   border-radius: 14px;
   background: #fff;
@@ -395,25 +397,24 @@ body{background:var(--bg)}
 }
 
 /* Görseldeki Seçili/Doğru Şık Stili */
-.quiz-option.correct {
-  border-color: #E31E24;
-  background: #FFF8F8;
+.quiz-option.selected {
+  border-color: #10213F;
+  background: #F7F9FC;
 }
-.quiz-option.correct .quiz-option-letter {
-  background: #E31E24;
-  border-color: #E31E24;
+.quiz-option.selected .quiz-option-letter {
+  background: #10213F;
+  border-color: #10213F;
   color: #fff;
 }
 .status-icon {
   width: 22px;
   height: 22px;
-  color: #E31E24;
+  color: #10213F;
   margin-left: 10px;
 }
-/* Yanlış Seçim (Opak gri border) */
-.quiz-option.wrong {
-  border-color: #D0D6E0;
-  background: #FAFBFC;
+.quiz-option:disabled {
+  cursor: default;
+  opacity: 0.9;
 }
 
 /* İpucu Kartı */
@@ -424,7 +425,7 @@ body{background:var(--bg)}
   padding: 14px 16px;
   border: 1.5px solid #E5E9F0;
   border-radius: 14px;
-  margin-top: 24px;
+  margin-top: 16px;
   background: #FAFBFC;
 }
 .hint-icon {
