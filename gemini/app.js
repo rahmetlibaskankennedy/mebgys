@@ -3,6 +3,7 @@ const CATALOGUE_URL = 'categoryTopics.json';
 const DAILY_GOAL = 20;
 const QUESTION_TIME_LIMIT = 45;
 
+// Uygulama Durumu (State)
 const state = {
   view: 'home',
   catalogue: null,
@@ -13,17 +14,20 @@ const state = {
   quiz: null
 };
 
+// Rota Ayarları
 const routeSettings = {
   mode: 'Sana Özel Karma',
   questions: 20,
   time: 'Süreli'
 };
 
+// DOM Elemanları
 const app = document.getElementById('app');
 const scrollArea = document.getElementById('scroll-area');
 const toast = document.getElementById('toast');
 const navButtons = [...document.querySelectorAll('[data-nav]')];
 
+// Sheet Elemanları
 const topicSheet = document.getElementById('topicSheet');
 const topicBackdrop = document.getElementById('topicBackdrop');
 const closeTopicSheetButton = document.getElementById('closeTopicSheet');
@@ -36,12 +40,14 @@ const topicProgressText = document.getElementById('topicProgressText');
 const topicProgressBar = document.getElementById('topicProgressBar');
 
 const routeSheet = document.getElementById('routeSheet');
+const routeBackdrop = document.getElementById('routeBackdrop');
 const closeRouteSheetButton = document.getElementById('closeRouteSheet');
 const startRouteButton = document.getElementById('startRouteButton');
 
 let timerInterval = null;
 let progress = loadProgress();
 
+// SVG İkon Kütüphanesi
 const iconPaths = {
   scale: '<path d="M12 3v18"/><path d="M6 6h12"/><path d="m6 6-4 7h8L6 6Z"/><path d="m18 6-4 7h8l-4-7Z"/><path d="M8 21h8"/>',
   landmark: '<path d="m3 10 9-6 9 6"/><path d="M5 10h14"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/><path d="M4 18h16M3 22h18"/>',
@@ -73,6 +79,7 @@ function escapeHtml(value = '') {
 }
 
 function showToast(message) {
+  if (!toast) return;
   toast.textContent = message;
   toast.classList.add('show');
   window.clearTimeout(showToast.timeout);
@@ -83,6 +90,7 @@ function haptic(duration = 18) {
   if ('vibrate' in navigator) navigator.vibrate(duration);
 }
 
+// İlerleme ve Veri Saklama
 function defaultProgress() {
   return {
     answers: 0,
@@ -161,12 +169,55 @@ function updateHeader() {
   const goalSubtext = document.querySelector('.daily-goal-subtext');
   const streakText = document.querySelector('.streak-text');
 
-  if (circlePath) circlePath.setAttribute('stroke-dasharray', `${stats.dailyPercentage}, 100`);
-  if (percentageText) percentageText.textContent = `${stats.dailyPercentage}%`;
-  if (goalSubtext) goalSubtext.textContent = `${stats.todayAnswers}/${DAILY_GOAL} Soru`;
-  if (streakText) streakText.textContent = `${stats.streak} Gün`;
+  if (circlePath) {
+    circlePath.setAttribute('stroke-dasharray', `${stats.dailyPercentage}, 100`);
+  }
+  if (percentageText) {
+    percentageText.textContent = `${stats.dailyPercentage}%`;
+  }
+  if (goalSubtext) {
+    goalSubtext.textContent = `${stats.todayAnswers} / ${DAILY_GOAL} Soru`;
+  }
+  if (streakText) {
+    streakText.textContent = `${stats.streak} Gün`;
+  }
 }
 
+// Katalog ve İçerik Yönetimi
+async function loadCatalogue() {
+  try {
+    const response = await fetch(CATALOGUE_URL);
+    if (!response.ok) throw new Error(`Katalog yüklenemedi: HTTP ${response.status}`);
+    state.catalogue = await response.json();
+    state.catalogueError = '';
+  } catch (err) {
+    state.catalogueError = err.message || 'Katalog yüklenirken hata oluştu.';
+  }
+  render();
+}
+
+function getCategories() {
+  return state.catalogue ? Object.entries(state.catalogue) : [];
+}
+
+function getCategory(categoryKey) {
+  return state.catalogue && state.catalogue[categoryKey];
+}
+
+function getCategoryItems(categoryKey) {
+  const cat = getCategory(categoryKey);
+  return cat ? cat.topics || [] : [];
+}
+
+function getActiveDocuments() {
+  return getCategories().flatMap(([categoryKey]) =>
+    getCategoryItems(categoryKey)
+      .filter(item => item.questionFile)
+      .map(item => ({ item, categoryKey }))
+  );
+}
+
+// Navigasyon
 function setNav(name) {
   navButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.nav === name));
 }
@@ -175,187 +226,187 @@ window.go = function go(view) {
   state.view = view;
   setNav(view);
   render();
-  scrollArea.scrollTop = 0;
+  if (scrollArea) scrollArea.scrollTop = 0;
 };
 
-function getCategories() {
-  return state.catalogue ? Object.entries(state.catalogue) : [];
+// Görünüm Şablonları (Views)
+function loadingView() {
+  return `
+    <section class="screen neutral-screen">
+      <div class="empty-state">
+        <span class="empty-state-icon">${svg('refresh')}</span>
+        <h3>İçerikler Yükleniyor</h3>
+        <p>Müfredat ve testler hazırlanıyor...</p>
+      </div>
+    </section>
+  `;
 }
 
-function getCategory(key) {
-  return state.catalogue && state.catalogue[key];
+function errorView() {
+  return `
+    <section class="screen neutral-screen">
+      <div class="empty-state empty-state-error">
+        <span class="empty-state-icon">${svg('book')}</span>
+        <h3>Bağlantı Hatası</h3>
+        <p>${escapeHtml(state.catalogueError || 'Katalog verisi yüklenemedi.')}</p>
+        <button class="reader-primary" id="retryLoadButton" type="button">Tekrar Dene</button>
+      </div>
+    </section>
+  `;
 }
 
-function getCategoryItems(key) {
-  const cat = getCategory(key);
-  return cat ? cat.topics || [] : [];
-}
-
-function categoryCardMeta(key) {
-  const presets = {
-    'general-legislation': { title: 'Genel Mevzuat', description: 'Anayasa, 657, 4483 ve kamu yönetimi kanunları', icon: 'scale', iconClass: '' },
-    'general-culture': { title: 'Türkçe ve Genel Kültür', description: 'Dilbilgisi, Tarih, Coğrafya, Yurttaşlık ve Güncel', icon: 'landmark', iconClass: 'blue' },
-    'meb-legislation': { title: 'MEB Mevzuatı', description: '1739, 222, CBK 1 ve MEB yönetmelikleri', icon: 'schoolbook', iconClass: 'red' }
-  };
-  return presets[key] || { title: getCategory(key)?.title || 'Kategori', description: getCategory(key)?.subtitle || '', icon: 'book', iconClass: '' };
-}
-
-function getActiveDocuments() {
-  return getCategories().flatMap(([catKey]) =>
-    getCategoryItems(catKey)
-      .filter(item => item.questionFile)
-      .map(item => ({ item, catKey }))
-  );
-}
-
-async function fetchQuestionBank(questionFile) {
-  if (state.questionBanks.has(questionFile)) {
-    return state.questionBanks.get(questionFile);
-  }
-  try {
-    const response = await fetch(questionFile);
-    if (!response.ok) throw new Error('Soru dosyası yüklenemedi.');
-    const data = await response.json();
-    state.questionBanks.set(questionFile, data);
-    return data;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
-
-async function preloadAllQuestionBanks() {
-  const activeDocs = getActiveDocuments();
-  for (const doc of activeDocs) {
-    if (doc.item.questionFile) {
-      await fetchQuestionBank(doc.item.questionFile);
-    }
-  }
+function statCard(icon, colorClass, number, label, target) {
+  return `
+    <button class="stat stat-button" data-stat-target="${target}" type="button">
+      <span class="stat-icon ${colorClass}">${svg(icon)}</span>
+      <strong>${number}</strong>
+      <span>${label}</span>
+    </button>
+  `;
 }
 
 function homeView() {
-  if (!state.catalogue) {
-    return state.catalogueError ? errorView() : loadingView();
-  }
-  const stats = getStats();
-  const categories = getCategories().map(([key]) => {
-    const meta = categoryCardMeta(key);
-    const topics = getCategoryItems(key);
-    const activeCount = topics.filter(t => t.questionFile).length;
-    const metaText = `${topics.length} Başlık • ${activeCount} Aktif Soru Paketi`;
+  if (!state.catalogue) return state.catalogueError ? errorView() : loadingView();
 
-    return `<article class="category" role="button" tabindex="0" data-open-category="${key}">
-      <div class="cat-icon ${meta.iconClass}">${svg(meta.icon)}</div>
-      <div class="cat-copy">
-        <h4>${escapeHtml(meta.title)}</h4>
-        <p>${escapeHtml(meta.description)}</p>
-        <small>${metaText}</small>
-      </div>
-      <div class="chevron">${svg('arrow')}</div>
-    </article>`;
+  const stats = getStats();
+  const categories = getCategories().map(([key, cat]) => {
+    const topics = cat.topics || [];
+    const activePackages = topics.filter(t => t.questionFile).length;
+    const metaText = activePackages > 0
+      ? `${topics.length} Konu • ${activePackages} Aktif Test`
+      : `${topics.length} Konu Hazırlanıyor`;
+
+    return `
+      <article class="category" role="button" tabindex="0" data-open-category="${key}">
+        <div class="cat-icon ${cat.iconClass || ''}">${svg(cat.icon || 'book')}</div>
+        <div class="cat-copy">
+          <h4>${escapeHtml(cat.title)}</h4>
+          <p>${escapeHtml(cat.subtitle || '')}</p>
+          <small>${metaText}</small>
+        </div>
+        <div class="chevron">${svg('arrow')}</div>
+      </article>
+    `;
   }).join('');
 
-  return `<section class="screen home-screen">
-    <div class="stats">
-      ${statCard('book', '', stats.completedSections, 'Tamamlanan<br>Konu', 'studies')}
-      ${statCard('target', 'accent', stats.solvedQuestions, 'Çözülen<br>Soru', 'studies')}
-      ${statCard('trophy', 'amber', stats.completedMocks, 'Tamamlanan<br>Deneme', 'bank')}
-      ${statCard('flame', 'accent', stats.streak, 'Günlük<br>Seri', 'studies')}
-    </div>
-    <div class="section-head"><h3>Test Kategorileri</h3></div>
-    <section class="categories">${categories}</section>
-    
-    <button class="cta-btn" id="openRouteSheetButton" type="button">
-      <div class="cta-icon">${svg('target')}</div>
-      <div><strong>Bugünkü Rota</strong><span>Performansına göre özelleştirilmiş çalışmayı başlat</span></div>
-      <span class="chevron-w">${svg('arrow')}</span>
-    </button>
-  </section>`;
-}
+  return `
+    <section class="screen home-screen">
+      <div class="stats">
+        ${statCard('book', '', stats.completedSections, 'Konu<br>Tamamlandı', 'wrong')}
+        ${statCard('target', 'accent', stats.solvedQuestions, 'Soru<br>Çözüldü', 'wrong')}
+        ${statCard('trophy', 'amber', stats.completedMocks, 'Deneme<br>Tamamlandı', 'bank')}
+        ${statCard('flame', 'accent', stats.streak, 'Günlük<br>Seri', 'wrong')}
+      </div>
 
-function statCard(icon, colorClass, number, label, targetView) {
-  return `<button class="stat stat-button" data-go-view="${targetView}" type="button">
-    <span class="stat-icon ${colorClass}">${svg(icon)}</span>
-    <strong>${number}</strong>
-    <span>${label}</span>
-  </button>`;
+      <div class="section-head">
+        <h3>Test Kategorileri</h3>
+      </div>
+
+      <section class="categories">
+        ${categories}
+      </section>
+
+      <button class="cta-btn" id="openRouteSheetButton" type="button">
+        <div class="cta-icon">${svg('target')}</div>
+        <div>
+          <strong>Bugünkü Rota</strong>
+          <span>Kişiselleştirilmiş soru setini başlat</span>
+        </div>
+        <span class="chevron-w">${svg('arrow')}</span>
+      </button>
+    </section>
+  `;
 }
 
 function bankView() {
   const stats = getStats();
   const activeDocs = getActiveDocuments();
 
-  return `<section class="screen content-screen">
-    <div class="page-heading">
-      <span>DENEMELER VE TESTLER</span>
-      <h2>Genel Denemeler</h2>
-      <p>Aktif tüm konulardan oluşturulan karma deneme sınavı.</p>
-    </div>
-    <article class="practice-card">
-      <div class="practice-card-icon">${svg('trophy')}</div>
-      <div>
-        <span>MEB GYS KARMA DENEME</span>
-        <h3>20 Soruluk Deneme Sınavı</h3>
-        <p>${activeDocs.length ? `${activeDocs.length} aktif mevzuat ve konudan rastgele soru seçilir.` : 'Soru paketi bulunamadı.'}</p>
+  return `
+    <section class="screen content-screen">
+      <div class="page-heading">
+        <span>DENEMELER</span>
+        <h2>Hızlı Deneme Sınavları</h2>
+        <p>Müfredat geneline yayılmış sorulardan oluşan karma denemeler.</p>
       </div>
-      <button class="reader-primary" id="startMockButton" type="button" ${activeDocs.length ? '' : 'disabled'}>Denemeyi Başlat</button>
-    </article>
-    <div class="metric-strip">
-      <div><strong>${stats.completedMocks}</strong><span>Bitirilen Deneme</span></div>
-      <div><strong>%${stats.accuracy}</strong><span>Genel Başarı</span></div>
-    </div>
-  </section>`;
+
+      <article class="practice-card">
+        <div class="practice-card-icon">${svg('trophy')}</div>
+        <div>
+          <span>KARMA DENEME</span>
+          <h3>20 Soruluk Karma Test</h3>
+          <p>${activeDocs.length ? `${activeDocs.length} aktif konudan rastgele derlenir.` : 'Aktif soru bulunamadı.'}</p>
+        </div>
+        <button class="reader-primary" id="startMockButton" type="button" ${activeDocs.length ? '' : 'disabled'}>Denemeyi Başlat</button>
+      </article>
+
+      <div class="metric-strip">
+        <div><strong>${stats.completedMocks}</strong><span>Bitirilen Deneme</span></div>
+        <div><strong>%${stats.accuracy}</strong><span>Genel Doğruluk</span></div>
+      </div>
+    </section>
+  `;
 }
 
 function studiesView() {
   const stats = getStats();
-  const recentTests = progress.completedTests.slice(-5).reverse();
+  const recent = progress.completedTests.slice(-4).reverse();
 
-  return `<section class="screen content-screen">
-    <div class="page-heading">
-      <span>ÇALIŞMA ANALİZİ</span>
-      <h2>İlerleme Durumu</h2>
-      <p>Çözdüğünüz sorular ve test sonuçları anlık olarak analiz edilir.</p>
-    </div>
-    <div class="study-grid">
-      <article><span>Toplam Çözülen</span><strong>${stats.solvedQuestions} Soru</strong></article>
-      <article><span>Doğruluk Oranı</span><strong>%${stats.accuracy}</strong></article>
-      <article><span>Tamamlanan Konu</span><strong>${stats.completedSections} Bölüm</strong></article>
-      <article><span>Günlük Çalışma Serisi</span><strong>${stats.streak} Gün</strong></article>
-    </div>
-    <section class="recent-tests">
-      <h3>Son Tamamlanan Testler</h3>
-      ${recentTests.length ? recentTests.map(t => `<article class="test-log-item">
-        <div>
-          <strong>${escapeHtml(t.title)}</strong>
-          <span>${t.score} / ${t.total} Doğru (${Math.round((t.score / t.total) * 100)}%)</span>
-        </div>
-        <small>${t.kind === 'mock' ? 'Karma Deneme' : 'Konu Testi'}</small>
-      </article>`).join('') : '<div class="empty-inline">Henüz tamamlanan test bulunmuyor.</div>'}
+  return `
+    <section class="screen content-screen">
+      <div class="page-heading">
+        <span>ÇALIŞMALARIM</span>
+        <h2>İlerleme Raporu</h2>
+        <p>Çözdüğünüz sorulara göre anlık güncellenen başarım tablonuz.</p>
+      </div>
+
+      <div class="study-grid">
+        <article><span>Toplam Soru</span><strong>${stats.solvedQuestions}</strong></article>
+        <article><span>Başarı Oranı</span><strong>%${stats.accuracy}</strong></article>
+        <article><span>Tamamlanan Bölüm</span><strong>${stats.completedSections}</strong></article>
+        <article><span>Aktif Seri</span><strong>${stats.streak} Gün</strong></article>
+      </div>
+
+      <section class="recent-tests">
+        <h3>Son Çözülen Testler</h3>
+        ${recent.length ? recent.map(t => `
+          <article>
+            <div>
+              <strong>${escapeHtml(t.title)}</strong>
+              <span>${t.score} / ${t.total} Doğru</span>
+            </div>
+            <small>${t.kind === 'mock' ? 'Karma Deneme' : 'Konu Testi'}</small>
+          </article>
+        `).join('') : '<div class="empty-inline">Henüz kayıtlı test bulunmuyor.</div>'}
+      </section>
+
+      <button class="reset-progress" id="resetProgressButton" type="button">Tüm İlerlemeyi Sıfırla</button>
     </section>
-    <button class="reset-progress" id="resetProgressButton" type="button">Çalışma Geçmişini Sıfırla</button>
-  </section>`;
+  `;
 }
 
 function wrongView() {
-  const wrongCount = progress.wrongQuestions ? progress.wrongQuestions.length : 0;
+  const wrongs = progress.wrongQuestions || [];
 
-  return `<section class="screen content-screen">
-    <div class="page-heading">
-      <span>YANLIŞLARIM</span>
-      <h2>Yanlış Yapılan Sorular</h2>
-      <p>Hatalı yanıtladığınız soruları tekrar çözerek zayıf konularınızı pekiştirin.</p>
-    </div>
-    <article class="practice-card">
-      <div class="practice-card-icon red">${svg('refresh')}</div>
-      <div>
-        <span>TEKRAR HAVUZU</span>
-        <h3>${wrongCount} Yanlış Soru</h3>
-        <p>${wrongCount > 0 ? 'Hatalı cevaplanan sorulardan oluşan özel tekrar testi.' : 'Harika! Havuzda tekrar edilecek yanlış soru yok.'}</p>
+  return `
+    <section class="screen content-screen">
+      <div class="page-heading">
+        <span>YANLIŞLARIM</span>
+        <h2>Hata Havuzu</h2>
+        <p>Yanlış cevapladığınız soruları tekrar çözerek pekiştirin.</p>
       </div>
-      <button class="reader-primary" id="startWrongQuizButton" type="button" ${wrongCount > 0 ? '' : 'disabled'}>Tekrar Testini Başlat</button>
-    </article>
-  </section>`;
+
+      <article class="practice-card">
+        <div class="practice-card-icon">${svg('refresh')}</div>
+        <div>
+          <span>TEKRAR TESTİ</span>
+          <h3>Yanlış Yapılan Sorular</h3>
+          <p>${wrongs.length} adet tekrar edilmeyi bekleyen soru var.</p>
+        </div>
+        <button class="reader-primary" id="startWrongTestButton" type="button" ${wrongs.length ? '' : 'disabled'}>Tekrara Başla</button>
+      </article>
+    </section>
+  `;
 }
 
 function quizView() {
@@ -363,201 +414,237 @@ function quizView() {
 
   const q = state.quiz.questions[state.quiz.currentIndex];
   const total = state.quiz.questions.length;
-  const current = state.quiz.currentIndex + 1;
-  const answered = state.quiz.answers[state.quiz.currentIndex] !== undefined;
-  const selectedIndex = state.quiz.answers[state.quiz.currentIndex];
+  const currentNum = state.quiz.currentIndex + 1;
 
-  const optionLetters = ['A', 'B', 'C', 'D', 'E'];
+  if (!q) {
+    return `<section class="screen neutral-screen"><div class="empty-state"><h3>Soru Bulunamadı</h3><button onclick="go('home')" class="reader-primary">Ana Sayfaya Dön</button></div></section>`;
+  }
 
-  return `<section class="screen quiz-screen">
-    <header class="quiz-header">
-      <button class="quiz-back-btn" id="exitQuizButton" type="button">${svg('back')}</button>
-      <div class="quiz-meta">
-        <span>${escapeHtml(state.quiz.title)}</span>
-        <small>Soru ${current} / ${total}</small>
+  const options = q.options.map((opt, idx) => {
+    let stateClass = '';
+    if (state.quiz.answered) {
+      if (idx === q.answer) stateClass = 'correct';
+      else if (idx === state.quiz.selectedOption) stateClass = 'wrong';
+    }
+
+    return `
+      <button class="quiz-option ${stateClass}" data-option-index="${idx}" ${state.quiz.answered ? 'disabled' : ''} type="button">
+        <span class="option-prefix">${String.fromCharCode(65 + idx)}</span>
+        <span class="option-text">${escapeHtml(opt)}</span>
+      </button>
+    `;
+  }).join('');
+
+  return `
+    <section class="screen quiz-screen">
+      <div class="quiz-header">
+        <button class="icon-btn" id="quitQuizButton" type="button">${svg('back')}</button>
+        <div class="quiz-title-wrap">
+          <span>${escapeHtml(state.quiz.title)}</span>
+          <small>Soru ${currentNum} / ${total}</small>
+        </div>
+        ${state.quiz.timeRemaining !== null ? `<div class="quiz-timer">${svg('clock')} <span>${state.quiz.timeRemaining}s</span></div>` : ''}
       </div>
-      <div class="quiz-timer">${svg('clock')}<span id="timerText">${state.quiz.timeLeft}s</span></div>
-    </header>
 
-    <main class="quiz-body">
-      <div class="question-card">
-        <p class="question-prompt">${escapeHtml(q.prompt)}</p>
-        <div class="options-list">
-          ${q.options.map((opt, idx) => {
-            let className = 'option-btn';
-            if (answered) {
-              if (idx === q.answerIndex) className += ' correct';
-              else if (idx === selectedIndex) className += ' wrong';
-              else className += ' disabled';
-            }
-            return `<button class="${className}" data-option-index="${idx}" ${answered ? 'disabled' : ''} type="button">
-              <span class="opt-badge">${optionLetters[idx]}</span>
-              <span class="opt-text">${escapeHtml(opt)}</span>
-            </button>`;
-          }).join('')}
+      <div class="quiz-progress-bar">
+        <div class="quiz-progress-fill" style="width: ${(currentNum / total) * 100}%"></div>
+      </div>
+
+      <div class="quiz-body">
+        <div class="question-box">
+          <p>${escapeHtml(q.question)}</p>
+        </div>
+
+        <div class="quiz-options">
+          ${options}
         </div>
       </div>
-    </main>
 
-    <footer class="quiz-footer">
-      ${answered ? `<button class="reader-primary" id="nextQuestionButton" type="button">
-        ${current === total ? 'Testi Bitir' : 'Sonraki Soru'}
-      </button>` : `<div class="quiz-hint">Lütfen bir şık seçiniz</div>`}
-    </footer>
-  </section>`;
+      ${state.quiz.answered ? `
+        <div class="quiz-footer">
+          <button class="reader-primary" id="nextQuestionButton" type="button">
+            ${currentNum === total ? 'Testi Bitir' : 'Sonraki Soru'}
+          </button>
+        </div>
+      ` : ''}
+    </section>
+  `;
 }
 
-function loadingView() {
-  return `<section class="screen neutral-screen">
-    <div class="empty-state">
-      <span class="empty-state-icon">${svg('refresh')}</span>
-      <h3>Müfredat ve Sorular Yükleniyor</h3>
-      <p>Lütfen bekleyiniz...</p>
-    </div>
-  </section>`;
-}
-
-function errorView() {
-  return `<section class="screen neutral-screen">
-    <div class="empty-state empty-state-error">
-      <span class="empty-state-icon">${svg('book')}</span>
-      <h3>Veriler Yüklenemedi</h3>
-      <p>${escapeHtml(state.catalogueError || 'Kılavuz dosyası okunamadı.')}</p>
-      <button class="reader-primary" id="retryLoadButton" type="button">Tekrar Deneyin</button>
-    </div>
-  </section>`;
-}
-
+// Render Ana Fonksiyonu
 function render() {
+  if (!app) return;
+
+  switch (state.view) {
+    case 'home':
+      app.innerHTML = homeView();
+      break;
+    case 'bank':
+      app.innerHTML = bankView();
+      break;
+    case 'studies':
+      app.innerHTML = studiesView();
+      break;
+    case 'wrong':
+      app.innerHTML = wrongView();
+      break;
+    case 'quiz':
+      app.innerHTML = quizView();
+      break;
+    default:
+      app.innerHTML = homeView();
+  }
+
   updateHeader();
-
-  if (state.view === 'home') app.innerHTML = homeView();
-  else if (state.view === 'bank') app.innerHTML = bankView();
-  else if (state.view === 'studies') app.innerHTML = studiesView();
-  else if (state.view === 'wrong') app.innerHTML = wrongView();
-  else if (state.view === 'quiz') app.innerHTML = quizView();
-  else app.innerHTML = homeView();
-
   bindViewEvents();
 }
 
+// Etkileşimler & Event Listener'lar
 function bindViewEvents() {
-  document.querySelectorAll('[data-open-category]').forEach(el => {
-    el.addEventListener('click', () => openCategorySheet(el.dataset.openCategory));
-  });
+  const retryBtn = document.getElementById('retryLoadButton');
+  if (retryBtn) retryBtn.onclick = () => loadCatalogue();
 
-  document.querySelectorAll('[data-go-view]').forEach(el => {
-    el.addEventListener('click', () => go(el.dataset.goView));
-  });
-
-  const openRouteBtn = document.getElementById('openRouteSheetButton');
-  if (openRouteBtn) openRouteBtn.addEventListener('click', openRouteSheet);
+  const routeBtn = document.getElementById('openRouteSheetButton');
+  if (routeBtn) routeBtn.onclick = () => openRouteSheet();
 
   const mockBtn = document.getElementById('startMockButton');
-  if (mockBtn) mockBtn.addEventListener('click', startMockQuiz);
+  if (mockBtn) mockBtn.onclick = () => startMockQuiz();
+
+  const wrongTestBtn = document.getElementById('startWrongTestButton');
+  if (wrongTestBtn) wrongTestBtn.onclick = () => startWrongQuiz();
 
   const resetBtn = document.getElementById('resetProgressButton');
-  if (resetBtn) resetBtn.addEventListener('click', resetProgress);
-
-  const retryBtn = document.getElementById('retryLoadButton');
-  if (retryBtn) retryBtn.addEventListener('click', initApp);
-
-  const startWrongBtn = document.getElementById('startWrongQuizButton');
-  if (startWrongBtn) startWrongBtn.addEventListener('click', startWrongQuiz);
-
-  if (state.view === 'quiz') {
-    const exitBtn = document.getElementById('exitQuizButton');
-    if (exitBtn) exitBtn.addEventListener('click', exitQuiz);
-
-    const nextBtn = document.getElementById('nextQuestionButton');
-    if (nextBtn) nextBtn.addEventListener('click', nextQuestion);
-
-    document.querySelectorAll('.option-btn').forEach(btn => {
-      btn.addEventListener('click', () => selectAnswer(parseInt(btn.dataset.optionIndex, 10)));
-    });
-  }
-}
-
-async function openCategorySheet(catKey) {
-  state.activeCategoryKey = catKey;
-  const category = getCategory(catKey);
-  if (!category) return;
-
-  const meta = categoryCardMeta(catKey);
-  topicEyebrow.textContent = meta.title;
-  topicSheetTitle.textContent = category.title;
-  topicSheetSubtitle.textContent = category.subtitle;
-  topicHeadingIcon.className = `cat-icon ${meta.iconClass}`;
-  topicHeadingIcon.innerHTML = svg(meta.icon);
-
-  const topics = getCategoryItems(catKey);
-  topicList.innerHTML = topics.map(item => {
-    const isDoc = item.type === 'document';
-    const subText = isDoc ? `${item.children ? item.children.length : 0} Alt Bölüm • ${item.questionCount || 20} Soru` : `${item.questionCount || 20} Soru`;
-
-    return `<div class="topic-item" data-topic-id="${item.id}" role="button" tabindex="0">
-      <div class="topic-item-icon">${svg(isDoc ? 'gavel' : 'book')}</div>
-      <div class="topic-item-content">
-        <strong>${escapeHtml(item.title)}</strong>
-        <small>${subText}</small>
-      </div>
-      <button class="topic-start-btn" type="button">Başlat</button>
-    </div>`;
-  }).join('');
-
-  topicList.querySelectorAll('.topic-item').forEach(el => {
-    el.addEventListener('click', () => {
-      const topicId = el.dataset.topicId;
-      const selected = topics.find(t => t.id === topicId);
-      if (selected) {
-        closeSheet(topicSheet, topicBackdrop);
-        startTopicQuiz(selected);
+  if (resetBtn) {
+    resetBtn.onclick = () => {
+      if (confirm('Tüm ilerlemeniz sıfırlanacaktır. Emin misiniz?')) {
+        progress = defaultProgress();
+        saveProgress();
+        showToast('İlerleme sıfırlandı.');
       }
-    });
+    };
+  }
+
+  // Kategori Tıklamaları
+  document.querySelectorAll('[data-open-category]').forEach(el => {
+    el.onclick = () => openCategorySheet(el.dataset.openCategory);
   });
 
-  openSheet(topicSheet, topicBackdrop);
+  // İstatistik Kartı Tıklamaları
+  document.querySelectorAll('[data-stat-target]').forEach(el => {
+    el.onclick = () => window.go(el.dataset.statTarget);
+  });
+
+  // Quiz Butonları
+  const quitBtn = document.getElementById('quitQuizButton');
+  if (quitBtn) {
+    quitBtn.onclick = () => {
+      if (confirm('Testten çıkmak istediğinize emin misiniz?')) {
+        stopTimer();
+        window.go('home');
+      }
+    };
+  }
+
+  const nextBtn = document.getElementById('nextQuestionButton');
+  if (nextBtn) {
+    nextBtn.onclick = () => handleNextQuestion();
+  }
+
+  document.querySelectorAll('.quiz-option').forEach(btn => {
+    btn.onclick = () => handleAnswer(parseInt(btn.dataset.optionIndex, 10));
+  });
 }
 
+// Topic Modal (Sheet)
+function openCategorySheet(categoryKey) {
+  const cat = getCategory(categoryKey);
+  if (!cat) return;
+
+  state.activeCategoryKey = categoryKey;
+  if (topicSheetTitle) topicSheetTitle.textContent = cat.title;
+  if (topicSheetSubtitle) topicSheetSubtitle.textContent = cat.subtitle || '';
+  if (topicEyebrow) topicEyebrow.textContent = 'Kategori Detayı';
+
+  const topics = getCategoryItems(categoryKey);
+  if (topicList) {
+    topicList.innerHTML = topics.map(item => `
+      <div class="topic-item">
+        <div class="topic-item-info">
+          <strong>${escapeHtml(item.title)}</strong>
+          <small>${item.questionCount || 20} Soru ${item.questionFile ? '• Hazır' : '• Hazırlanıyor'}</small>
+        </div>
+        <button class="topic-start-btn" data-start-topic="${item.id}" ${item.questionFile ? '' : 'disabled'}>
+          Başlat
+        </button>
+      </div>
+    `).join('');
+
+    topicList.querySelectorAll('[data-start-topic]').forEach(btn => {
+      btn.onclick = () => {
+        const topicId = btn.dataset.startTopic;
+        const topic = topics.find(t => t.id === topicId);
+        if (topic) {
+          closeCategorySheet();
+          startTopicQuiz(topic);
+        }
+      };
+    });
+  }
+
+  if (topicSheet) topicSheet.classList.add('open');
+  if (topicBackdrop) topicBackdrop.classList.add('open');
+}
+
+function closeCategorySheet() {
+  if (topicSheet) topicSheet.classList.remove('open');
+  if (topicBackdrop) topicBackdrop.classList.remove('open');
+}
+
+// Route Modal (Sheet)
 function openRouteSheet() {
-  openSheet(routeSheet, topicBackdrop);
+  if (routeSheet) routeSheet.classList.add('open');
+  if (routeBackdrop) routeBackdrop.classList.add('open');
 }
 
-function openSheet(sheetEl, backdropEl) {
-  if (sheetEl) sheetEl.classList.add('active');
-  if (backdropEl) backdropEl.classList.add('active');
+function closeRouteSheet() {
+  if (routeSheet) routeSheet.classList.remove('open');
+  if (routeBackdrop) routeBackdrop.classList.remove('open');
 }
 
-function closeSheet(sheetEl, backdropEl) {
-  if (sheetEl) sheetEl.classList.remove('active');
-  if (backdropEl) backdropEl.classList.remove('active');
-}
-
-async function startTopicQuiz(item) {
-  if (!item.questionFile) {
-    showToast('Bu konu için soru seti hazırlanıyor.');
-    return;
+// Quiz Mantığı
+async function fetchQuestionsForTopic(topic) {
+  if (state.questionBanks.has(topic.questionFile)) {
+    return state.questionBanks.get(topic.questionFile);
   }
-
-  showToast('Soru bankası yükleniyor...');
-  const bank = await fetchQuestionBank(item.questionFile);
-
-  if (!bank || !bank.questions || !bank.questions.length) {
-    showToast('Soru bulunamadı.');
-    return;
+  try {
+    const res = await fetch(topic.questionFile);
+    if (!res.ok) throw new Error('Soru dosyası bulunamadı');
+    const data = await res.json();
+    const questions = Array.isArray(data) ? data : data.questions || [];
+    state.questionBanks.set(topic.questionFile, questions);
+    return questions;
+  } catch (e) {
+    showToast('Sorular yüklenirken hata oluştu.');
+    return [];
   }
+}
+
+async function startTopicQuiz(topic) {
+  const questions = await fetchQuestionsForTopic(topic);
+  if (!questions.length) return;
 
   state.quiz = {
-    title: item.title,
-    questions: bank.questions,
+    title: topic.title,
+    questions: [...questions].sort(() => Math.random() - 0.5).slice(0, 20),
     currentIndex: 0,
-    answers: {},
-    correctCount: 0,
+    answers: [],
+    selectedOption: null,
+    answered: false,
     kind: 'topic',
-    timeLeft: QUESTION_TIME_LIMIT
+    timeRemaining: QUESTION_TIME_LIMIT
   };
 
-  go('quiz');
+  window.go('quiz');
   startTimer();
 }
 
@@ -565,118 +652,92 @@ async function startMockQuiz() {
   const activeDocs = getActiveDocuments();
   if (!activeDocs.length) return;
 
-  showToast('Deneme sınavı hazırlanıyor...');
   let allQuestions = [];
-
   for (const doc of activeDocs) {
-    const bank = await fetchQuestionBank(doc.item.questionFile);
-    if (bank && bank.questions) {
-      allQuestions = allQuestions.concat(bank.questions);
-    }
+    const qs = await fetchQuestionsForTopic(doc.item);
+    allQuestions = allQuestions.concat(qs);
   }
 
   if (!allQuestions.length) {
-    showToast('Deneme için soru çekilemedi.');
+    showToast('Deneme için soru yüklenemedi.');
     return;
   }
 
-  allQuestions.sort(() => Math.random() - 0.5);
-  const selectedQuestions = allQuestions.slice(0, 20);
-
   state.quiz = {
-    title: 'Karma Mevzuat Denemesi',
-    questions: selectedQuestions,
+    title: 'Karma Deneme Sınavı',
+    questions: allQuestions.sort(() => Math.random() - 0.5).slice(0, 20),
     currentIndex: 0,
-    answers: {},
-    correctCount: 0,
+    answers: [],
+    selectedOption: null,
+    answered: false,
     kind: 'mock',
-    timeLeft: QUESTION_TIME_LIMIT
+    timeRemaining: QUESTION_TIME_LIMIT
   };
 
-  go('quiz');
+  window.go('quiz');
   startTimer();
 }
 
 function startWrongQuiz() {
-  if (!progress.wrongQuestions || !progress.wrongQuestions.length) return;
+  if (!progress.wrongQuestions.length) return;
 
   state.quiz = {
     title: 'Yanlış Sorular Tekrarı',
-    questions: [...progress.wrongQuestions],
+    questions: [...progress.wrongQuestions].slice(0, 20),
     currentIndex: 0,
-    answers: {},
-    correctCount: 0,
+    answers: [],
+    selectedOption: null,
+    answered: false,
     kind: 'wrong',
-    timeLeft: QUESTION_TIME_LIMIT
+    timeRemaining: QUESTION_TIME_LIMIT
   };
 
-  go('quiz');
+  window.go('quiz');
   startTimer();
 }
 
-function startTimer() {
-  stopTimer();
-  state.quiz.timeLeft = QUESTION_TIME_LIMIT;
-  timerInterval = setInterval(() => {
-    if (!state.quiz) {
-      stopTimer();
-      return;
-    }
-    state.quiz.timeLeft -= 1;
-    const timerText = document.getElementById('timerText');
-    if (timerText) timerText.textContent = `${state.quiz.timeLeft}s`;
-
-    if (state.quiz.timeLeft <= 0) {
-      selectAnswer(-1); // Zaman doldu, cevapsız geçildi
-    }
-  }, 1000);
-}
-
-function stopTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-}
-
-function selectAnswer(index) {
-  if (!state.quiz || state.quiz.answers[state.quiz.currentIndex] !== undefined) return;
+function handleAnswer(index) {
+  if (!state.quiz || state.quiz.answered) return;
 
   stopTimer();
   haptic(25);
 
   const q = state.quiz.questions[state.quiz.currentIndex];
-  state.quiz.answers[state.quiz.currentIndex] = index;
+  const isCorrect = index === q.answer;
 
-  const isCorrect = index === q.answerIndex;
+  state.quiz.selectedOption = index;
+  state.quiz.answered = true;
+  state.quiz.answers.push({ question: q, userSelected: index, correct: isCorrect });
+
+  // İlerleme Kaydı
+  progress.answers += 1;
+  const today = dateKey();
+  progress.dailyAnswers[today] = (progress.dailyAnswers[today] || 0) + 1;
+
   if (isCorrect) {
-    state.quiz.correctCount += 1;
-    // Eğer önceden yanlış yapılmışsa havuzdan çıkar
-    if (progress.wrongQuestions) {
-      progress.wrongQuestions = progress.wrongQuestions.filter(wq => wq.id !== q.id);
-    }
+    progress.correctAnswers += 1;
+    // Yanlış listesinden çıkar
+    progress.wrongQuestions = progress.wrongQuestions.filter(item => item.id !== q.id);
   } else {
-    // Yanlış havuzuna ekle
-    if (!progress.wrongQuestions) progress.wrongQuestions = [];
-    if (!progress.wrongQuestions.some(wq => wq.id === q.id)) {
+    // Yanlış listesine ekle
+    if (!progress.wrongQuestions.some(item => item.id === q.id)) {
       progress.wrongQuestions.push(q);
     }
   }
-
-  // İlerleme İstatistiklerini Güncelle
-  progress.answers += 1;
-  if (isCorrect) progress.correctAnswers += 1;
-
-  const today = dateKey();
-  progress.dailyAnswers[today] = (progress.dailyAnswers[today] || 0) + 1;
 
   saveProgress();
   render();
 }
 
-function nextQuestion() {
+function handleNextQuestion() {
   if (!state.quiz) return;
 
-  if (state.quiz.currentIndex < state.quiz.questions.length - 1) {
+  if (state.quiz.currentIndex + 1 < state.quiz.questions.length) {
     state.quiz.currentIndex += 1;
-    go('quiz');
+    state.quiz.selectedOption = null;
+    state.quiz.answered = false;
+    state.quiz.timeRemaining = QUESTION_TIME_LIMIT;
+    render();
     startTimer();
   } else {
     finishQuiz();
@@ -685,64 +746,69 @@ function nextQuestion() {
 
 function finishQuiz() {
   stopTimer();
-  const score = state.quiz.correctCount;
+  const correctCount = state.quiz.answers.filter(a => a.correct).length;
   const total = state.quiz.questions.length;
 
   progress.completedTests.push({
     title: state.quiz.title,
-    score,
-    total,
+    score: correctCount,
+    total: total,
     kind: state.quiz.kind,
     date: new Date().toISOString()
   });
 
   saveProgress();
-  showToast(`Test Tamamlandı! Doğru: ${score}/${total}`);
+  alert(`Test Tamamlandı!\n\nDoğru: ${correctCount}\nYanlış: ${total - correctCount}\nBaşarı: %${Math.round((correctCount / total) * 100)}`);
+  
   state.quiz = null;
-  go('studies');
+  window.go('studies');
 }
 
-function exitQuiz() {
-  if (confirm('Testten çıkmak istediğinize emin misiniz? İlerlemeniz kaydedilmeyecek.')) {
-    stopTimer();
-    state.quiz = null;
-    go('home');
+function startTimer() {
+  stopTimer();
+  timerInterval = setInterval(() => {
+    if (!state.quiz || state.quiz.answered) return;
+    if (state.quiz.timeRemaining > 0) {
+      state.quiz.timeRemaining -= 1;
+      const timerEl = document.querySelector('.quiz-timer span');
+      if (timerEl) timerEl.textContent = `${state.quiz.timeRemaining}s`;
+    } else {
+      handleAnswer(-1); // Zaman doldu
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
   }
 }
 
-function resetProgress() {
-  if (confirm('Tüm çalışma ve istatistik verileriniz sıfırlanacaktır. Onaylıyor musunuz?')) {
-    progress = defaultProgress();
-    saveProgress();
-    showToast('İlerleme verileri sıfırlandı.');
-    go('home');
+// Global Event Bağlantıları
+function initEvents() {
+  navButtons.forEach(btn => {
+    btn.onclick = () => window.go(btn.dataset.nav);
+  });
+
+  if (closeTopicSheetButton) closeTopicSheetButton.onclick = closeCategorySheet;
+  if (topicBackdrop) topicBackdrop.onclick = closeCategorySheet;
+
+  if (closeRouteSheetButton) closeRouteSheetButton.onclick = closeRouteSheet;
+  if (routeBackdrop) routeBackdrop.onclick = closeRouteSheet;
+
+  if (startRouteButton) {
+    startRouteButton.onclick = () => {
+      closeRouteSheet();
+      startMockQuiz();
+    };
   }
 }
 
-async function initApp() {
-  try {
-    const res = await fetch(CATALOGUE_URL);
-    if (!res.ok) throw new Error('Kılavuz verisi çekilemedi.');
-    state.catalogue = await res.json();
-    await preloadAllQuestionBanks();
-  } catch (err) {
-    state.catalogueError = err.message;
-  } finally {
-    render();
-  }
+// Başlatıcı
+function init() {
+  initEvents();
+  loadCatalogue();
 }
 
-// Global Event Listeners & Sheet Kapatma
-if (closeTopicSheetButton) closeTopicSheetButton.addEventListener('click', () => closeSheet(topicSheet, topicBackdrop));
-if (closeRouteSheetButton) closeRouteSheetButton.addEventListener('click', () => closeSheet(routeSheet, topicBackdrop));
-if (topicBackdrop) topicBackdrop.addEventListener('click', () => {
-  closeSheet(topicSheet, topicBackdrop);
-  closeSheet(routeSheet, topicBackdrop);
-});
-
-navButtons.forEach(btn => {
-  btn.addEventListener('click', () => go(btn.dataset.nav));
-});
-
-// Uygulamayı Başlat
-document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', init);
