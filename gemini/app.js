@@ -89,14 +89,14 @@ function haptic(duration = 18) {
 }
 
 function defaultProgress() {
-  return { answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [] };
+  return { answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [], flaggedQuestions: {}, reportedQuestions: {} };
 }
 
 function loadProgress() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved || typeof saved !== 'object') return defaultProgress();
-    return { ...defaultProgress(), ...saved, dailyAnswers: saved.dailyAnswers || {}, completedSections: saved.completedSections || {}, completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : [] };
+    return { ...defaultProgress(), ...saved, dailyAnswers: saved.dailyAnswers || {}, completedSections: saved.completedSections || {}, completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : [], flaggedQuestions: saved.flaggedQuestions || {}, reportedQuestions: saved.reportedQuestions || {} };
   } catch (error) {
     return defaultProgress();
   }
@@ -193,7 +193,7 @@ function getCategoryProgress(categoryKey) {
 
 function getActiveDocuments() {
   return getCategories().flatMap(([categoryKey]) => getCategoryItems(categoryKey)
-    .filter(item => item.type === 'document' && item.questionFile)
+    .filter(item => (item.type === 'document' || item.type === 'topic') && item.questionFile)
     .map(item => ({ item, categoryKey })));
 }
 
@@ -531,10 +531,46 @@ function modeCard(mode, icon, title, description, enabled) {
 
 function renderTopicPlan(item, categoryKey) {
   topicSheet.classList.add('document-flow');
-  applySheetHeader({ title: item.title, subtitle: 'İçerik şablonu hazır', eyebrow: 'KONU ÇALIŞMA MERKEZİ', icon: 'book', iconClass: categoryCardMeta(categoryKey).iconClass });
+  const isActive = Boolean(item.questionFile);
+  applySheetHeader({ title: item.title, subtitle: isActive ? `${item.questionCount || 0} soru • aktif soru bankası` : 'İçerik şablonu hazır', eyebrow: 'KONU ÇALIŞMA MERKEZİ', icon: 'book', iconClass: categoryCardMeta(categoryKey).iconClass });
   renderBreadcrumb(getCategory(categoryKey).title, () => renderCategoryLevel(categoryKey));
-  setSheetProgress('Henüz çalışılmadı', 0);
-  topicList.innerHTML = `<section class="empty-state content-plan"><span class="empty-state-icon">${svg('book')}</span><h3>Bu konu için altyapı hazır</h3><p>Bölümler, özetler ve soru bankası JSON ile eklendiğinde bu ekran otomatik olarak kanun akışına dönüşür.</p><div class="plan-points"><span>${svg('check')} Bölüm bazlı çalışma</span><span>${svg('check')} Rastgele test</span><span>${svg('check')} İlerleme takibi</span></div></section>`;
+  setSheetProgress('Henüz çalışılmadı', isActive && progress.completedSections[item.id] ? 100 : 0);
+  if (!isActive) {
+    topicList.innerHTML = `<section class="empty-state content-plan"><span class="empty-state-icon">${svg('book')}</span><h3>Bu konu için altyapı hazır</h3><p>Soru bankası JSON ile eklendiğinde bu ekran otomatik olarak çalışma akışına dönüşür.</p><div class="plan-points"><span>${svg('check')} Konu geneli test</span><span>${svg('check')} Karışık soru havuzu</span><span>${svg('check')} İlerleme takibi</span></div></section>`;
+    topicSheet.scrollTop = 0;
+    return;
+  }
+  const completed = Boolean(progress.completedSections[item.id]);
+  topicList.innerHTML = `<section class="document-overview-card">
+      <div class="document-overview-top"><span class="document-number">KONU</span><span class="document-status">AKTİF SORU BANKASI</span></div>
+      <h4>${escapeHtml(item.title)}</h4><p>Konunun tamamından karışık sorularla çalış, ilerlemen otomatik kaydedilir.</p>
+      <div class="document-stats"><span><strong>${item.questionCount || 0}</strong> soru</span><span><strong>%${completed ? 100 : 0}</strong> ilerleme</span></div>
+    </section>
+    <div class="document-mode-grid">
+      ${modeCard('topic-quiz', 'target', `${Math.min(20, item.questionCount || 20)} Soruluk Test`, 'Konunun tüm soru havuzundan karışık test başlat.', true)}
+      ${modeCard('topic-all', 'book', 'Tüm Soruları Çöz', 'Bankadaki bütün soruları sırayla çöz.', true)}
+    </div>`;
+  topicList.querySelectorAll('[data-document-mode]').forEach(button => button.addEventListener('click', async () => {
+    haptic(18);
+    const mode = button.dataset.documentMode;
+    try {
+      showToast('Sorular hazırlanıyor…');
+      const bank = await loadQuestionBank(item);
+      if (!bank.length) return showToast('Bu konu için henüz soru bulunmuyor.');
+      const questions = mode === 'topic-quiz' ? shuffle(bank).slice(0, Math.min(20, bank.length)) : bank;
+      startQuiz({
+        questions,
+        documentItem: item,
+        section: { id: item.id, title: item.title },
+        kind: 'topic',
+        title: item.title,
+        subtitle: `${questions.length} soru`,
+        returnView: () => renderTopicPlan(item, categoryKey)
+      });
+    } catch (error) {
+      showToast(error.message || 'Sorular yüklenemedi.');
+    }
+  }));
   topicSheet.scrollTop = 0;
 }
 
@@ -748,7 +784,7 @@ function renderQuiz() {
           </div>
           <div class="quiz-premium-top-actions">
             ${timerDisplay}
-            <button type="button" aria-label="Menü">
+            <button type="button" id="quizGridTopButton" aria-label="Soru haritası">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
             </button>
           </div>
@@ -769,10 +805,10 @@ function renderQuiz() {
           <div class="quiz-card-header">
             <span class="quiz-badge">${escapeHtml(quiz.subtitle)}</span>
             <div class="quiz-card-actions">
-              <button type="button" class="action-btn">${svg('bookmark')}<span>Soruyu İşaretle</span></button>
-              <button type="button" class="action-btn">
+              <button type="button" class="action-btn ${progress.flaggedQuestions[current.id] ? 'active' : ''}" id="quizBookmarkButton">${svg('bookmark')}<span>${progress.flaggedQuestions[current.id] ? 'İşaretli' : 'Soruyu İşaretle'}</span></button>
+              <button type="button" class="action-btn ${progress.reportedQuestions[current.id] ? 'active' : ''}" id="quizReportButton" ${progress.reportedQuestions[current.id] ? 'disabled' : ''}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-                <span>Soruyu Bildir</span>
+                <span>${progress.reportedQuestions[current.id] ? 'Bildirildi' : 'Soruyu Bildir'}</span>
               </button>
             </div>
           </div>
@@ -783,12 +819,18 @@ function renderQuiz() {
             ${current.options.map((option, index) => {
               let className = 'quiz-option';
               let iconHtml = '';
-              if (current.userSelected === index) {
-                className += ' selected';
+              const answered = current.userSelected !== null;
+              if (answered && index === current.answerIndex) {
+                className += ' correct';
                 iconHtml = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+              } else if (current.userSelected === index) {
+                className += ' wrong';
+                iconHtml = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+              } else if (current.userSelected === index) {
+                className += ' selected';
               }
               return `
-              <button class="${className}" data-answer-index="${index}" type="button" ${current.userSelected !== null ? 'disabled' : ''}>
+              <button class="${className}" data-answer-index="${index}" type="button" ${answered ? 'disabled' : ''}>
                 <span class="quiz-option-letter">${letters[index] || index + 1}</span>
                 <span class="quiz-option-text">${escapeHtml(option)}</span>
                 ${iconHtml}
@@ -814,13 +856,19 @@ function renderQuiz() {
         <button class="footer-btn btn-prev" id="quizPrevButton" type="button" ${quiz.index === 0 ? 'disabled' : ''}>
           ${svg('arrowLeft')} Önceki
         </button>
-        <button class="footer-btn btn-grid" type="button">
+        <button class="footer-btn btn-grid" id="quizGridButton" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
           Sorular
         </button>
         <button class="footer-btn btn-next" id="quizNextButton" type="button">
           ${quiz.index === total - 1 ? 'Sonucu Gör' : 'Sonraki Soru'} ${svg('arrowRight')}
         </button>
+      </div>
+      <div class="quiz-nav-overlay" id="quizNavOverlay">
+        <div class="quiz-nav-sheet">
+          <div class="quiz-nav-head"><strong>Sorular</strong><button type="button" id="quizNavClose" aria-label="Kapat">×</button></div>
+          <div class="quiz-nav-grid" id="quizNavGrid"></div>
+        </div>
       </div>
     </div>`;
     
@@ -849,6 +897,49 @@ function startQuizTimer() {
   }, 1000);
 }
 
+function toggleQuestionFlag(question) {
+  if (progress.flaggedQuestions[question.id]) {
+    delete progress.flaggedQuestions[question.id];
+    showToast('İşaret kaldırıldı.');
+  } else {
+    progress.flaggedQuestions[question.id] = true;
+    showToast('Soru işaretlendi.');
+  }
+  haptic(14);
+  saveProgress();
+  renderQuiz();
+}
+
+function reportQuestion(question) {
+  if (progress.reportedQuestions[question.id]) return;
+  progress.reportedQuestions[question.id] = true;
+  haptic(14);
+  saveProgress();
+  showToast('Bildirimin alındı, teşekkürler.');
+  renderQuiz();
+}
+
+function openQuizNav() {
+  const quiz = state.quiz;
+  const overlay = document.getElementById('quizNavOverlay');
+  const grid = document.getElementById('quizNavGrid');
+  if (!overlay || !grid) return;
+  grid.innerHTML = quiz.questions.map((question, index) => {
+    let className = 'quiz-nav-cell';
+    if (index === quiz.index) className += ' current';
+    else if (question.userSelected !== null) className += question.userSelected === question.answerIndex ? ' answered-correct' : ' answered-wrong';
+    if (progress.flaggedQuestions[question.id]) className += ' flagged';
+    return `<button class="${className}" data-jump-index="${index}" type="button">${index + 1}</button>`;
+  }).join('');
+  grid.querySelectorAll('[data-jump-index]').forEach(button => button.addEventListener('click', () => {
+    clearInterval(timerInterval);
+    quiz.index = Number(button.dataset.jumpIndex);
+    overlay.classList.remove('open');
+    renderQuiz();
+  }));
+  overlay.classList.add('open');
+}
+
 function bindQuizEvents() {
   const quiz = state.quiz;
   document.getElementById('quizBackButton').addEventListener('click', () => {
@@ -864,7 +955,7 @@ function bindQuizEvents() {
     const selected = Number(button.dataset.answerIndex);
     current.userSelected = selected;
     recordAnswer(current, selected);
-    haptic(18); // doğru/yanlış farkı test sırasında hissettirilmiyor
+    haptic(selected === current.answerIndex ? 16 : [12, 40, 12]);
     renderQuiz();
   }));
   document.getElementById('quizPrevButton').addEventListener('click', () => {
@@ -882,6 +973,12 @@ function bindQuizEvents() {
       renderQuizResult();
     }
   });
+  document.getElementById('quizBookmarkButton')?.addEventListener('click', () => toggleQuestionFlag(quiz.questions[quiz.index]));
+  document.getElementById('quizReportButton')?.addEventListener('click', () => reportQuestion(quiz.questions[quiz.index]));
+  document.getElementById('quizGridButton')?.addEventListener('click', openQuizNav);
+  document.getElementById('quizGridTopButton')?.addEventListener('click', openQuizNav);
+  document.getElementById('quizNavClose')?.addEventListener('click', () => document.getElementById('quizNavOverlay')?.classList.remove('open'));
+  document.getElementById('quizNavOverlay')?.addEventListener('click', event => { if (event.target.id === 'quizNavOverlay') event.currentTarget.classList.remove('open'); });
 }
 
 function recordQuizCompletion(quiz) {
