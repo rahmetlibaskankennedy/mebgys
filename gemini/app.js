@@ -783,17 +783,12 @@ function renderQuiz() {
             ${current.options.map((option, index) => {
               let className = 'quiz-option';
               let iconHtml = '';
-              if (current.userSelected !== null) {
-                if (index === current.answerIndex) {
-                  className += ' correct';
-                  iconHtml = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                } else if (index === current.userSelected) {
-                  className += ' wrong';
-                  iconHtml = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-                }
+              if (current.userSelected === index) {
+                className += ' selected';
+                iconHtml = `<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
               }
               return `
-              <button class="${className}" data-answer-index="${index}" type="button">
+              <button class="${className}" data-answer-index="${index}" type="button" ${current.userSelected !== null ? 'disabled' : ''}>
                 <span class="quiz-option-letter">${letters[index] || index + 1}</span>
                 <span class="quiz-option-text">${escapeHtml(option)}</span>
                 ${iconHtml}
@@ -869,7 +864,7 @@ function bindQuizEvents() {
     const selected = Number(button.dataset.answerIndex);
     current.userSelected = selected;
     recordAnswer(current, selected);
-    haptic(selected === current.answerIndex ? 20 : 28);
+    haptic(18); // doğru/yanlış farkı test sırasında hissettirilmiyor
     renderQuiz();
   }));
   document.getElementById('quizPrevButton').addEventListener('click', () => {
@@ -970,3 +965,8 @@ bindRouteSheetEvents();
 
 render();
 loadCatalogue();
+```[cite: 1]
+
+---
+
+### 2. style(11).css
