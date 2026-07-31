@@ -14,10 +14,19 @@ const state = {
   quiz: null
 };
 
+// Rota Ayarları State'i
+const routeSettings = {
+  mode: 'Sana Özel Karma',
+  questions: 20,
+  time: 'Süreli'
+};
+
 const app = document.getElementById('app');
 const scrollArea = document.getElementById('scroll-area');
 const toast = document.getElementById('toast');
 const navButtons = [...document.querySelectorAll('[data-nav]')];
+
+// Konu Paneli (Topic Sheet) Elementleri
 const topicSheet = document.getElementById('topicSheet');
 const topicBackdrop = document.getElementById('topicBackdrop');
 const closeTopicSheetButton = document.getElementById('closeTopicSheet');
@@ -29,6 +38,14 @@ const topicList = document.getElementById('topicList');
 const topicProgressText = document.getElementById('topicProgressText');
 const topicProgressBar = document.getElementById('topicProgressBar');
 const topicBreadcrumbWrap = document.getElementById('topicBreadcrumbWrap');
+
+// Rota Paneli (Route Sheet) Elementleri
+const routeSheet = document.getElementById('routeSheet');
+const closeRouteSheetButton = document.getElementById('closeRouteSheet');
+const startRouteButton = document.getElementById('startRouteButton');
+const summaryMode = document.getElementById('summaryMode');
+const summaryDuration = document.getElementById('summaryDuration');
+
 let timerInterval = null;
 let progress = loadProgress();
 
@@ -57,12 +74,7 @@ function svg(name, className = 'ui-icon') {
 }
 
 function escapeHtml(value = '') {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
 
 function showToast(message) {
@@ -77,26 +89,14 @@ function haptic(duration = 18) {
 }
 
 function defaultProgress() {
-  return {
-    answers: 0,
-    correctAnswers: 0,
-    dailyAnswers: {},
-    completedSections: {},
-    completedTests: []
-  };
+  return { answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [] };
 }
 
 function loadProgress() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved || typeof saved !== 'object') return defaultProgress();
-    return {
-      ...defaultProgress(),
-      ...saved,
-      dailyAnswers: saved.dailyAnswers || {},
-      completedSections: saved.completedSections || {},
-      completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : []
-    };
+    return { ...defaultProgress(), ...saved, dailyAnswers: saved.dailyAnswers || {}, completedSections: saved.completedSections || {}, completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : [] };
   } catch (error) {
     return defaultProgress();
   }
@@ -156,16 +156,7 @@ function getCategories() {
 }
 
 function slugify(value) {
-  return String(value)
-    .toLocaleLowerCase('tr-TR')
-    .replace(/ı/g, 'i')
-    .replace(/ş/g, 's')
-    .replace(/ğ/g, 'g')
-    .replace(/ü/g, 'u')
-    .replace(/ö/g, 'o')
-    .replace(/ç/g, 'c')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  return String(value).toLocaleLowerCase('tr-TR').replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
 function looksLikeDocument(title) {
@@ -174,15 +165,7 @@ function looksLikeDocument(title) {
 
 function normalizeItem(item) {
   if (typeof item !== 'string') return item;
-  return {
-    id: slugify(item),
-    title: item,
-    type: looksLikeDocument(item) ? 'document' : 'topic',
-    contentStatus: 'planned',
-    questionCount: 0,
-    articleCount: 0,
-    children: []
-  };
+  return { id: slugify(item), title: item, type: looksLikeDocument(item) ? 'document' : 'topic', contentStatus: 'planned', questionCount: 0, articleCount: 0, children: [] };
 }
 
 function getCategory(categoryKey) {
@@ -259,8 +242,10 @@ function homeView() {
     </div>
     <div class="section-head"><h3>Test Kategorileri</h3></div>
     <section class="categories">${categories}</section>
-    <button class="cta-btn" id="smartPracticeButton" type="button">
-      <div class="cta-icon">${svg('target')}</div><div><strong>Pratiğe Başla</strong><span>Aktif soru bankalarından rastgele çöz</span></div><span class="chevron-w">${svg('arrow')}</span>
+    
+    <!-- BUGÜNKÜ ROTA BUTONU -->
+    <button class="cta-btn" id="openRouteSheetButton" type="button">
+      <div class="cta-icon">${svg('target')}</div><div><strong>Bugünkü Rota</strong><span>Önerilen planı gör veya özelleştir</span></div><span class="chevron-w">${svg('arrow')}</span>
     </button>
   </section>`;
 }
@@ -327,7 +312,10 @@ function bindViewEvents() {
     element.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') openTopicSheet(element.dataset.openCategory); });
   });
   app.querySelectorAll('[data-stat-target]').forEach(element => element.addEventListener('click', () => window.go(element.dataset.statTarget)));
-  document.getElementById('smartPracticeButton')?.addEventListener('click', startSmartPractice);
+  
+  // Rota panelini açma butonu
+  document.getElementById('openRouteSheetButton')?.addEventListener('click', openRouteSheet);
+  
   document.getElementById('startMockButton')?.addEventListener('click', startMixedMock);
   document.getElementById('resetProgressButton')?.addEventListener('click', resetProgress);
   app.querySelectorAll('[data-open-document]').forEach(element => element.addEventListener('click', () => {
@@ -359,6 +347,71 @@ function resetProgress() {
   showToast('İlerleme verisi sıfırlandı.');
 }
 
+// --- ROTA PANELİ YÖNETİMİ ---
+function openRouteSheet() {
+  routeSheet.classList.add('open');
+  topicBackdrop.classList.add('open');
+}
+
+function closeRouteSheet() {
+  routeSheet.classList.remove('open');
+  // Eğer arka planda topicSheet açık değilse backdrop'u da kapat
+  if (!topicSheet.classList.contains('open')) {
+    topicBackdrop.classList.remove('open');
+  }
+}
+
+function updateRouteSummary() {
+  startRouteButton.textContent = `${routeSettings.questions} Soruluk Rotayı Başlat`;
+  if (routeSettings.time === 'Süresiz') {
+    summaryDuration.textContent = 'Süresiz';
+  } else {
+    // Ortalama 45 saniyeden dakika hesabı
+    const minutes = Math.ceil((routeSettings.questions * QUESTION_TIME_LIMIT) / 60);
+    summaryDuration.textContent = `${minutes} dakika`;
+  }
+}
+
+function bindRouteSheetEvents() {
+  // Pratik Türü Seçimi
+  document.querySelectorAll('#modeGrid .mode-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#modeGrid .mode-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      routeSettings.mode = btn.dataset.mode;
+      summaryMode.textContent = routeSettings.mode;
+    });
+  });
+
+  // Soru Sayısı Seçimi
+  document.querySelectorAll('#questionChoices .choice').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#questionChoices .choice').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      routeSettings.questions = Number(btn.dataset.questions);
+      updateRouteSummary();
+    });
+  });
+
+  // Süre Modu Seçimi
+  document.querySelectorAll('#timeChoices .choice').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#timeChoices .choice').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      routeSettings.time = btn.dataset.time;
+      updateRouteSummary();
+    });
+  });
+
+  closeRouteSheetButton?.addEventListener('click', closeRouteSheet);
+  
+  startRouteButton?.addEventListener('click', () => {
+    closeRouteSheet();
+    startSmartPractice(); // Seçili ayarları kullanarak testi başlat
+  });
+}
+// ------------------------------
+
 function resetSheetClasses() {
   topicSheet.classList.remove('document-flow', 'quiz-active');
 }
@@ -380,8 +433,13 @@ function closeTopicSheet() {
   state.quiz = null;
   resetSheetClasses();
   topicSheet.classList.remove('open');
-  topicBackdrop.classList.remove('open');
+  // Eğer routeSheet açık değilse backdrop'u kapat
+  if (!routeSheet.classList.contains('open')) {
+    topicBackdrop.classList.remove('open');
+  }
 }
+
+// ... (applySheetHeader, renderBreadcrumb, setSheetProgress, renderCategoryLevel, statusLabel, renderDocumentHub, modeCard, renderTopicPlan, renderSections, renderSummary, loadQuestionBank, shuffle, openSectionQuiz, openRandomQuiz fonksiyonları aynı kalır) ...
 
 function applySheetHeader({ title, subtitle, eyebrow, icon = 'book', iconClass = '' }) {
   topicSheetTitle.textContent = title;
@@ -560,7 +618,7 @@ async function openRandomQuiz(documentItem, categoryKey) {
       documentItem,
       kind: 'random',
       title: documentItem.title,
-      subtitle: `Rastgele ${Math.min(20, bank.length)} soru`,
+      subtitle: `Rastgele 20 soru`,
       returnView: () => renderDocumentHub(documentItem, categoryKey)
     });
   } catch (error) {
@@ -568,14 +626,39 @@ async function openRandomQuiz(documentItem, categoryKey) {
   }
 }
 
+
+// --- GÜNCELLENEN ROTA BAŞLATMA FONKSİYONU ---
 async function startSmartPractice() {
   const activeDocuments = getActiveDocuments();
   if (!activeDocuments.length) return showToast('Henüz aktif soru paketi bulunmuyor.');
+  
+  // Şimdilik Rota için de rastgele aktif bir paketten soruyoruz.
+  // İleride "Sana Özel" vs. logicleri buraya eklenebilir.
   const selected = activeDocuments[Math.floor(Math.random() * activeDocuments.length)];
-  openTopicSheet(selected.categoryKey);
-  renderDocumentHub(selected.item, selected.categoryKey);
-  await openRandomQuiz(selected.item, selected.categoryKey);
+  
+  try {
+    showToast('Rota hazırlanıyor…');
+    const bank = await loadQuestionBank(selected.item);
+    if (!bank.length) return showToast('Bu başlık için henüz soru bulunmuyor.');
+    
+    // topicSheet'i arkada açık bırak, return olunca oraya dönecek
+    topicSheet.classList.add('open');
+    topicBackdrop.classList.add('open');
+    
+    startQuiz({
+      questions: shuffle(bank).slice(0, Math.min(routeSettings.questions, bank.length)),
+      documentItem: selected.item,
+      kind: 'route',
+      title: 'Bugünkü Rota',
+      subtitle: `${routeSettings.mode} • ${routeSettings.questions} Soru`,
+      returnView: closeTopicSheet
+    });
+  } catch (error) {
+    showToast(error.message || 'Sorular yüklenemedi.');
+  }
 }
+// ---------------------------------------------
+
 
 async function startMixedMock() {
   const activeDocuments = getActiveDocuments();
@@ -601,14 +684,20 @@ async function startMixedMock() {
 
 function startQuiz({ questions, documentItem = null, section = null, kind, title, subtitle, returnView }) {
   clearInterval(timerInterval);
+  
+  // Süre ayarını kontrol et (Süresiz ise 9999 saniye ver, UI'da timer gizlenebilir ama logic bozulmasın)
+  const isTimed = routeSettings.time === 'Süreli' || kind !== 'route';
+  const initialTime = isTimed ? QUESTION_TIME_LIMIT : 9999;
+  
   state.quiz = {
-    questions: shuffle(questions).map(question => ({ ...question, userSelected: null, timeLeft: QUESTION_TIME_LIMIT, answerRecorded: false })),
+    questions: shuffle(questions).map(question => ({ ...question, userSelected: null, timeLeft: initialTime, answerRecorded: false })),
     sourceQuestions: questions,
     documentItem,
     section,
     kind,
     title,
     subtitle,
+    isTimed,
     returnView,
     index: 0,
     completionRecorded: false
@@ -637,7 +726,13 @@ function renderQuiz() {
   const current = quiz.questions[quiz.index];
   const total = quiz.questions.length;
   const letters = ['A', 'B', 'C', 'D', 'E'];
-  topicList.innerHTML = `<div class="quiz-modern-container"><div class="quiz-modern-topbar"><button id="quizBackButton" type="button" aria-label="Geri">${svg('back')}</button><h2>${quiz.kind === 'mock' ? 'Deneme' : 'Mevzuat'}</h2><button type="button" aria-label="Yer işareti">${svg('bookmark')}</button></div><div class="quiz-modern-progress-area"><div class="quiz-modern-progress-info">Soru ${quiz.index + 1} / ${total}<div class="quiz-modern-progress-bar"><div class="quiz-modern-progress-fill" style="width:${Math.round(((quiz.index + 1) / total) * 100)}%"></div></div></div><div class="quiz-modern-timer" id="quizTimer">${svg('clock')} 00:${String(current.timeLeft).padStart(2, '0')}</div></div><div class="quiz-modern-card"><span class="quiz-modern-badge">${escapeHtml(quiz.subtitle)}</span><h3 class="quiz-modern-question">${escapeHtml(current.prompt)}</h3><div class="quiz-modern-options">${current.options.map((option, index) => {
+  
+  // Süre UI'ı
+  const timerDisplay = quiz.isTimed ? 
+    `<div class="quiz-modern-timer" id="quizTimer">${svg('clock')} 00:${String(current.timeLeft).padStart(2, '0')}</div>` : 
+    `<div class="quiz-modern-timer" style="background:#eaf8f0; color:#1f9d62;">Süresiz</div>`;
+
+  topicList.innerHTML = `<div class="quiz-modern-container"><div class="quiz-modern-topbar"><button id="quizBackButton" type="button" aria-label="Geri">${svg('back')}</button><h2>${quiz.kind === 'mock' ? 'Deneme' : quiz.kind === 'route' ? 'Rota' : 'Mevzuat'}</h2><button type="button" aria-label="Yer işareti">${svg('bookmark')}</button></div><div class="quiz-modern-progress-area"><div class="quiz-modern-progress-info">Soru ${quiz.index + 1} / ${total}<div class="quiz-modern-progress-bar"><div class="quiz-modern-progress-fill" style="width:${Math.round(((quiz.index + 1) / total) * 100)}%"></div></div></div>${timerDisplay}</div><div class="quiz-modern-card"><span class="quiz-modern-badge">${escapeHtml(quiz.subtitle)}</span><h3 class="quiz-modern-question">${escapeHtml(current.prompt)}</h3><div class="quiz-modern-options">${current.options.map((option, index) => {
     let className = 'quiz-modern-option';
     if (current.userSelected !== null) {
       if (index === current.answerIndex) className += ' correct';
@@ -647,7 +742,7 @@ function renderQuiz() {
   }).join('')}</div></div><div class="quiz-modern-footer"><button class="quiz-modern-btn quiz-modern-btn-prev" id="quizPrevButton" type="button" ${quiz.index === 0 ? 'disabled' : ''}>${svg('arrowLeft')} Önceki</button><button class="quiz-modern-btn quiz-modern-btn-next" id="quizNextButton" type="button">${quiz.index === total - 1 ? 'Sonucu Gör' : 'Sonraki'} ${svg('arrowRight')}</button></div></div>`;
   topicSheet.scrollTop = 0;
   bindQuizEvents();
-  startQuizTimer();
+  if(quiz.isTimed) startQuizTimer();
 }
 
 function startQuizTimer() {
@@ -758,7 +853,10 @@ function openDocumentFromLibrary(categoryKey, documentId) {
 
 navButtons.forEach(button => button.addEventListener('click', () => window.go(button.dataset.nav)));
 closeTopicSheetButton.addEventListener('click', closeTopicSheet);
-topicBackdrop.addEventListener('click', closeTopicSheet);
+topicBackdrop.addEventListener('click', () => {
+  closeTopicSheet();
+  closeRouteSheet();
+});
 
 async function loadCatalogue() {
   state.catalogueError = '';
@@ -775,6 +873,9 @@ async function loadCatalogue() {
   }
   render();
 }
+
+// Olay dinleyicilerini başlat
+bindRouteSheetEvents();
 
 render();
 loadCatalogue();
