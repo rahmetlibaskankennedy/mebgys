@@ -864,3 +864,27 @@ body.auth-page{
 /* YANLIŞ SORU HAVUZU */
 .wrong-pool{margin-top:16px}
 .wrong-pool h3{font-size:12px;color:var(--navy);margin:0 0 8px}
+
+/* KADRO SEÇİM KAPISI (zorunlu, tam ekran) */
+.role-gate{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:28px 20px;overflow-y:auto}
+.role-gate[aria-hidden="true"]{display:none}
+.role-gate-card{width:100%;max-width:420px}
+.role-gate-dots{display:flex;gap:8px;justify-content:center;margin-bottom:22px}
+.role-gate-dots .dot{width:9px;height:9px;border-radius:50%;background:#d7dce4}
+.role-gate-dots .dot:nth-child(1){background:var(--navy)}
+.role-gate-dots .dot:nth-child(2){background:var(--red)}
+.role-gate-card h1{font-size:25px;font-weight:800;color:var(--navy);text-align:center;margin:0 0 8px;letter-spacing:-.4px}
+.role-gate-card>p{font-size:12.5px;color:var(--muted);text-align:center;margin:0 0 22px}
+.role-gate-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.role-gate-item{width:100%;display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--line);border-radius:16px;background:#fff;cursor:pointer;box-shadow:0 3px 10px rgba(13,33,68,.03);text-align:left}
+.role-gate-item-icon{width:46px;height:46px;border-radius:50%;background:#edf3fb;color:var(--navy2);display:grid;place-items:center;flex-shrink:0}
+.role-gate-item-icon svg{width:21px;height:21px}
+.role-gate-item strong{flex:1;font-size:15.5px;color:var(--navy);font-weight:800}
+.role-gate-item-arrow{color:#c4c8d4;display:grid;place-items:center;flex-shrink:0}
+.role-gate-item-arrow svg{width:17px;height:17px}
+.role-gate-item.selected{border-color:var(--navy);background:#f7faff}
+.role-gate-item.selected .role-gate-item-icon{background:var(--navy);color:#fff}
+.role-gate-item.selected .role-gate-item-arrow{color:var(--navy)}
+.role-gate-cta{width:100%;border:0;border-radius:14px;padding:16px;background:#c7cddb;color:#fff;font-size:14.5px;font-weight:700;cursor:not-allowed}
+.role-gate-cta.enabled{background:var(--navy);cursor:pointer;box-shadow:0 10px 24px rgba(7,31,73,.22)}
+@media(min-width:641px){.role-gate-card{max-width:440px}}
