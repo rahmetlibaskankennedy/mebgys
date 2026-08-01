@@ -32,10 +32,18 @@ supabaseClient.auth.onAuthStateChange((_event, session) => {
   }
 });
 
-supabaseClient.auth.getSession().then(({ data }) => {
-  if (data.session) {
-    startApp(data.session);
-  } else {
+supabaseClient.auth.getSession().then(async ({ data }) => {
+  if (!data.session) {
     window.location.href = 'login.html';
+    return;
   }
+  // Oturum var görünüyor ama kullanıcı gerçekten Supabase'de duruyor mu, sunucudan doğrula
+  const { data: userData, error } = await supabaseClient.auth.getUser();
+  if (error || !userData?.user) {
+    // Kullanıcı silinmiş / geçersiz — oturumu temizle, giriş sayfasına dön
+    await supabaseClient.auth.signOut();
+    window.location.href = 'login.html';
+    return;
+  }
+  startApp(data.session);
 });
