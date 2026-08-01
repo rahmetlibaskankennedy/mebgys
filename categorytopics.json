@@ -74,7 +74,19 @@
           { "id": "law-657-section-istihdam-sekilleri", "type": "section", "title": "İstihdam Şekilleri", "articleRange": "Madde 4 – 5" },
           { "id": "law-657-section-odevler-sorumluluklar", "type": "section", "title": "Ödevler ve Sorumluluklar", "articleRange": "Madde 6 – 16" },
           { "id": "law-657-section-genel-haklar-yasaklar", "type": "section", "title": "Genel Haklar ve Yasaklar", "articleRange": "Madde 17 – 31" },
-          { "id": "law-657-section-disiplin", "type": "section", "title": "Disiplin Cezaları ve Soruşturma", "articleRange": "Madde 124 – 136" }
+          { "id": "law-657-section-siniflandirma", "type": "section", "title": "Sınıflandırma", "articleRange": "Madde 32 – 45" },
+          { "id": "law-657-section-memurluga-alinma", "type": "section", "title": "Devlet Memurluğuna Alınma (Usul, Şartlar, Adaylık)", "articleRange": "Madde 46 – 57" },
+          { "id": "law-657-section-atanma-ilerleme-yer-degistirme", "type": "section", "title": "Atanma, İlerleme-Yükselme ve Yer Değiştirme", "articleRange": "Madde 58 – 93" },
+          { "id": "law-657-section-memurlugun-sona-ermesi", "type": "section", "title": "Memurluğun Sona Ermesi", "articleRange": "Madde 94 – 98" },
+          { "id": "law-657-section-calisma-saatleri-izinler", "type": "section", "title": "Çalışma Saatleri ve İzinler", "articleRange": "Madde 99 – 108" },
+          { "id": "law-657-section-ozluk-dosyasi", "type": "section", "title": "Özlük Dosyası", "articleRange": "Madde 109 – 123" },
+          { "id": "law-657-section-disiplin", "type": "section", "title": "Disiplin Cezaları ve Soruşturma", "articleRange": "Madde 124 – 136" },
+          { "id": "law-657-section-gorevden-uzaklastirma", "type": "section", "title": "Görevden Uzaklaştırma", "articleRange": "Madde 137 – 145" },
+          { "id": "law-657-section-mali-hukumler", "type": "section", "title": "Mali Hükümler (Aylık ve Ödenekler)", "articleRange": "Madde 146 – 186" },
+          { "id": "law-657-section-sosyal-haklar-yardimlar", "type": "section", "title": "Sosyal Haklar ve Yardımlar", "articleRange": "Madde 187 – 213" },
+          { "id": "law-657-section-memur-yetistirilmesi", "type": "section", "title": "Devlet Memurlarının Yetiştirilmesi", "articleRange": "Madde 214 – 225" },
+          { "id": "law-657-section-cesitli-hukumler", "type": "section", "title": "Çeşitli Hükümler", "articleRange": "Madde 226 – 236" },
+          { "id": "law-657-section-gecici-ve-son-hukumler", "type": "section", "title": "Geçici ve Son Hükümler", "articleRange": "Ek/Geçici Maddeler, Madde 237 – 239" }
         ]
       },
       {
