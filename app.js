@@ -66,6 +66,7 @@ let timerInterval = null;
 let progress = loadProgress();
 
 const iconPaths = {
+  alertX: '<circle cx="12" cy="12" r="9"/><path d="m9.5 9.5 5 5m0-5-5 5"/>',
   scale: '<path d="M12 3v18"/><path d="M6 6h12"/><path d="m6 6-4 7h8L6 6Z"/><path d="m18 6-4 7h8l-4-7Z"/><path d="M8 21h8"/>',
   landmark: '<path d="m3 10 9-6 9 6"/><path d="M5 10h14"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/><path d="M4 18h16M3 22h18"/>',
   schoolbook: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4Z"/><path d="M8 4v16"/><path d="M12 8h4M12 12h4"/><path d="m14 15 .7 1.4 1.6.2-1.2 1.1.3 1.6-1.4-.8-1.4.8.3-1.6-1.2-1.1 1.6-.2L14 15Z"/>',
@@ -307,10 +308,6 @@ function studiesView() {
       <article><span>Tamamlanan bölüm</span><strong>${stats.completedSections}</strong></article>
       <article><span>Günlük seri</span><strong>${stats.streak} gün</strong></article>
     </div>
-    <section class="wrong-pool">
-      <h3>Yanlış Yaptığın Sorular</h3>
-      ${wrongCount ? `<article class="practice-card"><div class="practice-card-icon">${svg('flame')}</div><div><span>TEKRAR HAVUZU</span><h3>${wrongCount} soru</h3><p>Daha önce yanlış yaptığın soruları tekrar çöz.</p></div><button class="reader-primary" id="startWrongPoolButton" type="button">Başlat</button></article>` : '<div class="empty-inline">Henüz yanlış yaptığın bir soru yok.</div>'}
-    </section>
     <section class="recent-tests"><h3>Son testler</h3>${recentTests.length ? recentTests.map(test => `<article><div><strong>${escapeHtml(test.title)}</strong><span>${test.score}/${test.total} doğru</span></div><small>${test.kind === 'mock' ? 'Deneme' : 'Konu testi'}</small></article>`).join('') : '<div class="empty-inline">Henüz tamamlanan bir test yok.</div>'}</section>
     <button class="reset-progress" id="resetProgressButton" type="button">İlerleme verisini sıfırla</button>
   </section>`;
@@ -352,7 +349,7 @@ function profileView() {
 }
 
 function render() {
-  const views = { home: homeView, bank: bankView, wrong: studiesView, laws: libraryView, profile: profileView };
+  const views = { home: homeView, bank: bankView, wrong: studiesView, mistakes: mistakesView, laws: libraryView, profile: profileView };
   app.innerHTML = (views[state.view] || homeView)();
   bindViewEvents();
   updateHeader();
