@@ -3,9 +3,7 @@
 // oturum varsa app.js'in beklediği 'sinavrotasi:authenticated' event'ini tetikler.
 // (E-posta doğrulama bağlantısındaki #access_token da burada, sayfa yüklenirken
 // supabase-js tarafından otomatik okunup temizlenir.)
-
 let appStarted = false;
-
 function startApp(session) {
   if (appStarted) return;
   appStarted = true;
@@ -15,25 +13,28 @@ function startApp(session) {
   const firstNameEl = document.getElementById('userFirstName');
   if (firstNameEl) firstNameEl.textContent = firstName;
   window.currentUser = user;
-
   // Sunucudaki kayıtlı kadroyu çek — tarama verisi silinse bile kaybolmasın
   supabaseClient
-  .from('profiles')
-  .select('role')
-  .eq('id', user.id)
-  .maybeSingle()
-  .then(({ data, error }) => {
-    if (error) console.error('Profil rolü okunamadı:', error);
-    window.currentUserRole = data?.role || null;
-    window.currentUserAuthReady = true; // YENİ: rol bilgisi dahil her şey hazır
-    document.dispatchEvent(new CustomEvent('sinavrotasi:authenticated', { detail: { user } }));
-  });
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+    .then(({ data, error }) => {
+      if (error) console.error('Profil rolü okunamadı:', error);
+      window.currentUserRole = data?.role || null;
+      // ÖNEMLİ: window.currentUser rol sorgusundan ÖNCE senkron olarak set edildi.
+      // app.js bu yüzden window.currentUser'a değil, sadece rol bilgisi de dahil
+      // her şey hazır olduğunda true olan bu bayrağa bakmalı — aksi halde app.js
+      // rol verisi gelmeden handleAuthenticated()'i tetikleyip kadro ekranını
+      // yanlışlıkla açabilir.
+      window.currentUserAuthReady = true;
+      document.dispatchEvent(new CustomEvent('sinavrotasi:authenticated', { detail: { user } }));
+    });
 }
 window.signOut = async function signOut() {
   await supabaseClient.auth.signOut();
   window.location.href = 'login.html';
 };
-
 supabaseClient.auth.onAuthStateChange((_event, session) => {
   if (session) {
     startApp(session);
@@ -42,7 +43,6 @@ supabaseClient.auth.onAuthStateChange((_event, session) => {
     window.location.href = 'login.html';
   }
 });
-
 supabaseClient.auth.getSession().then(async ({ data }) => {
   if (!data.session) {
     window.location.href = 'login.html';
@@ -58,3 +58,10 @@ supabaseClient.auth.getSession().then(async ({ data }) => {
   }
   startApp(data.session);
 });
+
+// Supabase proje ayarların — bunları Supabase Dashboard > Project Settings > API'den al.
+const SUPABASE_URL = 'https://zrlsllbgqrllwgjyqbfv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_9BNNjJTjh9AfWQsxM27BiQ_1KfT0x7C';
+// Not: anon key public'tir, tarayıcıda görünmesi güvenlik açığı değildir.
+// Gerçek güvenlik Supabase tarafındaki Row Level Security (RLS) politikalarıyla sağlanır.
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
