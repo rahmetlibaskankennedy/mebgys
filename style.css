@@ -679,25 +679,30 @@ body{background:var(--bg)}
 
 .sheet-primary{ width:100%; border:0; border-radius:14px; padding:15px; background:var(--navy); color:#fff; font-size:14px; font-weight:700; cursor:pointer; }
 
-/* ================= AUTH (ÜYELİK / GİRİŞ) ================= */
-.auth-phone-bg{
+/* ================= AUTH (ÜYELİK / GİRİŞ) — normal, responsive web page (phone mockup DEĞİL) ================= */
+html, body.auth-page{height:auto}
+body.auth-page{
+  min-height:100dvh;
   background:
-    linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)),
+    linear-gradient(rgba(255,255,255,.75),rgba(255,255,255,.75)),
     url("images/background.png");
   background-size:cover;
   background-position:center;
+  background-attachment:fixed;
   background-repeat:no-repeat;
 }
-.auth-content{
-  display:flex;flex-direction:column;align-items:center;
-  padding:calc(18px + env(safe-area-inset-top)) 22px calc(32px + env(safe-area-inset-bottom));
+.auth-shell{
   min-height:100dvh;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:calc(28px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
 }
-.auth-card-wrap{width:100%;display:flex;flex-direction:column;align-items:center}
-.auth-card-wrap + .auth-card-wrap{margin-top:0}
+.auth-card-wrap{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center}
 
-/* Brand lockup: icon + wordmark + tagline, mirrors the mockup's compass + wordmark header */
-.auth-brand{display:flex;flex-direction:column;align-items:center;margin:6px 0 22px;text-align:center}
+/* Brand lockup: icon + wordmark + tagline */
+.auth-brand{display:flex;flex-direction:column;align-items:center;margin:0 0 22px;text-align:center}
 .auth-brand-icon{width:60px;height:60px;object-fit:contain;margin-bottom:10px}
 .auth-brand-word{font-size:22px;font-weight:800;letter-spacing:-.2px;line-height:1}
 .auth-brand-word .w-navy{color:var(--navy)}
@@ -709,11 +714,11 @@ body{background:var(--bg)}
   background:#fff;
   border:1px solid rgba(21,59,115,.06);
   border-radius:24px;
-  padding:24px 22px;
+  padding:28px 24px;
   box-shadow:0 16px 40px rgba(13,33,68,.08);
 }
 .auth-heading{text-align:center;margin-bottom:4px}
-.auth-heading h1{font-size:20px;margin:0;color:var(--navy);font-weight:800;letter-spacing:-.2px}
+.auth-heading h1{font-size:21px;margin:0;color:var(--navy);font-weight:800;letter-spacing:-.2px}
 .auth-heading p{font-size:12.5px;color:var(--muted);margin:5px 0 0}
 
 .auth-form{display:flex;flex-direction:column}
@@ -723,29 +728,32 @@ body{background:var(--bg)}
 }
 .auth-form .field:focus-within{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(45,126,247,.1)}
 .auth-form .field svg{width:17px;height:17px;flex-shrink:0}
-.auth-form .field input{border:none;outline:none;flex:1;min-width:0;background:transparent;font-size:13.5px;color:var(--text)}
+.auth-form .field input{border:none;outline:none;flex:1;min-width:0;background:transparent;font-size:14px;color:var(--text)}
 .auth-form .field input::placeholder{color:#a7b0c0}
 .auth-form .field .eye{cursor:pointer}
 
-.row-between{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:12px;flex-wrap:wrap;gap:8px}
-.remember{display:flex;align-items:center;gap:6px;color:#4a5a70}
+.row-between{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:12.5px;flex-wrap:wrap;gap:8px}
+.remember{display:flex;align-items:center;gap:6px;color:#4a5a70;cursor:pointer}
 .remember input{width:14px;height:14px;accent-color:var(--blue)}
-.forgot{color:var(--blue);font-weight:600;cursor:pointer}
+.forgot{color:var(--blue);font-weight:600;cursor:pointer;background:none;border:none;font-size:12.5px;padding:0}
 
-.terms{display:flex;align-items:flex-start;gap:7px;margin-top:13px;font-size:11.5px;color:#4a5a70;line-height:1.4}
+.terms{display:flex;align-items:flex-start;gap:7px;margin-top:13px;font-size:12px;color:#4a5a70;line-height:1.4}
 .terms input{width:14px;height:14px;margin-top:2px;accent-color:var(--blue);flex-shrink:0}
 .terms label{cursor:pointer}
 
-.auth-error{color:var(--red);font-size:11.5px;margin:10px 0 0;min-height:14px}
-.auth-info{color:var(--green);font-size:11.5px;margin:10px 0 0;line-height:1.4}
+.auth-error{color:var(--red);font-size:12px;margin:10px 0 0;min-height:14px}
+.auth-info{color:var(--green);font-size:12px;margin:10px 0 0;line-height:1.4}
 
 .auth-form .primary-btn{
   width:100%;margin-top:18px;color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;border:none;
   height:52px;border-radius:14px;background:var(--blue);
   box-shadow:0 10px 24px rgba(45,126,247,.28);transition:.2s;
 }
+.auth-form .primary-btn:hover{filter:brightness(1.05)}
 .auth-form .primary-btn:active{transform:scale(.98)}
 .auth-form .primary-btn:disabled{opacity:.6;cursor:default;box-shadow:none;transform:none}
+
+.auth-redirect-note{text-align:center;color:var(--muted);font-size:12.5px;margin-top:14px}
 
 .divider{display:flex;align-items:center;gap:10px;margin:20px 0 16px}
 .divider .line{flex:1;height:1px;background:var(--line)}
@@ -757,15 +765,23 @@ body{background:var(--bg)}
   border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
   background:#f6f8fb;transition:.15s;
 }
-.social-box:active{background:#eef2f7}
+.social-box:hover{background:#eef2f7}
+.social-box:disabled{opacity:.5;cursor:default}
 .social-box svg{width:20px;height:20px}
 
-.auth-switch{margin-top:18px;text-align:center;font-size:12.5px;color:#4a5a70}
+.auth-switch{margin-top:18px;text-align:center;font-size:13px;color:#4a5a70}
 .auth-switch a{color:var(--blue);font-weight:700;text-decoration:none}
+.auth-switch a:hover{text-decoration:underline}
 
 @media(max-width:380px){
-  .auth-content{padding-left:16px;padding-right:16px}
-  .auth-card{padding:20px 16px}
+  .auth-shell{padding-left:14px;padding-right:14px}
+  .auth-card{padding:22px 16px}
   .auth-brand-icon{width:52px;height:52px}
   .auth-brand-word{font-size:20px}
+}
+
+/* Geniş ekranlarda (tablet/masaüstü) kartı ortalı ve ferah tut — sahte telefon çerçevesi yok */
+@media(min-width:640px){
+  .auth-card-wrap{max-width:420px}
+  .auth-card{padding:34px 32px}
 }
