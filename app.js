@@ -46,6 +46,13 @@ const startRouteButton = document.getElementById('startRouteButton');
 const summaryMode = document.getElementById('summaryMode');
 const summaryDuration = document.getElementById('summaryDuration');
 
+// Arama Paneli Elementleri
+const openSearchButton = document.getElementById('openSearchButton');
+const searchSheet = document.getElementById('searchSheet');
+const closeSearchSheetButton = document.getElementById('closeSearchSheet');
+const searchInput = document.getElementById('searchInput');
+const searchResultsList = document.getElementById('searchResultsList');
+
 let timerInterval = null;
 let progress = loadProgress();
 
@@ -359,6 +366,7 @@ function resetProgress() {
 
 // --- ROTA PANELİ YÖNETİMİ ---
 function openRouteSheet() {
+  searchSheet.classList.remove('open');
   routeSheet.classList.add('open');
   topicBackdrop.classList.add('open');
 }
@@ -415,6 +423,82 @@ function bindRouteSheetEvents() {
   startSmartPractice();
   });
 }
+// --- ARAMA PANELİ YÖNETİMİ ---
+function openSearchSheet() {
+  routeSheet.classList.remove('open');
+  searchSheet.classList.add('open');
+  topicBackdrop.classList.add('open');
+  window.setTimeout(() => searchInput.focus(), 300);
+  runSearch('');
+}
+
+function closeSearchSheet() {
+  searchSheet.classList.remove('open');
+  searchInput.value = '';
+  searchResultsList.innerHTML = '';
+  if (!topicSheet.classList.contains('open') && !routeSheet.classList.contains('open')) {
+    topicBackdrop.classList.remove('open');
+  }
+}
+
+function collectSearchIndex() {
+  const index = [];
+  getCategories().forEach(([categoryKey, category]) => {
+    getCategoryItems(categoryKey).forEach(item => {
+      index.push({ type: item.type, title: item.title, categoryKey, categoryTitle: category.title, item, icon: item.type === 'document' ? 'gavel' : 'book' });
+      (item.children || []).forEach(section => {
+        index.push({ type: 'section', title: section.title, categoryKey, categoryTitle: category.title, item, section, icon: 'gavel', context: item.title });
+        (section.children || []).forEach(article => {
+          const label = article.summary || article.title || '';
+          if (label) index.push({ type: 'article', title: label, categoryKey, categoryTitle: category.title, item, section, article, icon: 'book', context: `${item.title} • ${section.title}` });
+        });
+      });
+    });
+  });
+  return index;
+}
+
+function runSearch(query) {
+  if (!state.catalogue) {
+    searchResultsList.innerHTML = '<div class="empty-inline">İçerikler henüz yüklenmedi.</div>';
+    return;
+  }
+  const trimmed = query.trim();
+  if (trimmed.length < 2) {
+    searchResultsList.innerHTML = '<div class="empty-inline">Aramak için en az 2 karakter yaz.</div>';
+    return;
+  }
+  const needle = trimmed.toLocaleLowerCase('tr-TR');
+  const results = collectSearchIndex().filter(entry => entry.title.toLocaleLowerCase('tr-TR').includes(needle)).slice(0, 30);
+  searchResultsList.innerHTML = results.length ? results.map((result, index) => `
+    <article class="topic-item" data-search-index="${index}" role="button" tabindex="0">
+      <div class="topic-number">${svg(result.icon)}</div>
+      <div class="topic-copy"><h4>${escapeHtml(result.title)}</h4><p>${escapeHtml(result.context || result.categoryTitle)}</p></div>
+      <div class="topic-arrow">${svg('arrow')}</div>
+    </article>`).join('') : '<div class="empty-inline">Sonuç bulunamadı.</div>';
+  searchResultsList.querySelectorAll('[data-search-index]').forEach(element => {
+    const open = () => openSearchResult(results[Number(element.dataset.searchIndex)]);
+    element.addEventListener('click', open);
+    element.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') open(); });
+  });
+}
+
+function openSearchResult(result) {
+  closeSearchSheet();
+  topicSheet.classList.add('open');
+  topicBackdrop.classList.add('open');
+  if (result.type === 'section' || result.type === 'article') {
+    renderSummary(result.item, result.categoryKey);
+  } else if (result.item.type === 'document') {
+    renderDocumentHub(result.item, result.categoryKey);
+  } else {
+    renderTopicPlan(result.item, result.categoryKey);
+  }
+}
+
+openSearchButton?.addEventListener('click', openSearchSheet);
+closeSearchSheetButton?.addEventListener('click', closeSearchSheet);
+searchInput?.addEventListener('input', () => runSearch(searchInput.value));
 
 function resetSheetClasses() {
   topicSheet.classList.remove('document-flow', 'quiz-active');
@@ -1033,6 +1117,7 @@ closeTopicSheetButton.addEventListener('click', closeTopicSheet);
 topicBackdrop.addEventListener('click', () => {
   closeTopicSheet();
   closeRouteSheet();
+  closeSearchSheet();
 });
 
 async function loadCatalogue() {
