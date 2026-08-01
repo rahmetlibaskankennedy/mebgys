@@ -313,6 +313,21 @@ function studiesView() {
   </section>`;
 }
 
+function mistakesView() {
+  const questions = Object.values(progress.wrongQuestions);
+  return `<section class="screen content-screen">
+    <div class="page-heading"><span>TEKRAR HAVUZU</span><h2>Yanlışlarım</h2><p>Daha önce yanlış yaptığın tüm sorular burada birikir.</p></div>
+    ${questions.length ? `<article class="practice-card">
+      <div class="practice-card-icon">${svg('flame')}</div>
+      <div><span>TEKRAR HAVUZU</span><h3>${questions.length} soru</h3><p>Hepsini karışık sırayla tekrar çöz.</p></div>
+      <button class="reader-primary" id="startWrongPoolButton" type="button">Başlat</button>
+    </article>
+    <div class="quiz-result-list" style="margin-top:16px">
+      ${questions.map(q => `<article class="quiz-result-item"><p>${escapeHtml(q.prompt)}</p><small>Doğru cevap: ${escapeHtml(q.options[q.answerIndex])}</small></article>`).join('')}
+    </div>` : '<div class="empty-inline">Henüz yanlış yaptığın bir soru yok.</div>'}
+  </section>`;
+}
+
 function startWrongPool() {
   const questions = Object.values(progress.wrongQuestions);
   if (!questions.length) return showToast('Tekrar edilecek soru yok.');
@@ -345,7 +360,7 @@ function profileView() {
   const fullName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Aday';
   const email = user?.email || '';
   const initial = fullName.trim().charAt(0).toUpperCase() || '?';
-  return `<section class="screen content-screen"><div class="page-heading"><span>PROFİL</span><h2>${escapeHtml(fullName)}</h2><p>${escapeHtml(email)}</p></div><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>Hedef: MEB GYS</strong><span>${stats.solvedQuestions} soru • %${stats.accuracy} doğruluk</span></div></article><div class="profile-notice">İstatistikler şu an cihazında saklanır; hesap bazlı senkronizasyon yakında eklenecek.</div><button class="reader-secondary" id="signOutButton" type="button">Çıkış Yap</button></section>`;
+  return `<section class="screen content-screen"><div class="page-heading"><span>PROFİL</span><h2>${escapeHtml(fullName)}</h2><p>${escapeHtml(email)}</p></div><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>Hedef: MEB GYS</strong><span>${stats.solvedQuestions} soru • %${stats.accuracy} doğruluk</span></div></article><div class="profile-notice">İstatistikler şu an cihazında saklanır; hesap bazlı senkronizasyon yakında eklenecek.</div><button class="signout-btn" id="signOutButton" type="button">${svg('lock')}<span>Çıkış Yap</span></button></section>`;
 }
 
 function render() {
