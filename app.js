@@ -301,9 +301,9 @@ function homeView() {
   return `<section class="screen home-screen">
     <div class="stats">
       ${statCard('squareCheck', '', stats.completedSections, 'Konu<br>Tamamlandı', 'wrong')}
-${statCard('circleCheckBig', 'accent', stats.solvedQuestions, 'Soru<br>Çözüldü', 'wrong')}
-${statCard('award', 'amber', stats.completedMocks, 'Deneme<br>Tamamlandı', 'bank')}
-${statCard('flame', 'accent', stats.streak, 'Günlük<br>Seri', 'wrong')}
+      ${statCard('circleCheckBig', 'accent', stats.solvedQuestions, 'Soru<br>Çözüldü', 'wrong')}
+      ${statCard('award', 'amber', stats.completedMocks, 'Deneme<br>Tamamlandı', 'bank')}
+      ${statCard('flame', 'accent', stats.streak, 'Günlük<br>Seri', 'wrong')}
     </div>
     <div class="section-head"><h3>Test Kategorileri</h3></div>
     <section class="categories">${categories}</section>
