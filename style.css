@@ -982,8 +982,12 @@ body.auth-page{
 
 .flip-card-face{
   position:absolute;
-  inset:0;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
   backface-visibility:hidden;
+  transform: translateZ(1px);
   -webkit-backface-visibility:hidden;
   padding:22px 20px;
   display:flex;
@@ -991,7 +995,7 @@ body.auth-page{
   align-items:center;
   justify-content:center;
   text-align:center;
-  box-shadow:var(--shadow);
+  box-shadow:var(--shadow); 
 }
 
 /* Ön yüz — soru */
@@ -1049,8 +1053,8 @@ body.auth-page{
 .flip-card-back{
   background:radial-gradient(120% 90% at 15% 0%,#f2fbf6 0%,var(--green2) 55%,#fff 100%);
   border:1.5px solid #cfead9;
-  transform:rotateY(180deg);
-  -webkit-transform:rotateY(180deg);
+  transform: rotateY(180deg) translateZ(1px);
+  -webkit-transform: rotateY(180deg) translateZ(1px);
   color:var(--navy);
 }
 .flip-card-back .flip-card-text{
