@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'sinavrotasi-study-progress-v2';
-const CATALOGUE_URL = 'categoryTopics.json';
+const CATALOGUE_URL = 'categorytopics.json';
 const DAILY_GOAL = 20;
 const QUESTION_TIME_LIMIT = 45;
 
