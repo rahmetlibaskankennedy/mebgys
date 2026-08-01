@@ -343,10 +343,16 @@ function profileView() {
   const fullName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Aday';
   const email = user?.email || '';
   const initial = fullName.trim().charAt(0).toUpperCase() || '?';
-  return `<section class="screen content-screen"><div class="page-heading"><span>PROFİL</span><h2>${escapeHtml(fullName)}</h2><p>${escapeHtml(email)}</p></div><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>Hedef: MEB GYS</strong><span>${stats.solvedQuestions} soru • %${stats.accuracy} doğruluk</span></div></article><div class="profile-notice">İstatistikler şu an cihazında saklanır; hesap bazlı senkronizasyon yakında eklenecek.</div><button class="reader-secondary" id="signOutButton" type="button">Çıkış Yap</button></section>`;
+  const roleGrid = ROLES.map(role => `<button class="role-card ${role.key === progress.selectedRole ? 'selected' : ''}" data-role="${role.key}" type="button"><span class="role-card-icon">${svg(progress.purchasedRoles.includes(role.key) ? 'check' : 'lock')}</span><strong>${role.label}</strong><small>${progress.purchasedRoles.includes(role.key) ? 'Satın alındı' : 'Kilitli'}</small></button>`).join('');
+  return `<section class="screen content-screen"><div class="page-heading"><span>PROFİL</span><h2>${escapeHtml(fullName)}</h2><p>${escapeHtml(email)}</p></div><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>Hedef: MEB GYS</strong><span>${stats.solvedQuestions} soru • %${stats.accuracy} doğruluk</span></div></article><div class="profile-notice">İstatistikler şu an cihazında saklanır; hesap bazlı senkronizasyon yakında eklenecek.</div><div class="page-heading" style="margin-top:20px"><span>KADRO</span><h2 style="font-size:14px">Kadronu değiştir</h2></div><div class="role-grid">${roleGrid}</div><button class="reader-secondary" id="signOutButton" type="button" style="margin-top:18px">Çıkış Yap</button></section>`;
 }
 
 function render() {
+  if (!progress.selectedRole) {
+    app.innerHTML = roleSelectView();
+    app.querySelectorAll('[data-role]').forEach(element => element.addEventListener('click', () => selectRole(element.dataset.role)));
+    return;
+  }
   const views = { home: homeView, bank: bankView, wrong: studiesView, laws: libraryView, profile: profileView };
   app.innerHTML = (views[state.view] || homeView)();
   bindViewEvents();
@@ -365,8 +371,10 @@ function bindViewEvents() {
   document.getElementById('openRouteSheetButton')?.addEventListener('click', openRouteSheet);
   
   document.getElementById('startMockButton')?.addEventListener('click', startMixedMock);
+  document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
   document.getElementById('resetProgressButton')?.addEventListener('click', resetProgress);
   document.getElementById('signOutButton')?.addEventListener('click', () => window.signOut());
+  app.querySelectorAll('[data-role]').forEach(element => element.addEventListener('click', () => selectRole(element.dataset.role)));
   app.querySelectorAll('[data-open-document]').forEach(element => element.addEventListener('click', () => {
     openDocumentFromLibrary(element.dataset.categoryKey, element.dataset.openDocument);
   }));
@@ -532,6 +540,38 @@ openSearchButton?.addEventListener('click', openSearchSheet);
 closeSearchSheetButton?.addEventListener('click', closeSearchSheet);
 searchInput?.addEventListener('input', () => runSearch(searchInput.value));
 
+function roleSelectView() {
+  return `<section class="screen role-select-screen">
+    <div class="page-heading"><span>BAŞLARKEN</span><h2>Hangi kadro için hazırlanıyorsun?</h2><p>Seçimini istediğin zaman profil ekranından değiştirebilirsin.</p></div>
+    <div class="role-grid">${ROLES.map(role => `<button class="role-card" data-role="${role.key}" type="button"><span class="role-card-icon">${svg('target')}</span><strong>${role.label}</strong></button>`).join('')}</div>
+  </section>`;
+}
+
+function selectRole(roleKey) {
+  progress.selectedRole = roleKey;
+  haptic(16);
+  saveProgress();
+  render();
+}
+
+function purchaseCurrentRole(reopen) {
+  if (!progress.purchasedRoles.includes(progress.selectedRole)) progress.purchasedRoles.push(progress.selectedRole);
+  saveProgress();
+  showToast('Satın alma tamamlandı (deneme modu). Kadron açıldı!');
+  if (reopen) reopen();
+}
+
+function renderPurchasePrompt(categoryKey) {
+  resetSheetClasses();
+  topicSheet.classList.add('document-flow');
+  const roleLabel = ROLES.find(role => role.key === progress.selectedRole)?.label || '';
+  applySheetHeader({ title: 'Premium İçerik', subtitle: `${roleLabel} kadrosu için tüm içerik`, eyebrow: 'SATIN AL', icon: 'lock', iconClass: 'red' });
+  renderBreadcrumb(getCategory(categoryKey).title, () => renderCategoryLevel(categoryKey));
+  topicList.innerHTML = `<section class="empty-state content-plan"><span class="empty-state-icon">${svg('lock')}</span><h3>Bu içerik kilitli</h3><p>${roleLabel} kadrosu için tüm konu, kanun ve soruların kilidini açmak üzere satın alma işlemini tamamla.</p><button class="reader-primary" id="mockPurchaseButton" type="button" style="margin-top:16px">Kadroyu Satın Al</button></section>`;
+  document.getElementById('mockPurchaseButton').addEventListener('click', () => purchaseCurrentRole(() => renderCategoryLevel(categoryKey)));
+  topicSheet.scrollTop = 0;
+}
+
 function resetSheetClasses() {
   topicSheet.classList.remove('document-flow', 'quiz-active');
 }
@@ -586,14 +626,17 @@ function renderCategoryLevel(categoryKey) {
   const progressPercent = getCategoryProgress(categoryKey);
   setSheetProgress('Henüz çalışılmadı', progressPercent);
   const items = getCategoryItems(categoryKey);
+  const purchased = isRolePurchased();
   topicList.innerHTML = items.map((item, index) => {
     const isDocument = item.type === 'document';
     const isComplete = isDocument && getDocumentProgress(item) === 100;
-    const info = isDocument ? `${item.articleCount || 0} madde • ${item.questionCount || 0} soru` : 'Konu anlatımı ve soru bankası';
-    return `<article class="topic-item ${isComplete ? 'completed' : ''}" data-topic-index="${index}" role="button" tabindex="0"><div class="topic-number">${String(index + 1).padStart(2, '0')}</div><div class="topic-copy"><h4>${escapeHtml(item.title)}</h4><p>${info}</p></div>${isDocument && item.articleCount ? `<span class="article-range">${item.contentStatus === 'sample' ? 'ÖRNEK SET' : 'MEVZUAT'}</span>` : ''}<div class="topic-arrow">${svg('arrow')}</div></article>`;
+    const locked = index > 0 && !purchased;
+    const info = locked ? 'Kilidi açmak için satın al' : (isDocument ? `${item.articleCount || 0} madde • ${item.questionCount || 0} soru` : 'Konu anlatımı ve soru bankası');
+    return `<article class="topic-item ${isComplete ? 'completed' : ''} ${locked ? 'locked' : ''}" data-topic-index="${index}" data-locked="${locked}" role="button" tabindex="0"><div class="topic-number">${locked ? svg('lock') : String(index + 1).padStart(2, '0')}</div><div class="topic-copy"><h4>${escapeHtml(item.title)}</h4><p>${info}</p></div>${!locked && isDocument && item.articleCount ? `<span class="article-range">${item.contentStatus === 'sample' ? 'ÖRNEK SET' : 'MEVZUAT'}</span>` : ''}<div class="topic-arrow">${svg('arrow')}</div></article>`;
   }).join('');
   topicList.querySelectorAll('[data-topic-index]').forEach(element => {
     const open = () => {
+      if (element.dataset.locked === 'true') return renderPurchasePrompt(categoryKey);
       const item = items[Number(element.dataset.topicIndex)];
       if (item.type === 'document') renderDocumentHub(item, categoryKey);
       else renderTopicPlan(item, categoryKey);
