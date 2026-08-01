@@ -12,7 +12,7 @@ const ROLES = [
 
 const ROLE_ICONS = { memur: 'idcard', sef: 'clipboard', sayman: 'calculator', 'sube-mudur': 'landmark' };
 
-// ↓↓↓ YENİ EKLENEN KISIM BURADAN BAŞLIYOR ↓↓↓
+// --- BİLGİ KARTLARI KATALOĞU ---
 const CARD_CATEGORY_ORDER = ['general-legislation', 'meb-legislation', 'general-culture'];
 
 const CARD_CATALOGUE = {
@@ -40,7 +40,6 @@ const CARD_CATALOGUE = {
 };
 
 const cardDecks = new Map();
-// ↑↑↑ YENİ EKLENEN KISIM BURADA BİTİYOR ↑↑↑
 
 const state = {
   view: 'home',
@@ -372,17 +371,133 @@ function startWrongPool() {
     returnView: closeTopicSheet
   });
 }
-function libraryView() {
-  if (!state.catalogue) return loadingView();
-  const groups = getCategories().map(([categoryKey, category]) => {
-    const documents = getCategoryItems(categoryKey).filter(item => item.type === 'document');
-    if (!documents.length) return '';
-    return `<section class="library-group"><div class="library-group-head"><span>${escapeHtml(category.title)}</span><small>${documents.length} kaynak</small></div>${documents.map(item => {
-      const available = item.questionFile ? 'Aktif soru paketi' : 'İçerik planlanıyor';
-      return `<button class="library-item" data-open-document="${item.id}" data-category-key="${categoryKey}" type="button"><span class="library-item-icon">${svg('gavel')}</span><span><strong>${escapeHtml(item.title)}</strong><small>${available}</small></span>${svg('arrow')}</button>`;
-    }).join('')}</section>`;
+
+// --- BİLGİ KARTLARI (KARTLARIM) EKRANLARI ---
+function cardsView() {
+  return `<section class="screen content-screen">
+    <div class="page-heading"><span>KARTLARIM</span><h2>Bilgi Kartları</h2><p>Kategorini seç, soru-cevap kartlarıyla hızlı tekrar yap.</p></div>
+    <section class="categories">
+      ${CARD_CATEGORY_ORDER.map(key => {
+        const meta = CARD_CATALOGUE[key];
+        const activeCount = meta.documents.filter(d => d.cardFile).length;
+        const metaText = meta.documents.length ? `${meta.documents.length} kaynak • ${activeCount} aktif set` : 'İçerik yakında eklenecek';
+        return `<article class="category" role="button" tabindex="0" data-open-card-category="${key}">
+          <div class="cat-icon ${meta.iconClass}">${svg(meta.icon)}</div>
+          <div class="cat-copy"><h4>${escapeHtml(meta.title)}</h4><p>${escapeHtml(meta.description)}</p><small>${metaText}</small></div>
+          <div class="chevron">${svg('arrow')}</div>
+        </article>`;
+      }).join('')}
+    </section>
+  </section>`;
+}
+
+function openCardCategorySheet(categoryKey) {
+  const category = CARD_CATALOGUE[categoryKey];
+  if (!category) return showToast('Kategori bulunamadı.');
+  clearInterval(timerInterval);
+  topicSheet.classList.add('open');
+  topicBackdrop.classList.add('open');
+  renderCardCategoryLevel(categoryKey);
+}
+
+function renderCardCategoryLevel(categoryKey) {
+  const category = CARD_CATALOGUE[categoryKey];
+  resetSheetClasses();
+  applySheetHeader({ title: category.title, subtitle: 'Çalışmak istediğin kaynağı seç.', eyebrow: 'BİLGİ KARTLARI', icon: category.icon, iconClass: category.iconClass });
+  topicBreadcrumbWrap.innerHTML = '';
+  setSheetProgress('Bir kaynak seç', 0);
+  if (!category.documents.length) {
+    topicList.innerHTML = `<section class="empty-state content-plan"><span class="empty-state-icon">${svg('book')}</span><h3>Bu kategori için kart seti hazırlanıyor</h3><p>Kaynaklar eklendiğinde burada otomatik olarak görünecek.</p></section>`;
+    topicSheet.scrollTop = 0;
+    return;
+  }
+  topicList.innerHTML = category.documents.map((doc, index) => {
+    const info = doc.cardFile ? 'Aktif kart seti' : 'Yakında eklenecek';
+    return `<article class="topic-item ${doc.cardFile ? '' : 'is-disabled'}" data-card-doc-index="${index}" role="button" tabindex="0">
+      <div class="topic-number">${String(index + 1).padStart(2, '0')}</div>
+      <div class="topic-copy"><h4>${escapeHtml(doc.title)}</h4><p>${info}</p></div>
+      <div class="topic-arrow">${svg('arrow')}</div>
+    </article>`;
   }).join('');
-  return `<section class="screen content-screen"><div class="page-heading"><span>KİTAPLIK</span><h2>Mevzuat kaynakları</h2><p>Her kaynak aynı çalışma akışını kullanır; içerik paketi eklendiğinde otomatik etkinleşir.</p></div>${groups}</section>`;
+  topicList.querySelectorAll('[data-card-doc-index]').forEach(element => {
+    const open = () => {
+      const doc = category.documents[Number(element.dataset.cardDocIndex)];
+      if (!doc.cardFile) return showToast('Bu kaynak için kart seti henüz eklenmedi.');
+      openCardDeck(doc, categoryKey);
+    };
+    element.addEventListener('click', open);
+    element.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') open(); });
+  });
+  topicSheet.scrollTop = 0;
+}
+
+async function loadCardDeck(doc) {
+  if (!doc.cardFile) throw new Error('Bu kaynak için kart seti henüz eklenmedi.');
+  if (cardDecks.has(doc.id)) return cardDecks.get(doc.id);
+  const response = await fetch(doc.cardFile, { cache: 'no-store' });
+  if (!response.ok) throw new Error('Kart dosyası okunamadı.');
+  const data = await response.json();
+  const cards = Array.isArray(data.cards) ? data.cards : [];
+  cardDecks.set(doc.id, cards);
+  return cards;
+}
+
+async function openCardDeck(doc, categoryKey) {
+  try {
+    showToast('Kartlar hazırlanıyor…');
+    const cards = await loadCardDeck(doc);
+    if (!cards.length) return showToast('Bu kaynak için henüz kart bulunmuyor.');
+    state.cardStudy = { doc, categoryKey, cards: shuffle(cards), index: 0, flipped: false };
+    renderCardStudy();
+  } catch (error) {
+    showToast(error.message || 'Kartlar yüklenemedi.');
+  }
+}
+
+function renderCardStudy() {
+  const study = state.cardStudy;
+  if (!study) return;
+  topicSheet.classList.add('document-flow', 'card-study-active');
+  topicSheet.classList.remove('quiz-active');
+  const category = CARD_CATALOGUE[study.categoryKey];
+  applySheetHeader({ title: study.doc.title, subtitle: `${study.index + 1} / ${study.cards.length}`, eyebrow: 'BİLGİ KARTLARI', icon: 'gavel', iconClass: category.iconClass });
+  renderBreadcrumb(category.title, () => { state.cardStudy = null; topicSheet.classList.remove('card-study-active'); renderCardCategoryLevel(study.categoryKey); });
+  setSheetProgress('', Math.round(((study.index + 1) / study.cards.length) * 100));
+  const current = study.cards[study.index];
+  topicList.innerHTML = `
+    <div class="card-study-wrap">
+      <div class="flip-card ${study.flipped ? 'flipped' : ''}" id="flipCard">
+        <div class="flip-card-inner">
+          <div class="flip-card-face flip-card-front">
+            <span class="flip-card-label">${escapeHtml(category.title)}</span>
+            <span class="flip-card-q-mark">?</span>
+            <p class="flip-card-text">${escapeHtml(current.question)}</p>
+            <span class="flip-card-hint">Kartı çevirmek için tıkla</span>
+          </div>
+          <div class="flip-card-face flip-card-back">
+            <p class="flip-card-text">${escapeHtml(current.answer)}</p>
+            <span class="flip-card-hint">Kartı geri çevirmek için tıkla</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-study-nav">
+        <button class="card-nav-btn" id="cardPrevButton" type="button" ${study.index === 0 ? 'disabled' : ''}>${svg('arrowLeft')}</button>
+        <span class="card-nav-count">${study.index + 1} / ${study.cards.length}</span>
+        <button class="card-nav-btn" id="cardNextButton" type="button" ${study.index === study.cards.length - 1 ? 'disabled' : ''}>${svg('arrowRight')}</button>
+      </div>
+    </div>`;
+  document.getElementById('flipCard').addEventListener('click', () => {
+    study.flipped = !study.flipped;
+    haptic(12);
+    renderCardStudy();
+  });
+  document.getElementById('cardPrevButton')?.addEventListener('click', () => {
+    if (study.index > 0) { study.index -= 1; study.flipped = false; renderCardStudy(); }
+  });
+  document.getElementById('cardNextButton')?.addEventListener('click', () => {
+    if (study.index < study.cards.length - 1) { study.index += 1; study.flipped = false; renderCardStudy(); }
+  });
+  topicSheet.scrollTop = 0;
 }
 
 function profileView() {
@@ -395,7 +510,7 @@ function profileView() {
 }
 
 function render() {
-  const views = { home: homeView, bank: bankView, wrong: studiesView, mistakes: mistakesView, laws: libraryView, profile: profileView };
+  const views = { home: homeView, bank: bankView, wrong: studiesView, mistakes: mistakesView, cards: cardsView, profile: profileView };
   app.innerHTML = (views[state.view] || homeView)();
   bindViewEvents();
   updateHeader();
@@ -407,6 +522,10 @@ function bindViewEvents() {
     element.addEventListener('click', () => openTopicSheet(element.dataset.openCategory));
     element.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') openTopicSheet(element.dataset.openCategory); });
   });
+  app.querySelectorAll('[data-open-card-category]').forEach(element => {
+    element.addEventListener('click', () => openCardCategorySheet(element.dataset.openCardCategory));
+    element.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') openCardCategorySheet(element.dataset.openCardCategory); });
+  });
   app.querySelectorAll('[data-stat-target]').forEach(element => element.addEventListener('click', () => window.go(element.dataset.statTarget)));
   
   // Rota panelini açma butonu
@@ -416,9 +535,6 @@ function bindViewEvents() {
   document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
   document.getElementById('resetProgressButton')?.addEventListener('click', resetProgress);
   document.getElementById('signOutButton')?.addEventListener('click', () => window.signOut());
-  app.querySelectorAll('[data-open-document]').forEach(element => element.addEventListener('click', () => {
-    openDocumentFromLibrary(element.dataset.categoryKey, element.dataset.openDocument);
-  }));
 }
 
 function updateHeader() {
@@ -584,7 +700,7 @@ closeSearchSheetButton?.addEventListener('click', closeSearchSheet);
 searchInput?.addEventListener('input', () => runSearch(searchInput.value));
 
 function resetSheetClasses() {
-  topicSheet.classList.remove('document-flow', 'quiz-active');
+  topicSheet.classList.remove('document-flow', 'quiz-active', 'card-study-active');
 }
 
 function openTopicSheet(categoryKey) {
@@ -602,6 +718,7 @@ function openTopicSheet(categoryKey) {
 function closeTopicSheet() {
   clearInterval(timerInterval);
   state.quiz = null;
+  state.cardStudy = null;
   resetSheetClasses();
   topicSheet.classList.remove('open');
   if (!routeSheet.classList.contains('open')) {
@@ -665,7 +782,7 @@ function renderDocumentHub(documentItem, categoryKey) {
   state.activeDocument = documentItem;
   state.activeCategoryKey = categoryKey;
   topicSheet.classList.add('document-flow');
-  topicSheet.classList.remove('quiz-active');
+  topicSheet.classList.remove('quiz-active', 'card-study-active');
   applySheetHeader({ title: documentItem.title, subtitle: documentItem.questionFile ? `${documentItem.articleCount || 0} madde • ${documentItem.questionCount || 0} soru` : 'İçerik yapısı hazır, kaynak paketi bekleniyor', eyebrow: 'MEVZUAT ÇALIŞMA MERKEZİ', icon: 'gavel', iconClass: categoryCardMeta(categoryKey).iconClass });
   renderBreadcrumb(getCategory(categoryKey).title, () => renderCategoryLevel(categoryKey));
   const documentProgress = getDocumentProgress(documentItem);
@@ -1190,14 +1307,6 @@ function renderQuizResult() {
     returnView();
   });
   topicSheet.scrollTop = 0;
-}
-
-function openDocumentFromLibrary(categoryKey, documentId) {
-  const item = getCategoryItems(categoryKey).find(candidate => candidate.id === documentId);
-  if (!item) return;
-  topicSheet.classList.add('open');
-  topicBackdrop.classList.add('open');
-  renderDocumentHub(item, categoryKey);
 }
 
 navButtons.forEach(button => button.addEventListener('click', () => window.go(button.dataset.nav)));
