@@ -1399,7 +1399,11 @@ function initializeApp() {
   loadCatalogue();
 }
 
+let authHandledOnce = false;
 function handleAuthenticated() {
+  if (authHandledOnce) return; // Aynı oturum için ikinci kez çalışmasın (yarış durumu koruması)
+  authHandledOnce = true;
+
   const currentUserId = window.currentUser?.id || null;
   if (progress.userId !== currentUserId) {
     progress = defaultProgress();
@@ -1419,6 +1423,9 @@ function handleAuthenticated() {
 }
 
 document.addEventListener('sinavrotasi:authenticated', handleAuthenticated);
-// app-guard.js, app.js yüklenmeden önce oturumu bulup event'i tetiklemiş olabilir
-// (yarış durumu) — bu durumda window.currentUser zaten set edilmiştir, hemen başlat.
-if (window.currentUser) handleAuthenticated();
+// app-guard.js, app.js yüklenmeden önce oturumu bulup rol bilgisiyle birlikte event'i
+// tetiklemiş olabilir (yarış durumu). Bu durumda window.currentUserAuthReady zaten
+// true'dur ve rol bilgisi de (window.currentUserRole) hazırdır — hemen başlatmak güvenlidir.
+// window.currentUser'a bakmıyoruz çünkü o, rol sorgusu tamamlanmadan senkron olarak
+// set edilir ve bu, kadro ekranının erken/yanlışlıkla açılmasına yol açardı.
+if (window.currentUserAuthReady) handleAuthenticated();
