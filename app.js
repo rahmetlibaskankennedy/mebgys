@@ -88,10 +88,10 @@ const iconPaths = {
   statTopics: '<rect x="4.5" y="4.5" width="15" height="15" rx="4"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/>',
   statQuestions: '<circle cx="12" cy="12" r="8.5"/><path d="m8 12.3 2.7 2.7 5.3-5.7"/>',
   statTrials: '<path d="M12 3.2 13.7 5l2.5-.5.6 2.5 2.4.9-.9 2.4 1.7 1.9-1.7 1.9.9 2.4-2.4.9-.6 2.5-2.5-.5-1.7 1.8-1.7-1.8-2.5.5-.6-2.5-2.4-.9.9-2.4L4 12.2l1.7-1.9-.9-2.4 2.4-.9.6-2.5 2.5.5Z"/><path d="M9 13.5 12.5 21l1-4"/><path d="m15 13.5-1.8 3.7"/>',
-  statFlame: '<path d="M12 3s1.5 2.5 1.5 4c0 1-.6 1.5-1.5 1.5S10.5 8 10.5 7c0-1.5 1.5-4 1.5-4Z"/><path d="M9 8c-2.5 2-3.5 4.3-3.5 6.5a6.5 6.5 0 0 0 13 0c0-1.3-.4-2.6-1.2-3.8-.5 1.6-1.6 2.4-2.8 2.4a2.9 2.9 0 0 1-2.9-2.9c0-1 .4-1.8 1-2.5C11 8.6 9.8 8.2 9 8Z"/>'
+  statFlame: '<path d="M12 3s1.5 2.5 1.5 4c0 1-.6 1.5-1.5 1.5S10.5 8 10.5 7c0-1.5 1.5-4 1.5-4Z"/><path d="M9 8c-2.5 2-3.5 4.3-3.5 6.5a6.5 6.5 0 0 0 13 0c0-1.3-.4-2.6-1.2-3.8-.5 1.6-1.6 2.4-2.8 2.4a2.9 2.9 0 0 1-2.9-2.9c0-1 .4-1.8 1-2.5C11 8.6 9.8 8.2 9 8Z"/>',
   idcard: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 15.5c.7-1 2-1.5 3-1.5s2.3.5 3 1.5"/><path d="M15 9h3M15 12h3M15 15h3"/>',
   clipboard: '<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6H8V4.5a1 1 0 0 1 1-1Z"/><path d="m9.5 11 1.5 1.5L14.5 9M9.5 15 11 16.5 14.5 13"/>',
-  calculator: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/><path d="M8 19h8"/>',
+  calculator: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/><path d="M8 19h8"/>'
 };
 
 function svg(name, className = 'ui-icon') {
@@ -348,16 +348,10 @@ function profileView() {
   const fullName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Aday';
   const email = user?.email || '';
   const initial = fullName.trim().charAt(0).toUpperCase() || '?';
-  const roleGrid = ROLES.map(role => `<button class="role-card ${role.key === progress.selectedRole ? 'selected' : ''}" data-role="${role.key}" type="button"><span class="role-card-icon">${svg(progress.purchasedRoles.includes(role.key) ? 'check' : 'lock')}</span><strong>${role.label}</strong><small>${progress.purchasedRoles.includes(role.key) ? 'Satın alındı' : 'Kilitli'}</small></button>`).join('');
-  return `<section class="screen content-screen"><div class="page-heading"><span>PROFİL</span><h2>${escapeHtml(fullName)}</h2><p>${escapeHtml(email)}</p></div><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>Hedef: MEB GYS</strong><span>${stats.solvedQuestions} soru • %${stats.accuracy} doğruluk</span></div></article><div class="profile-notice">İstatistikler şu an cihazında saklanır; hesap bazlı senkronizasyon yakında eklenecek.</div><div class="page-heading" style="margin-top:20px"><span>KADRO</span><h2 style="font-size:14px">Kadronu değiştir</h2></div><div class="role-grid">${roleGrid}</div><button class="reader-secondary" id="signOutButton" type="button" style="margin-top:18px">Çıkış Yap</button></section>`;
+  return `<section class="screen content-screen"><div class="page-heading"><span>PROFİL</span><h2>${escapeHtml(fullName)}</h2><p>${escapeHtml(email)}</p></div><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>Hedef: MEB GYS</strong><span>${stats.solvedQuestions} soru • %${stats.accuracy} doğruluk</span></div></article><div class="profile-notice">İstatistikler şu an cihazında saklanır; hesap bazlı senkronizasyon yakında eklenecek.</div><button class="reader-secondary" id="signOutButton" type="button">Çıkış Yap</button></section>`;
 }
 
 function render() {
-  if (!progress.selectedRole) {
-    app.innerHTML = roleSelectView();
-    app.querySelectorAll('[data-role]').forEach(element => element.addEventListener('click', () => selectRole(element.dataset.role)));
-    return;
-  }
   const views = { home: homeView, bank: bankView, wrong: studiesView, laws: libraryView, profile: profileView };
   app.innerHTML = (views[state.view] || homeView)();
   bindViewEvents();
@@ -379,7 +373,6 @@ function bindViewEvents() {
   document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
   document.getElementById('resetProgressButton')?.addEventListener('click', resetProgress);
   document.getElementById('signOutButton')?.addEventListener('click', () => window.signOut());
-  app.querySelectorAll('[data-role]').forEach(element => element.addEventListener('click', () => selectRole(element.dataset.role)));
   app.querySelectorAll('[data-open-document]').forEach(element => element.addEventListener('click', () => {
     openDocumentFromLibrary(element.dataset.categoryKey, element.dataset.openDocument);
   }));
@@ -545,38 +538,6 @@ openSearchButton?.addEventListener('click', openSearchSheet);
 closeSearchSheetButton?.addEventListener('click', closeSearchSheet);
 searchInput?.addEventListener('input', () => runSearch(searchInput.value));
 
-function roleSelectView() {
-  return `<section class="screen role-select-screen">
-    <div class="page-heading"><span>BAŞLARKEN</span><h2>Hangi kadro için hazırlanıyorsun?</h2><p>Seçimini istediğin zaman profil ekranından değiştirebilirsin.</p></div>
-    <div class="role-grid">${ROLES.map(role => `<button class="role-card" data-role="${role.key}" type="button"><span class="role-card-icon">${svg('target')}</span><strong>${role.label}</strong></button>`).join('')}</div>
-  </section>`;
-}
-
-function selectRole(roleKey) {
-  progress.selectedRole = roleKey;
-  haptic(16);
-  saveProgress();
-  render();
-}
-
-function purchaseCurrentRole(reopen) {
-  if (!progress.purchasedRoles.includes(progress.selectedRole)) progress.purchasedRoles.push(progress.selectedRole);
-  saveProgress();
-  showToast('Satın alma tamamlandı (deneme modu). Kadron açıldı!');
-  if (reopen) reopen();
-}
-
-function renderPurchasePrompt(categoryKey) {
-  resetSheetClasses();
-  topicSheet.classList.add('document-flow');
-  const roleLabel = ROLES.find(role => role.key === progress.selectedRole)?.label || '';
-  applySheetHeader({ title: 'Premium İçerik', subtitle: `${roleLabel} kadrosu için tüm içerik`, eyebrow: 'SATIN AL', icon: 'lock', iconClass: 'red' });
-  renderBreadcrumb(getCategory(categoryKey).title, () => renderCategoryLevel(categoryKey));
-  topicList.innerHTML = `<section class="empty-state content-plan"><span class="empty-state-icon">${svg('lock')}</span><h3>Bu içerik kilitli</h3><p>${roleLabel} kadrosu için tüm konu, kanun ve soruların kilidini açmak üzere satın alma işlemini tamamla.</p><button class="reader-primary" id="mockPurchaseButton" type="button" style="margin-top:16px">Kadroyu Satın Al</button></section>`;
-  document.getElementById('mockPurchaseButton').addEventListener('click', () => purchaseCurrentRole(() => renderCategoryLevel(categoryKey)));
-  topicSheet.scrollTop = 0;
-}
-
 function resetSheetClasses() {
   topicSheet.classList.remove('document-flow', 'quiz-active');
 }
@@ -631,17 +592,14 @@ function renderCategoryLevel(categoryKey) {
   const progressPercent = getCategoryProgress(categoryKey);
   setSheetProgress('Henüz çalışılmadı', progressPercent);
   const items = getCategoryItems(categoryKey);
-  const purchased = isRolePurchased();
   topicList.innerHTML = items.map((item, index) => {
     const isDocument = item.type === 'document';
     const isComplete = isDocument && getDocumentProgress(item) === 100;
-    const locked = index > 0 && !purchased;
-    const info = locked ? 'Kilidi açmak için satın al' : (isDocument ? `${item.articleCount || 0} madde • ${item.questionCount || 0} soru` : 'Konu anlatımı ve soru bankası');
-    return `<article class="topic-item ${isComplete ? 'completed' : ''} ${locked ? 'locked' : ''}" data-topic-index="${index}" data-locked="${locked}" role="button" tabindex="0"><div class="topic-number">${locked ? svg('lock') : String(index + 1).padStart(2, '0')}</div><div class="topic-copy"><h4>${escapeHtml(item.title)}</h4><p>${info}</p></div>${!locked && isDocument && item.articleCount ? `<span class="article-range">${item.contentStatus === 'sample' ? 'ÖRNEK SET' : 'MEVZUAT'}</span>` : ''}<div class="topic-arrow">${svg('arrow')}</div></article>`;
+    const info = isDocument ? `${item.articleCount || 0} madde • ${item.questionCount || 0} soru` : 'Konu anlatımı ve soru bankası';
+    return `<article class="topic-item ${isComplete ? 'completed' : ''}" data-topic-index="${index}" role="button" tabindex="0"><div class="topic-number">${String(index + 1).padStart(2, '0')}</div><div class="topic-copy"><h4>${escapeHtml(item.title)}</h4><p>${info}</p></div>${isDocument && item.articleCount ? `<span class="article-range">${item.contentStatus === 'sample' ? 'ÖRNEK SET' : 'MEVZUAT'}</span>` : ''}<div class="topic-arrow">${svg('arrow')}</div></article>`;
   }).join('');
   topicList.querySelectorAll('[data-topic-index]').forEach(element => {
     const open = () => {
-      if (element.dataset.locked === 'true') return renderPurchasePrompt(categoryKey);
       const item = items[Number(element.dataset.topicIndex)];
       if (item.type === 'document') renderDocumentHub(item, categoryKey);
       else renderTopicPlan(item, categoryKey);
@@ -1224,13 +1182,6 @@ async function loadCatalogue() {
 
 bindRouteSheetEvents();
 
-let appInitialized = false;
-function initializeApp() {
-  if (appInitialized) return;
-  appInitialized = true;
-  render();
-  loadCatalogue();
-}
 // --- KADRO SEÇİM KAPISI ---
 const roleGate = document.getElementById('roleGate');
 const roleGateList = document.getElementById('roleGateList');
