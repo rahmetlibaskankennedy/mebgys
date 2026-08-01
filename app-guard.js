@@ -18,15 +18,16 @@ function startApp(session) {
 
   // Sunucudaki kayıtlı kadroyu çek — tarama verisi silinse bile kaybolmasın
   supabaseClient
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle()
-    .then(({ data, error }) => {
-      if (error) console.error('Profil rolü okunamadı:', error);
-      window.currentUserRole = data?.role || null;
-      document.dispatchEvent(new CustomEvent('sinavrotasi:authenticated', { detail: { user } }));
-    });
+  .from('profiles')
+  .select('role')
+  .eq('id', user.id)
+  .maybeSingle()
+  .then(({ data, error }) => {
+    if (error) console.error('Profil rolü okunamadı:', error);
+    window.currentUserRole = data?.role || null;
+    window.currentUserAuthReady = true; // YENİ: rol bilgisi dahil her şey hazır
+    document.dispatchEvent(new CustomEvent('sinavrotasi:authenticated', { detail: { user } }));
+  });
 }
 window.signOut = async function signOut() {
   await supabaseClient.auth.signOut();
