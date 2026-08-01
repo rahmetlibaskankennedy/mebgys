@@ -60,7 +60,12 @@ signupForm.addEventListener('submit', async event => {
   const fullName = document.getElementById('signupName').value.trim();
   const email = document.getElementById('signupEmail').value.trim();
   const password = document.getElementById('signupPassword').value;
+  const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
   const termsAccepted = document.getElementById('signupTerms')?.checked;
+  if (password !== passwordConfirm) {
+    signupError.textContent = 'Şifreler eşleşmiyor.';
+    return;
+  }
   if (!termsAccepted) {
     signupError.textContent = 'Devam etmek için Kullanım Koşulları ve Gizlilik Politikası\'nı kabul etmelisin.';
     return;
