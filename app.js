@@ -1050,12 +1050,13 @@ async function loadCatalogue() {
 bindRouteSheetEvents();
 
 let appInitialized = false;
-document.addEventListener('sinavrotasi:authenticated', () => {
-  if (appInitialized) {
-    render();
-    return;
-  }
+function initializeApp() {
+  if (appInitialized) return;
   appInitialized = true;
   render();
   loadCatalogue();
-});
+}
+document.addEventListener('sinavrotasi:authenticated', initializeApp);
+// app-guard.js, app.js yüklenmeden önce oturumu bulup event'i tetiklemiş olabilir
+// (yarış durumu) — bu durumda window.currentUser zaten set edilmiştir, hemen başlat.
+if (window.currentUser) initializeApp();
