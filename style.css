@@ -931,3 +931,177 @@ body.auth-page{
 
 /* Kadro ibaresi (header chip) */
 .role-badge{display:inline-block;margin-top:3px;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.1);color:#c9d4e8;font-size:9px;font-weight:700;letter-spacing:.3px}
+
+/* ================= BİLGİ KARTLARI — FLIP CARD ÇALIŞMA MODU =================
+   app.js -> renderCardStudy() tarafından üretilen markup ile eşleşir:
+   .card-study-wrap > .flip-card(.flipped) > .flip-card-inner >
+     .flip-card-face.flip-card-front / .flip-card-back
+   + .card-study-nav > .card-nav-btn / .card-nav-count
+   Kaynak: topicSheet üzerine 'document-flow card-study-active' class'ları eklenir. */
+
+.card-study-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:20px;
+  padding:6px 2px 22px;
+}
+
+/* --- Kart --- */
+.flip-card{
+  width:100%;
+  max-width:320px;
+  aspect-ratio:3/4;
+  perspective:1500px;
+  cursor:pointer;
+  margin:0 auto;
+  -webkit-tap-highlight-color:transparent;
+}
+.flip-card-inner{
+  position:relative;
+  width:100%;
+  height:100%;
+  transition:transform .55s cubic-bezier(.4,.2,.2,1);
+  transform-style:preserve-3d;
+}
+.flip-card.flipped .flip-card-inner{ transform:rotateY(180deg); }
+
+.flip-card-face{
+  position:absolute;
+  inset:0;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  border-radius:22px;
+  padding:24px 22px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+
+/* Ön yüz — soru (koyu, app-header/goal-card ile aynı lacivert dil) */
+.flip-card-front{
+  background:linear-gradient(160deg,#0b1e46 0%,#152c5c 100%);
+  color:#fff;
+}
+.flip-card-label{
+  position:absolute;
+  top:16px; left:16px;
+  font-size:8.5px;
+  font-weight:800;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  padding:4px 9px;
+  border-radius:20px;
+  background:rgba(255,255,255,.1);
+  color:#c9d4e8;
+}
+.flip-card-q-mark{
+  position:absolute;
+  top:2px; right:12px;
+  font-size:76px;
+  font-weight:800;
+  line-height:1;
+  color:rgba(255,255,255,.07);
+  pointer-events:none;
+}
+.flip-card-text{
+  position:relative;
+  z-index:1;
+  font-size:16px;
+  font-weight:700;
+  line-height:1.5;
+  margin:0;
+  max-width:240px;
+  color:#fff;
+}
+.flip-card-hint{
+  position:absolute;
+  left:0; right:0; bottom:16px;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.3px;
+  color:rgba(255,255,255,.5);
+}
+
+/* Arka yüz — cevap (açık, green2 vurgulu "doğru cevap" dili) */
+.flip-card-back{
+  background:linear-gradient(160deg,var(--green2) 0%,#fff 65%);
+  border:1.5px solid #cfead9;
+  transform:rotateY(180deg);
+  color:var(--navy);
+}
+.flip-card-back .flip-card-text{
+  font-size:15.5px;
+  color:var(--navy);
+  max-width:250px;
+}
+.flip-card-back .flip-card-hint{
+  color:var(--green);
+  font-weight:800;
+}
+.flip-card-back::before{
+  content:'';
+  position:absolute;
+  top:16px; left:16px;
+  width:26px; height:26px;
+  border-radius:50%;
+  background:var(--green2);
+  border:1.5px solid #b9e3c9;
+}
+.flip-card-back::after{
+  content:'✓';
+  position:absolute;
+  top:16px; left:16px;
+  width:26px; height:26px;
+  display:grid;
+  place-items:center;
+  font-size:13px;
+  font-weight:800;
+  color:var(--green);
+}
+
+/* --- Alt gezinme (önceki / sayaç / sonraki) --- */
+.card-study-nav{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  width:100%;
+  max-width:320px;
+}
+.card-nav-btn{
+  width:44px; height:44px;
+  border-radius:50%;
+  border:1.5px solid var(--line);
+  background:#fff;
+  color:var(--navy);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  box-shadow:0 4px 10px rgba(13,33,68,.05);
+  flex-shrink:0;
+  transition:.15s;
+}
+.card-nav-btn svg{ width:18px; height:18px; }
+.card-nav-btn:hover:not(:disabled){ border-color:#c9daf6; transform:translateY(-1px); }
+.card-nav-btn:disabled{ opacity:.35; cursor:not-allowed; }
+.card-nav-count{
+  font-size:12px;
+  font-weight:800;
+  color:var(--navy2);
+  min-width:64px;
+  text-align:center;
+}
+
+@media(max-width:370px){
+  .flip-card{ max-width:280px; }
+  .flip-card-text{ font-size:14.5px; }
+}
+
+@media(min-width:641px){
+  .flip-card{ max-width:340px; }
+}
