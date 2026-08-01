@@ -1394,11 +1394,15 @@ function initializeApp() {
 function handleAuthenticated() {
   const currentUserId = window.currentUser?.id || null;
   if (progress.userId !== currentUserId) {
-    // Farklı bir Supabase kullanıcısı (örn. hesap silinip yeniden açılmış) — local veriyi sıfırla
     progress = defaultProgress();
     progress.userId = currentUserId;
-    saveProgress();
   }
+  // Sunucuda kayıtlı rol varsa onu esas al (localStorage silinmiş olsa bile kaybolmaz)
+  if (window.currentUserRole && !progress.selectedRole) {
+    progress.selectedRole = window.currentUserRole;
+  }
+  saveProgress();
+
   if (!progress.selectedRole) {
     openRoleGate();
   } else {
