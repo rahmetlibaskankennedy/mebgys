@@ -22,11 +22,11 @@ const CARD_CATALOGUE = {
     icon: 'scale', iconClass: '',
     documents: [
       { id: 'anayasa', title: 'T.C. Anayasası', cardFile: 'cards/anayasa.json' },
-      { id: '657-sayili-kanun', title: '657 Sayılı Devlet Memurları Kanunu', cardFile: 'cards/657-sayili-kanun.json' },
-      { id: '4483-sayili-kanun', title: '4483 Sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması Hakkında Kanun', cardFile: 'cards/4483-sayili-kanun.json' },
-      { id: '5442-sayili-kanun', title: '5442 Sayılı İl İdaresi Kanunu', cardFile: 'cards/5442-sayili-kanun.json' },
-      { id: '4982-sayili-kanun', title: '4982 Sayılı Bilgi Edinme Hakkı Kanunu', cardFile: 'cards/4982-sayili-kanun.json' },
-      { id: '3071-sayili-kanun', title: '3071 Sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun', cardFile: 'cards/3071-sayili-kanun.json' }
+      { id: '657-sayili-kanun', title: '657 Sayılı Devlet Memurları Kanunu', cardFile: 'cards/657.json' },
+      { id: '4483-sayili-kanun', title: '4483 Sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması Hakkında Kanun', cardFile: 'cards/4483.json' },
+      { id: '5442-sayili-kanun', title: '5442 Sayılı İl İdaresi Kanunu', cardFile: 'cards/5442.json' },
+      { id: '4982-sayili-kanun', title: '4982 Sayılı Bilgi Edinme Hakkı Kanunu', cardFile: 'cards/4982.json' },
+      { id: '3071-sayili-kanun', title: '3071 Sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun', cardFile: 'cards/3071.json' }
     ]
   },
   'meb-legislation': {
