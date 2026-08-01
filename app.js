@@ -3,6 +3,13 @@ const CATALOGUE_URL = 'categorytopics.json';
 const DAILY_GOAL = 20;
 const QUESTION_TIME_LIMIT = 45;
 
+const ROLES = [
+  { key: 'memur', label: 'Memur' },
+  { key: 'sef', label: 'Şef' },
+  { key: 'sayman', label: 'Sayman' },
+  { key: 'sube-mudur', label: 'Şube Müdürü' }
+];
+
 const state = {
   view: 'home',
   catalogue: null,
@@ -74,6 +81,7 @@ const iconPaths = {
   check: '<path d="m5 12 4 4L19 6"/>',
   chart: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 2 5-6"/>',
   refresh: '<path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4"/>',
+  lock: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
   // --- Ana sayfa istatistik kartları için özgün ikonlar ---
   statTopics: '<rect x="4.5" y="4.5" width="15" height="15" rx="4"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/>',
   statQuestions: '<circle cx="12" cy="12" r="8.5"/><path d="m8 12.3 2.7 2.7 5.3-5.7"/>',
@@ -101,14 +109,14 @@ function haptic(duration = 18) {
 }
 
 function defaultProgress() {
-  return { answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [], flaggedQuestions: {}, reportedQuestions: {} };
+  return { answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [], flaggedQuestions: {}, reportedQuestions: {}, selectedRole: null, purchasedRoles: [], wrongQuestions: {} };
 }
 
 function loadProgress() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved || typeof saved !== 'object') return defaultProgress();
-    return { ...defaultProgress(), ...saved, dailyAnswers: saved.dailyAnswers || {}, completedSections: saved.completedSections || {}, completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : [], flaggedQuestions: saved.flaggedQuestions || {}, reportedQuestions: saved.reportedQuestions || {} };
+    return { ...defaultProgress(), ...saved, dailyAnswers: saved.dailyAnswers || {}, completedSections: saved.completedSections || {}, completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : [], flaggedQuestions: saved.flaggedQuestions || {}, reportedQuestions: saved.reportedQuestions || {}, purchasedRoles: Array.isArray(saved.purchasedRoles) ? saved.purchasedRoles : [], wrongQuestions: saved.wrongQuestions || {} };
   } catch (error) {
     return defaultProgress();
   }
@@ -186,7 +194,12 @@ function getCategory(categoryKey) {
 
 function getCategoryItems(categoryKey) {
   const category = getCategory(categoryKey);
-  return category ? (category.topics || []).map(normalizeItem) : [];
+  const role = progress.selectedRole;
+  return category ? (category.topics || []).map(normalizeItem).filter(item => !role || !item.kadrolar || item.kadrolar.includes(role)) : [];
+}
+
+function isRolePurchased(role = progress.selectedRole) {
+  return !role || progress.purchasedRoles.includes(role);
 }
 
 function getDocumentProgress(documentItem) {
@@ -204,9 +217,10 @@ function getCategoryProgress(categoryKey) {
 }
 
 function getActiveDocuments() {
+  const purchased = isRolePurchased();
   return getCategories().flatMap(([categoryKey]) => getCategoryItems(categoryKey)
-    .filter(item => (item.type === 'document' || item.type === 'topic') && item.questionFile)
-    .map(item => ({ item, categoryKey })));
+    .map((item, index) => ({ item, categoryKey, index }))
+    .filter(entry => (entry.item.type === 'document' || entry.item.type === 'topic') && entry.item.questionFile && (purchased || entry.index === 0)));
 }
 
 function categoryCardMeta(categoryKey) {
@@ -233,7 +247,7 @@ function statCard(icon, colorClass, number, label, target) {
 function homeView() {
   if (!state.catalogue) return state.catalogueError ? errorView() : loadingView();
   const stats = getStats();
-  const categories = getCategories().map(([key]) => {
+  const categories = getCategories().filter(([key]) => getCategoryItems(key).length > 0).map(([key]) => {
     const meta = categoryCardMeta(key);
     const topics = getCategoryItems(key);
     const activePackages = topics.filter(item => item.questionFile).length;
@@ -279,6 +293,7 @@ function bankView() {
 function studiesView() {
   const stats = getStats();
   const recentTests = progress.completedTests.slice(-3).reverse();
+  const wrongCount = Object.keys(progress.wrongQuestions).length;
   return `<section class="screen content-screen">
     <div class="page-heading"><span>ÇALIŞMALARIM</span><h2>İlerlemen</h2><p>Bu değerler cevapların ve tamamladığın testlerle otomatik güncellenir.</p></div>
     <div class="study-grid">
@@ -287,11 +302,28 @@ function studiesView() {
       <article><span>Tamamlanan bölüm</span><strong>${stats.completedSections}</strong></article>
       <article><span>Günlük seri</span><strong>${stats.streak} gün</strong></article>
     </div>
+    <section class="wrong-pool">
+      <h3>Yanlış Yaptığın Sorular</h3>
+      ${wrongCount ? `<article class="practice-card"><div class="practice-card-icon">${svg('flame')}</div><div><span>TEKRAR HAVUZU</span><h3>${wrongCount} soru</h3><p>Daha önce yanlış yaptığın soruları tekrar çöz.</p></div><button class="reader-primary" id="startWrongPoolButton" type="button">Başlat</button></article>` : '<div class="empty-inline">Henüz yanlış yaptığın bir soru yok.</div>'}
+    </section>
     <section class="recent-tests"><h3>Son testler</h3>${recentTests.length ? recentTests.map(test => `<article><div><strong>${escapeHtml(test.title)}</strong><span>${test.score}/${test.total} doğru</span></div><small>${test.kind === 'mock' ? 'Deneme' : 'Konu testi'}</small></article>`).join('') : '<div class="empty-inline">Henüz tamamlanan bir test yok.</div>'}</section>
     <button class="reset-progress" id="resetProgressButton" type="button">İlerleme verisini sıfırla</button>
   </section>`;
 }
 
+function startWrongPool() {
+  const questions = Object.values(progress.wrongQuestions);
+  if (!questions.length) return showToast('Tekrar edilecek soru yok.');
+  topicSheet.classList.add('open');
+  topicBackdrop.classList.add('open');
+  startQuiz({
+    questions,
+    kind: 'wrong-pool',
+    title: 'Yanlışlarım',
+    subtitle: `${questions.length} soru • tekrar havuzu`,
+    returnView: closeTopicSheet
+  });
+}
 function libraryView() {
   if (!state.catalogue) return loadingView();
   const groups = getCategories().map(([categoryKey, category]) => {
@@ -829,7 +861,12 @@ function recordAnswer(question, selected) {
   if (question.answerRecorded) return;
   question.answerRecorded = true;
   progress.answers += 1;
-  if (selected === question.answerIndex) progress.correctAnswers += 1;
+  if (selected === question.answerIndex) {
+    progress.correctAnswers += 1;
+    delete progress.wrongQuestions[question.id];
+  } else {
+    progress.wrongQuestions[question.id] = { id: question.id, prompt: question.prompt, options: question.options, answerIndex: question.answerIndex, sectionId: question.sectionId || null };
+  }
   const today = dateKey();
   progress.dailyAnswers[today] = Number(progress.dailyAnswers[today] || 0) + 1;
   saveProgress();
