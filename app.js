@@ -392,6 +392,8 @@ function bindViewEvents() {
 
 function updateHeader() {
   const stats = getStats();
+  const roleBadge = document.getElementById('userRoleBadge');
+  if (roleBadge) roleBadge.textContent = ROLES.find(r => r.key === progress.selectedRole)?.label || '';
   const ring = document.getElementById('dailyGoalCircle');
   const percent = document.getElementById('dailyGoalPercent');
   const solved = document.getElementById('dailySolvedCount');
