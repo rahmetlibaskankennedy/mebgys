@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'sinavrotasi-study-progress-v2';
+  const STORAGE_KEY = 'sinavrotasi-study-progress-v2';
 const CATALOGUE_URL = 'categorytopics.json';
 const DAILY_GOAL = 20;
 const QUESTION_TIME_LIMIT = 45;
@@ -123,6 +123,9 @@ const iconPaths = {
   idcard: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 15.5c.7-1 2-1.5 3-1.5s2.3.5 3 1.5"/><path d="M15 9h3M15 12h3M15 15h3"/>',
   clipboard: '<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6H8V4.5a1 1 0 0 1 1-1Z"/><path d="m9.5 11 1.5 1.5L14.5 9M9.5 15 11 16.5 14.5 13"/>',
   calculator: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/><path d="M8 19h8"/>'
+  squareCheck: '<rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 2.5 2.5L16 9"/>',
+  circleCheckBig: '<circle cx="12" cy="12" r="10"/><path d="m8 12 2.5 2.5L16 9"/>',
+  award: '<circle cx="12" cy="8" r="6"/><path d="M15.5 12.9 17 21.5l-5-3-5 3 1.5-8.6"/>',
 };
 
 function svg(name, className = 'ui-icon') {
@@ -297,10 +300,10 @@ function homeView() {
 
   return `<section class="screen home-screen">
     <div class="stats">
-      ${statCard('statTopics', '', stats.completedSections, 'Konu<br>Tamamlandı', 'wrong')}
-      ${statCard('statQuestions', 'accent', stats.solvedQuestions, 'Soru<br>Çözüldü', 'wrong')}
-      ${statCard('trophy', 'amber', stats.completedMocks, 'Deneme<br>Tamamlandı', 'bank')}
-      ${statCard('flame', 'accent', stats.streak, 'Günlük<br>Seri', 'wrong')}
+      ${statCard('squareCheck', '', stats.completedSections, 'Konu<br>Tamamlandı', 'wrong')}
+${statCard('circleCheckBig', 'accent', stats.solvedQuestions, 'Soru<br>Çözüldü', 'wrong')}
+${statCard('award', 'amber', stats.completedMocks, 'Deneme<br>Tamamlandı', 'bank')}
+${statCard('flame', 'accent', stats.streak, 'Günlük<br>Seri', 'wrong')}
     </div>
     <div class="section-head"><h3>Test Kategorileri</h3></div>
     <section class="categories">${categories}</section>
