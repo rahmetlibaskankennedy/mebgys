@@ -1381,9 +1381,11 @@ roleGateContinue?.addEventListener('click', async () => {
   saveProgress();
 
   // Sunucuya da kaydet — tarama verisi silinse bile kalıcı olsun
-  await supabaseClient
-    .from('profiles')
-    .upsert({ id: window.currentUser.id, role: pendingRoleSelection });
+  const { error } = await supabaseClient
+  .from('profiles')
+  .update({ role: pendingRoleSelection })
+  .eq('id', window.currentUser.id);
+if (error) console.error('Kadro sunucuya kaydedilemedi:', error);
 
   closeRoleGate();
   initializeApp();
