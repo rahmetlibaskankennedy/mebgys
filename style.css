@@ -938,7 +938,14 @@ body.auth-page{
    + .card-study-nav > .card-nav-btn / .card-nav-count
    topicSheet'e her zaman 'document-flow card-study-active' birlikte eklenir,
    bu yüzden .card-study-active kuralları kart moduna giren TÜM kategoriler
-   (Genel Mevzuat, MEB Mevzuatı, Genel Kültür) için otomatik geçerlidir. */
+   (Genel Mevzuat, MEB Mevzuatı, Genel Kültür) için otomatik geçerlidir.
+
+   iOS/WebKit DÜZELTMESİ (revize): backface-visibility:hidden bazı iOS Safari
+   sürümlerinde -webkit- öneksiz transform/transform-style ile birlikte
+   güvenilmez çalışıyor, bu da arka yüzün öne "sızıp" ters/aynalı görünmesine
+   yol açıyordu. Aşağıda ilgili tüm transform özelliklerine -webkit- öneki
+   eklendi ve 3D bağlamının atası olan .topic-list'teki overflow:hidden
+   kaldırıldı (bkz. PANEL İÇİ SIĞDIRMA bölümü). */
 
 .card-study-wrap{
   display:flex;
@@ -954,9 +961,11 @@ body.auth-page{
   max-width:320px;
   aspect-ratio:3/4;
   perspective:1500px;
+  -webkit-perspective:1500px;
   cursor:pointer;
   margin:0 auto;
   -webkit-tap-highlight-color:transparent;
+  border-radius:22px;
 }
 .flip-card-inner{
   position:relative;
@@ -964,8 +973,12 @@ body.auth-page{
   height:100%;
   transition:transform .55s cubic-bezier(.4,.2,.2,1);
   transform-style:preserve-3d;
+  -webkit-transform-style:preserve-3d;
 }
-.flip-card.flipped .flip-card-inner{ transform:rotateY(180deg); }
+.flip-card.flipped .flip-card-inner{
+  transform:rotateY(180deg);
+  -webkit-transform:rotateY(180deg);
+}
 
 .flip-card-face{
   position:absolute;
@@ -1021,6 +1034,7 @@ body.auth-page{
   position:absolute;
   left:50%; bottom:14px;
   transform:translateX(-50%);
+  -webkit-transform:translateX(-50%);
   font-size:8.5px;
   font-weight:700;
   letter-spacing:.3px;
@@ -1036,6 +1050,7 @@ body.auth-page{
   background:radial-gradient(120% 90% at 15% 0%,#f2fbf6 0%,var(--green2) 55%,#fff 100%);
   border:1.5px solid #cfead9;
   transform:rotateY(180deg);
+  -webkit-transform:rotateY(180deg);
   color:var(--navy);
 }
 .flip-card-back .flip-card-text{
@@ -1106,13 +1121,18 @@ body.auth-page{
 }
 
 /* ================= PANEL İÇİ SIĞDIRMA (kesin çözüm) =================
-   Önceki deneme (aspect-ratio + max-height:100%) bazı tarayıcılarda
-   güvenilir küçülmüyordu -> kart üstten kırpılıyor, nav görünmüyordu.
-   Şimdi: panel SABİT yükseklikli bir flex-column. Header/breadcrumb/
-   ilerleme sabit yer kaplar (flex-shrink:0). .topic-list kalanı flex:1
-   ile doldurur. .flip-card artık aspect-ratio KULLANMIYOR, bunun yerine
-   flex:1 ile "nav çıkarıldıktan sonra kalan boşluğun TAMAMINI VE SADECE
-   TAMAMINI" alıyor. Matematiksel olarak taşma/kırpılma imkânsız. */
+   Panel SABİT yükseklikli bir flex-column. Header/breadcrumb/ilerleme
+   sabit yer kaplar (flex-shrink:0). .topic-list kalanı flex:1 ile doldurur.
+   .flip-card artık aspect-ratio KULLANMIYOR, bunun yerine flex:1 ile
+   "nav çıkarıldıktan sonra kalan boşluğun TAMAMINI VE SADECE TAMAMINI"
+   alıyor. Matematiksel olarak taşma/kırpılma imkânsız.
+
+   ÖNEMLİ (revize): .topic-list'te overflow:hidden ARTIK KULLANILMIYOR.
+   iOS/WebKit'te 3D transform (backface-visibility) içeren torun elementlerle
+   overflow:hidden birlikte kullanıldığında flip animasyonu bozuluyor
+   (arka yüz öne sızıp ters/aynalı görünüyor). Taşma riski zaten
+   flex:1 + min-height:0 kombinasyonuyla engelleniyor, bu yüzden
+   overflow:hidden'a ihtiyaç yok. */
 .topic-sheet.card-study-active{
   height:88%;
   overflow:hidden;
@@ -1125,7 +1145,6 @@ body.auth-page{
 .topic-sheet.card-study-active .topic-list{
   flex:1;
   min-height:0;
-  overflow:hidden;
   padding-bottom:0;
 }
 .topic-sheet.card-study-active .card-study-wrap{
