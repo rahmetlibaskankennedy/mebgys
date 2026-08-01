@@ -1171,3 +1171,93 @@ body.auth-page{
 @media(min-width:641px){
   .flip-card{ max-width:320px; }
 }
+/* ================= KART ÇALIŞMA EKRANI — ÜST BÖLÜM YENİDEN TASARIMI =================
+   Bu blok style.css'in EN SONUNA eklenmeli (aynı kaynak sırasında sonra gelen
+   kural kazanır — önceki flip-card bloğundaki .topic-heading-icon /
+   .topic-eyebrow / .topic-breadcrumb tanımlarını üzerine yazar).
+   Sadece .card-study-active kapsamında çalışır -> Genel Mevzuat, MEB Mevzuatı,
+   Genel Kültür kart modlarının HEPSİNDE otomatik geçerlidir. Quiz/konu akışlarını
+   etkilemez. */
+
+/* --- İkon rozeti: kare değil, gradyanlı daire --- */
+.topic-sheet.card-study-active .topic-heading-icon{
+  width:48px; height:48px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#1c3a72,#0a1b3f);
+  color:#fff;
+  box-shadow:0 6px 16px rgba(10,27,63,.28);
+}
+.topic-sheet.card-study-active .topic-heading-icon svg{ width:21px; height:21px; }
+
+/* --- "BİLGİ KARTLARI" etiketi: düz yazı değil, dolgulu rozet --- */
+.topic-sheet.card-study-active .topic-eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  background:var(--red2);
+  color:var(--red);
+  padding:4px 9px 4px 7px;
+  border-radius:20px;
+  font-size:8.5px;
+  margin-bottom:7px;
+}
+.topic-sheet.card-study-active .topic-eyebrow::before{
+  content:'';
+  width:4px; height:4px;
+  border-radius:50%;
+  background:var(--red);
+  flex-shrink:0;
+}
+
+/* --- Başlık --- */
+.topic-sheet.card-study-active #topicSheetTitle{
+  font-size:17px;
+  letter-spacing:-.2px;
+  line-height:1.25;
+}
+
+/* --- "1 / 30" sayacı: düz yazı değil, minik kapsül --- */
+.topic-sheet.card-study-active #topicSheetSubtitle{
+  display:inline-block;
+  margin-top:4px;
+  font-size:9.5px;
+  font-weight:800;
+  color:var(--navy2);
+  background:#eef3fc;
+  padding:3px 9px;
+  border-radius:10px;
+}
+
+/* --- Breadcrumb ("‹ Genel Mevzuat"): kart/kapsül tasarımı --- */
+.topic-sheet.card-study-active .topic-breadcrumb{
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  background:#fff;
+  border:1.5px solid var(--line);
+  border-radius:30px;
+  padding:6px 16px 6px 6px;
+  margin-bottom:14px;
+  box-shadow:0 3px 10px rgba(13,33,68,.05);
+  transition:.18s ease;
+}
+.topic-sheet.card-study-active .topic-breadcrumb:hover{
+  border-color:#c9daf6;
+  background:#f7faff;
+  box-shadow:0 4px 12px rgba(13,33,68,.08);
+  transform:translateY(-1px);
+}
+.topic-sheet.card-study-active .topic-breadcrumb svg{
+  width:26px; height:26px;
+  padding:6px;
+  box-sizing:border-box;
+  border-radius:50%;
+  background:#edf3fb;
+  color:var(--blue);
+  flex-shrink:0;
+}
+.topic-sheet.card-study-active .topic-breadcrumb span{
+  font-size:11.5px;
+  font-weight:800;
+  color:var(--navy);
+}
