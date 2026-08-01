@@ -360,7 +360,6 @@ function openRouteSheet() {
 
 function closeRouteSheet() {
   routeSheet.classList.remove('open');
-  // Eğer arka planda topicSheet açık değilse backdrop'u da kapat
   if (!topicSheet.classList.contains('open')) {
     topicBackdrop.classList.remove('open');
   }
@@ -371,14 +370,12 @@ function updateRouteSummary() {
   if (routeSettings.time === 'Süresiz') {
     summaryDuration.textContent = 'Süresiz';
   } else {
-    // Ortalama 45 saniyeden dakika hesabı
     const minutes = Math.ceil((routeSettings.questions * QUESTION_TIME_LIMIT) / 60);
     summaryDuration.textContent = `${minutes} dakika`;
   }
 }
 
 function bindRouteSheetEvents() {
-  // Pratik Türü Seçimi
   document.querySelectorAll('#modeGrid .mode-option').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#modeGrid .mode-option').forEach(b => b.classList.remove('selected'));
@@ -388,7 +385,6 @@ function bindRouteSheetEvents() {
     });
   });
 
-  // Soru Sayısı Seçimi
   document.querySelectorAll('#questionChoices .choice').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#questionChoices .choice').forEach(b => b.classList.remove('selected'));
@@ -398,7 +394,6 @@ function bindRouteSheetEvents() {
     });
   });
 
-  // Süre Modu Seçimi
   document.querySelectorAll('#timeChoices .choice').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#timeChoices .choice').forEach(b => b.classList.remove('selected'));
@@ -415,7 +410,6 @@ function bindRouteSheetEvents() {
   startSmartPractice();
   });
 }
-// ------------------------------
 
 function resetSheetClasses() {
   topicSheet.classList.remove('document-flow', 'quiz-active');
@@ -438,7 +432,6 @@ function closeTopicSheet() {
   state.quiz = null;
   resetSheetClasses();
   topicSheet.classList.remove('open');
-  // Eğer routeSheet açık değilse backdrop'u kapat
   if (!routeSheet.classList.contains('open')) {
     topicBackdrop.classList.remove('open');
   }
@@ -665,7 +658,6 @@ async function openRandomQuiz(documentItem, categoryKey) {
   }
 }
 
-// --- GÜNCELLENEN ROTA BAŞLATMA FONKSİYONU ---
 async function startSmartPractice() {
   const activeDocuments = getActiveDocuments();
   if (!activeDocuments.length) {
@@ -673,8 +665,6 @@ async function startSmartPractice() {
     return showToast('Henüz aktif soru paketi bulunmuyor.');
   }
   
-  // Şimdilik Rota için de rastgele aktif bir paketten soruyoruz.
-  // İleride "Sana Özel" vs. logicleri buraya eklenebilir.
   const selected = activeDocuments[Math.floor(Math.random() * activeDocuments.length)];
   
   try {
@@ -685,7 +675,6 @@ async function startSmartPractice() {
       return showToast('Bu başlık için henüz soru bulunmuyor.');
     }
     
-    // topicSheet'i arkada açık bırak, return olunca oraya dönecek
     topicSheet.classList.add('open');
     topicBackdrop.classList.add('open');
     
@@ -728,7 +717,6 @@ async function startMixedMock() {
 function startQuiz({ questions, documentItem = null, section = null, kind, title, subtitle, returnView }) {
   clearInterval(timerInterval);
   
-  // Süre ayarını kontrol et (Süresiz ise 9999 saniye ver, UI'da timer gizlenebilir ama logic bozulmasın)
   const isTimed = routeSettings.time === 'Süreli' || kind !== 'route';
   const initialTime = isTimed ? QUESTION_TIME_LIMIT : 9999;
   
@@ -770,7 +758,6 @@ function renderQuiz() {
   const total = quiz.questions.length;
   const letters = ['A', 'B', 'C', 'D', 'E'];
   
-  // Süre UI'ı (Görseldeki gibi MM:SS formatı)
   const timerDisplay = quiz.isTimed ? 
     `<div class="quiz-premium-timer" id="quizTimer">${svg('clock')} ${String(Math.floor(current.timeLeft / 60)).padStart(2, '0')}:${String(current.timeLeft % 60).padStart(2, '0')}</div>` : 
     `<div class="quiz-premium-timer" style="color:#1f9d62;">Süresiz</div>`;
@@ -779,7 +766,6 @@ function renderQuiz() {
 
   topicList.innerHTML = `
     <div class="quiz-premium-layout">
-      <!-- Koyu Lacivert Üst Alan -->
       <div class="quiz-premium-header">
         <div class="quiz-premium-topbar">
           <button id="quizBackButton" type="button" aria-label="Geri">${svg('back')}</button>
@@ -804,7 +790,6 @@ function renderQuiz() {
         </div>
       </div>
 
-      <!-- Beyaz Soru Kartı (Üst alana biniyor) -->
       <div class="quiz-premium-card-wrapper">
         <div class="quiz-premium-card">
           <div class="quiz-card-header">
@@ -856,7 +841,6 @@ function renderQuiz() {
         </div>
       </div>
 
-      <!-- Alt Butonlar -->
       <div class="quiz-premium-footer">
         <button class="footer-btn btn-prev" id="quizPrevButton" type="button" ${quiz.index === 0 ? 'disabled' : ''}>
           ${svg('arrowLeft')} Önceki
@@ -1056,20 +1040,18 @@ async function loadCatalogue() {
     const data = await response.json();
     if (!data || typeof data !== 'object') throw new Error('Konu verisi geçerli değil.');
     state.catalogue = data;
+    render();
   } catch (error) {
     state.catalogueError = error.message || 'Konu verisi yüklenemedi.';
+    render();
   }
-  render();
 }
 
-// Olay dinleyicilerini başlat
 bindRouteSheetEvents();
 
-// Uygulama, kullanıcı giriş yapmadan (auth.js tarafından doğrulanmadan) başlamaz.
 let appInitialized = false;
 document.addEventListener('sinavrotasi:authenticated', () => {
   if (appInitialized) {
-    // Farklı bir kullanıcıyla tekrar giriş yapıldıysa görünümü yenile.
     render();
     return;
   }
