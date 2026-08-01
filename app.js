@@ -68,10 +68,10 @@ const iconPaths = {
   chart: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 2 5-6"/>',
   refresh: '<path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4"/>',
   // --- Ana sayfa istatistik kartları için özgün ikonlar ---
-  statTopics: '<path d="M4 19.2V6a2 2 0 0 1 2-2h5.5v17H6a2 2 0 0 1-2-1.8Z"/><path d="M11.5 4H18a2 2 0 0 1 2 2v13.2a1.8 1.8 0 0 1-1.8 1.8H11.5"/><path d="m7.3 10.6 1.9 1.9L12.7 8"/>',
-  statQuestions: '<path d="M20.5 11.2a8 8 0 0 1-8 8 8.2 8.2 0 0 1-3.9-1L4 20l1.2-4.3a8 8 0 0 1-1-3.9 8 8 0 0 1 8-8 8 8 0 0 1 8.3 7.4Z"/><path d="m8.7 12.3 2 2 4.3-4.6"/>',
-  statTrials: '<circle cx="12" cy="7.6" r="4.6"/><path d="m8.1 11.6-1.4 6.7 5.3-2.7 5.3 2.7-1.4-6.7"/><path d="m9.8 7.4 1.6 1.6 3-3.2"/>',
-  statFlame: '<path d="M9.3 2.7c-1 3-3.1 4.9-3.1 8.6a5.8 5.8 0 0 0 11.6 0c0-2-1-3.6-2-5 .3 1.6-.6 2.5-1.6 2.5.6-2-.5-4-2-5.6-.2 1.5-1 2.1-2 2.6.4-1 .4-2 .3-3.1Z"/><circle cx="12" cy="14.2" r="1.9"/>'
+ statTopics: '<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M8 9h8"/><path d="M8 13h5"/><path d="m14.5 16 1.5 1.5L19 14"/>',
+  statQuestions: '<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5L16 9.5"/>',
+  statTrials: '<circle cx="12" cy="8.5" r="5"/><path d="M9 13 7.5 21 12 18.5 16.5 21 15 13"/>',
+  statFlame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>'
 };
 
 function svg(name, className = 'ui-icon') {
