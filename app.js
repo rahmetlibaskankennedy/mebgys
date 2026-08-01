@@ -1,4 +1,4 @@
-  const STORAGE_KEY = 'sinavrotasi-study-progress-v2';
+const STORAGE_KEY = 'sinavrotasi-study-progress-v2';
 const CATALOGUE_URL = 'categorytopics.json';
 const DAILY_GOAL = 20;
 const QUESTION_TIME_LIMIT = 45;
@@ -1375,10 +1375,16 @@ function closeRoleGate() {
   roleGate.setAttribute('aria-hidden', 'true');
 }
 
-roleGateContinue?.addEventListener('click', () => {
+roleGateContinue?.addEventListener('click', async () => {
   if (!pendingRoleSelection) return;
   progress.selectedRole = pendingRoleSelection;
   saveProgress();
+
+  // Sunucuya da kaydet — tarama verisi silinse bile kalıcı olsun
+  await supabaseClient
+    .from('profiles')
+    .upsert({ id: window.currentUser.id, role: pendingRoleSelection });
+
   closeRoleGate();
   initializeApp();
 });
