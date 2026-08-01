@@ -5,52 +5,6 @@ button{font:inherit}
 body{background:var(--bg)}
 .phone{width:100%;max-width:480px;margin:0 auto;height:100dvh;position:relative;overflow:hidden;background:var(--bg);transition:max-width .2s}
 
-/* ================= RESPONSIVE — GERÇEK BİR WEB SİTESİ, SAHTE TELEFON ÇERÇEVESİ DEĞİL =================
-   Mobilde tam ekran uygulama hissi korunur; tablet ve masaüstünde içerik genişler,
-   kategoriler çok sütunlu ızgaraya döner ve alt gezinme menüsü kalıcı bir yan menüye dönüşür. */
-@media(min-width:641px){
-  .phone{max-width:640px;box-shadow:0 0 0 1px var(--line)}
-  .app-header{padding-left:24px;padding-right:24px}
-  .screen{padding-left:20px;padding-right:20px}
-  .categories{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-  .stats{padding:14px 8px}
-}
-
-@media(min-width:1000px){
-  html,body{background:#eef1f6}
-  .phone{
-    max-width:1180px;height:100dvh;
-    display:grid;grid-template-columns:236px 1fr;
-    box-shadow:0 0 0 1px var(--line),0 30px 70px rgba(13,33,68,.10);
-  }
-  .scroll-area{position:relative;grid-column:2;overflow-y:auto;height:100%}
-  .app-scroll{padding-bottom:28px}
-  .app-header{border-radius:0 26px 0 0}
-  .screen{padding-left:26px;padding-right:26px;max-width:840px}
-  .categories{grid-template-columns:repeat(2,1fr);gap:12px}
-
-  /* Alt gezinme menüsü -> kalıcı sol yan menü */
-  .bottom-nav{
-    position:relative;grid-column:1;grid-row:1/-1;order:unset;
-    height:100%;width:auto;border-top:0;border-right:1px solid var(--line);
-    background:#fff;backdrop-filter:none;
-    display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;
-    gap:4px;padding:26px 14px;grid-template-columns:none;
-  }
-  .bottom-nav button{
-    flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;
-    padding:12px 14px;border-radius:12px;font-size:13.5px;color:#4a5a70;
-  }
-  .bottom-nav button>svg{width:20px;height:20px}
-  .bottom-nav button span{font-size:13px;font-weight:600;margin-top:0}
-  .bottom-nav button.active{background:var(--red2);color:var(--red)}
-
-  /* Bottom sheet / topic sheet masaüstünde ortalanmış bir panel gibi davransın */
-  .topic-sheet,.bottom-sheet{left:50%;right:auto;width:min(560px,92%);transform:translate(-50%,100%);border-radius:28px}
-  .topic-sheet.open,.bottom-sheet.open{transform:translate(-50%,0)}
-  .toast{left:calc(50% + 118px)}
-}
-
 .scroll-area{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
 .scroll-area::-webkit-scrollbar{display:none}
 .app-scroll{padding-bottom:82px}
@@ -829,4 +783,53 @@ body.auth-page{
 @media(min-width:640px){
   .auth-card-wrap{max-width:420px}
   .auth-card{padding:34px 32px}
+}
+
+/* ================= UYGULAMA — GERÇEK BİR WEB SİTESİ, SAHTE TELEFON ÇERÇEVESİ DEĞİL =================
+   Bu blok dosyanın EN SONUNDA olmalı: aynı özgüllükteki (specificity) kurallarda tarayıcı
+   kaynak sırasında SONRA geleni uygular — yukarıdaki mobil-öncelikli .categories/.bottom-nav
+   tanımlarının bu kuralları ezmemesi için buraya taşındı.
+   Mobilde tam ekran uygulama hissi korunur; tablet ve masaüstünde içerik genişler,
+   kategoriler çok sütunlu ızgaraya döner ve alt gezinme menüsü kalıcı bir yan menüye dönüşür. */
+@media(min-width:641px){
+  .phone{max-width:640px;box-shadow:0 0 0 1px var(--line)}
+  .app-header{padding-left:24px;padding-right:24px}
+  .screen{padding-left:20px;padding-right:20px}
+  .categories{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .stats{padding:14px 8px}
+}
+
+@media(min-width:1000px){
+  html,body{background:#eef1f6}
+  .phone{
+    max-width:1180px;height:100dvh;
+    display:grid;grid-template-columns:236px 1fr;
+    box-shadow:0 0 0 1px var(--line),0 30px 70px rgba(13,33,68,.10);
+  }
+  .scroll-area{position:relative;grid-column:2;overflow-y:auto;height:100%}
+  .app-scroll{padding-bottom:28px}
+  .app-header{border-radius:0 26px 0 0}
+  .screen{padding-left:26px;padding-right:26px;max-width:840px}
+  .categories{grid-template-columns:repeat(2,1fr);gap:12px}
+
+  /* Alt gezinme menüsü -> kalıcı sol yan menü */
+  .bottom-nav{
+    position:relative;grid-column:1;grid-row:1/-1;order:unset;
+    height:100%;width:auto;border-top:0;border-right:1px solid var(--line);
+    background:#fff;backdrop-filter:none;
+    display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;
+    gap:4px;padding:26px 14px;grid-template-columns:none;
+  }
+  .bottom-nav button{
+    flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;
+    padding:12px 14px;border-radius:12px;font-size:13.5px;color:#4a5a70;
+  }
+  .bottom-nav button>svg{width:20px;height:20px}
+  .bottom-nav button span{font-size:13px;font-weight:600;margin-top:0}
+  .bottom-nav button.active{background:var(--red2);color:var(--red)}
+
+  /* Bottom sheet / topic sheet masaüstünde ortalanmış bir panel gibi davransın */
+  .topic-sheet,.bottom-sheet{left:50%;right:auto;width:min(560px,92%);transform:translate(-50%,100%);border-radius:28px}
+  .topic-sheet.open,.bottom-sheet.open{transform:translate(-50%,0)}
+  .toast{left:calc(50% + 118px)}
 }
