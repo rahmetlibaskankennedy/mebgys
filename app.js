@@ -10,6 +10,8 @@ const ROLES = [
   { key: 'sube-mudur', label: 'Şube Müdürü' }
 ];
 
+const ROLE_ICONS = { memur: 'idcard', sef: 'clipboard', sayman: 'calculator', 'sube-mudur': 'landmark' };
+
 const state = {
   view: 'home',
   catalogue: null,
@@ -87,6 +89,9 @@ const iconPaths = {
   statQuestions: '<circle cx="12" cy="12" r="8.5"/><path d="m8 12.3 2.7 2.7 5.3-5.7"/>',
   statTrials: '<path d="M12 3.2 13.7 5l2.5-.5.6 2.5 2.4.9-.9 2.4 1.7 1.9-1.7 1.9.9 2.4-2.4.9-.6 2.5-2.5-.5-1.7 1.8-1.7-1.8-2.5.5-.6-2.5-2.4-.9.9-2.4L4 12.2l1.7-1.9-.9-2.4 2.4-.9.6-2.5 2.5.5Z"/><path d="M9 13.5 12.5 21l1-4"/><path d="m15 13.5-1.8 3.7"/>',
   statFlame: '<path d="M12 3s1.5 2.5 1.5 4c0 1-.6 1.5-1.5 1.5S10.5 8 10.5 7c0-1.5 1.5-4 1.5-4Z"/><path d="M9 8c-2.5 2-3.5 4.3-3.5 6.5a6.5 6.5 0 0 0 13 0c0-1.3-.4-2.6-1.2-3.8-.5 1.6-1.6 2.4-2.8 2.4a2.9 2.9 0 0 1-2.9-2.9c0-1 .4-1.8 1-2.5C11 8.6 9.8 8.2 9 8Z"/>'
+  idcard: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 15.5c.7-1 2-1.5 3-1.5s2.3.5 3 1.5"/><path d="M15 9h3M15 12h3M15 15h3"/>',
+  clipboard: '<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6H8V4.5a1 1 0 0 1 1-1Z"/><path d="m9.5 11 1.5 1.5L14.5 9M9.5 15 11 16.5 14.5 13"/>',
+  calculator: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/><path d="M8 19h8"/>',
 };
 
 function svg(name, className = 'ui-icon') {
@@ -1226,7 +1231,67 @@ function initializeApp() {
   render();
   loadCatalogue();
 }
-document.addEventListener('sinavrotasi:authenticated', initializeApp);
+// --- KADRO SEÇİM KAPISI ---
+const roleGate = document.getElementById('roleGate');
+const roleGateList = document.getElementById('roleGateList');
+const roleGateContinue = document.getElementById('roleGateContinue');
+let pendingRoleSelection = null;
+
+function renderRoleGate() {
+  roleGateList.innerHTML = ROLES.map(role => `
+    <button class="role-gate-item" data-role-key="${role.key}" type="button">
+      <span class="role-gate-item-icon">${svg(ROLE_ICONS[role.key] || 'book')}</span>
+      <strong>${escapeHtml(role.label)}</strong>
+      <span class="role-gate-item-arrow">${svg('arrow')}</span>
+    </button>`).join('');
+  roleGateList.querySelectorAll('[data-role-key]').forEach(button => {
+    button.addEventListener('click', () => {
+      pendingRoleSelection = button.dataset.roleKey;
+      roleGateList.querySelectorAll('.role-gate-item').forEach(el => el.classList.toggle('selected', el === button));
+      roleGateContinue.disabled = false;
+      roleGateContinue.classList.add('enabled');
+      haptic(14);
+    });
+  });
+}
+
+function openRoleGate() {
+  pendingRoleSelection = null;
+  renderRoleGate();
+  roleGateContinue.disabled = true;
+  roleGateContinue.classList.remove('enabled');
+  roleGate.setAttribute('aria-hidden', 'false');
+}
+
+function closeRoleGate() {
+  roleGate.setAttribute('aria-hidden', 'true');
+}
+
+roleGateContinue?.addEventListener('click', () => {
+  if (!pendingRoleSelection) return;
+  progress.selectedRole = pendingRoleSelection;
+  saveProgress();
+  closeRoleGate();
+  initializeApp();
+});
+
+let appInitialized = false;
+function initializeApp() {
+  if (appInitialized) return;
+  appInitialized = true;
+  render();
+  loadCatalogue();
+}
+
+function handleAuthenticated() {
+  if (!progress.selectedRole) {
+    openRoleGate();
+  } else {
+    initializeApp();
+  }
+}
+
+document.addEventListener('sinavrotasi:authenticated', handleAuthenticated);
 // app-guard.js, app.js yüklenmeden önce oturumu bulup event'i tetiklemiş olabilir
 // (yarış durumu) — bu durumda window.currentUser zaten set edilmiştir, hemen başlat.
-if (window.currentUser) initializeApp();
+if (window.currentUser) handleAuthenticated();
