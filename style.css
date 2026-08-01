@@ -937,17 +937,19 @@ body.auth-page{
    .card-study-wrap > .flip-card(.flipped) > .flip-card-inner >
      .flip-card-face.flip-card-front / .flip-card-back
    + .card-study-nav > .card-nav-btn / .card-nav-count
-   Kaynak: topicSheet üzerine 'document-flow card-study-active' class'ları eklenir. */
+   topicSheet'e her zaman 'document-flow card-study-active' birlikte eklenir,
+   bu yüzden aşağıdaki .card-study-active kuralları kart moduna giren
+   TÜM kategoriler (Genel Mevzuat, MEB Mevzuatı, Genel Kültür) için geçerlidir. */
 
 .card-study-wrap{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:20px;
-  padding:6px 2px 22px;
+  gap:16px;
+  padding:2px 2px 4px;
 }
 
-/* --- Kart --- */
+/* --- Kart (varsayılan / taban boyutlandırma) --- */
 .flip-card{
   width:100%;
   max-width:320px;
@@ -972,7 +974,7 @@ body.auth-page{
   backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
   border-radius:22px;
-  padding:24px 22px;
+  padding:22px 20px;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -989,7 +991,7 @@ body.auth-page{
 }
 .flip-card-label{
   position:absolute;
-  top:16px; left:16px;
+  top:14px; left:14px;
   font-size:8.5px;
   font-weight:800;
   letter-spacing:.6px;
@@ -1001,9 +1003,149 @@ body.auth-page{
 }
 .flip-card-q-mark{
   position:absolute;
-  top:2px; right:12px;
-  font-size:76px;
+  top:0; right:10px;
+  font-size:64px;
   font-weight:800;
+  line-height:1;
+  color:rgba(255,255,255,.07);
+  pointer-events:none;
+}
+.flip-card-text{
+  position:relative;
+  z-index:1;
+  font-size:15.5px;
+  font-weight:700;
+  line-height:1.5;
+  margin:0;
+  max-width:240px;
+  color:#fff;
+}
+.flip-card-hint{
+  position:absolute;
+  left:0; right:0; bottom:14px;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.3px;
+  color:rgba(255,255,255,.5);
+}
+
+/* Arka yüz — cevap (açık, green2 vurgulu "doğru cevap" dili) */
+.flip-card-back{
+  background:linear-gradient(160deg,var(--green2) 0%,#fff 65%);
+  border:1.5px solid #cfead9;
+  transform:rotateY(180deg);
+  color:var(--navy);
+}
+.flip-card-back .flip-card-text{
+  font-size:15px;
+  color:var(--navy);
+  max-width:250px;
+}
+.flip-card-back .flip-card-hint{
+  color:var(--green);
+  font-weight:800;
+}
+.flip-card-back::before{
+  content:'';
+  position:absolute;
+  top:14px; left:14px;
+  width:24px; height:24px;
+  border-radius:50%;
+  background:var(--green2);
+  border:1.5px solid #b9e3c9;
+}
+.flip-card-back::after{
+  content:'✓';
+  position:absolute;
+  top:14px; left:14px;
+  width:24px; height:24px;
+  display:grid;
+  place-items:center;
+  font-size:12px;
+  font-weight:800;
+  color:var(--green);
+}
+
+/* --- Alt gezinme (önceki / sayaç / sonraki) --- */
+.card-study-nav{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  width:100%;
+  max-width:320px;
+  flex-shrink:0;
+}
+.card-nav-btn{
+  width:42px; height:42px;
+  border-radius:50%;
+  border:1.5px solid var(--line);
+  background:#fff;
+  color:var(--navy);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  box-shadow:0 4px 10px rgba(13,33,68,.05);
+  flex-shrink:0;
+  transition:.15s;
+}
+.card-nav-btn svg{ width:18px; height:18px; }
+.card-nav-btn:hover:not(:disabled){ border-color:#c9daf6; transform:translateY(-1px); }
+.card-nav-btn:disabled{ opacity:.35; cursor:not-allowed; }
+.card-nav-count{
+  font-size:12px;
+  font-weight:800;
+  color:var(--navy2);
+  min-width:64px;
+  text-align:center;
+}
+
+/* ================= SIĞDIRMA DÜZELTMESİ =================
+   Sorun: sabit aspect-ratio (3/4) + sabit max-width, panelin gerçekte
+   kalan yüksekliğini hesaba katmıyordu -> kart+nav ekran dışına taşıyor,
+   kullanıcı aşağı kaydırmak zorunda kalıyordu.
+   Çözüm: .topic-sheet.card-study-active panelini SABİT yükseklikli bir
+   flex-column'a çeviriyoruz; header/breadcrumb/progress sabit yer kaplar,
+   .topic-list geri kalan boşluğu (flex:1) doldurur, kart da o boşluğa
+   max-height:100% ile "sıkışarak" sığar — asla taşma/scroll gerekmez. */
+.topic-sheet.card-study-active{
+  height:88%;
+  overflow:hidden;
+}
+.topic-sheet.card-study-active .topic-sheet-head,
+.topic-sheet.card-study-active .topic-breadcrumb,
+.topic-sheet.card-study-active .topic-progress-card{
+  flex-shrink:0;
+}
+.topic-sheet.card-study-active .topic-list{
+  flex:1;
+  min-height:0;
+  overflow:hidden;
+  padding-bottom:0;
+}
+.topic-sheet.card-study-active .card-study-wrap{
+  height:100%;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+}
+.topic-sheet.card-study-active .flip-card{
+  max-height:100%;
+  flex-shrink:1;
+}
+
+@media(max-width:370px){
+  .flip-card{ max-width:270px; }
+  .flip-card-text{ font-size:14px; }
+  .flip-card-q-mark{ font-size:52px; }
+}
+
+@media(min-width:641px){
+  .flip-card{ max-width:320px; }
+}  font-weight:800;
   line-height:1;
   color:rgba(255,255,255,.07);
   pointer-events:none;
