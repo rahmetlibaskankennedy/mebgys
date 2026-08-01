@@ -59,9 +59,8 @@ supabaseClient.auth.getSession().then(async ({ data }) => {
   startApp(data.session);
 });
 
-// Supabase proje ayarların — bunları Supabase Dashboard > Project Settings > API'den al.
-const SUPABASE_URL = 'https://zrlsllbgqrllwgjyqbfv.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_9BNNjJTjh9AfWQsxM27BiQ_1KfT0x7C';
-// Not: anon key public'tir, tarayıcıda görünmesi güvenlik açığı değildir.
-// Gerçek güvenlik Supabase tarafındaki Row Level Security (RLS) politikalarıyla sağlanır.
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// NOT: SUPABASE_URL, SUPABASE_ANON_KEY ve supabaseClient burada TEKRAR tanımlanmıyor —
+// bunlar zaten supabaseClient.js dosyasında tanımlı ve bu dosya app-guard.js'den ÖNCE
+// yükleniyor (index.html'deki script sırasına bakın). Burada tekrar `const` ile
+// tanımlamak "Identifier has already been declared" SyntaxError'una yol açar ve bu
+// hata dosyanın tamamının (window.signOut dahil) çalışmasını engeller.
