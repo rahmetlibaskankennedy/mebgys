@@ -115,7 +115,7 @@ function haptic(duration = 18) {
 }
 
 function defaultProgress() {
-  return { answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [], flaggedQuestions: {}, reportedQuestions: {}, selectedRole: null, purchasedRoles: [], wrongQuestions: {} };
+  return { userId: null, answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [], flaggedQuestions: {}, reportedQuestions: {}, selectedRole: null, purchasedRoles: [], wrongQuestions: {} };
 }
 
 function loadProgress() {
@@ -1249,6 +1249,13 @@ function initializeApp() {
 }
 
 function handleAuthenticated() {
+  const currentUserId = window.currentUser?.id || null;
+  if (progress.userId !== currentUserId) {
+    // Farklı bir Supabase kullanıcısı (örn. hesap silinip yeniden açılmış) — local veriyi sıfırla
+    progress = defaultProgress();
+    progress.userId = currentUserId;
+    saveProgress();
+  }
   if (!progress.selectedRole) {
     openRoleGate();
   } else {
