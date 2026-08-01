@@ -972,7 +972,6 @@ body.auth-page{
   inset:0;
   backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
-  border-radius:22px;
   padding:22px 20px;
   display:flex;
   flex-direction:column;
@@ -980,7 +979,6 @@ body.auth-page{
   justify-content:center;
   text-align:center;
   box-shadow:var(--shadow);
-  overflow:hidden;
 }
 
 /* Ön yüz — soru */
