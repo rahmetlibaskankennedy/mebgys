@@ -33,7 +33,7 @@ document.getElementById('signupForm').addEventListener('submit', async event => 
       // uygulamaya (index.html) dönsün. Bu URL'nin Supabase Dashboard >
       // Authentication > URL Configuration > Redirect URLs listesinde
       // kayıtlı olması gerekir, yoksa Supabase bağlantıyı reddeder.
-      emailRedirectTo: `${window.location.origin}/index.html`
+      emailRedirectTo: new URL('index.html', window.location.href).href
     }
   });
   setFormBusy(submitButton, false, 'Kayıt Ol');

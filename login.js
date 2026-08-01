@@ -28,7 +28,7 @@ document.getElementById('forgotPasswordLink')?.addEventListener('click', async (
   }
   loginError.textContent = '';
   const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/login.html`
+    redirectTo: new URL('login.html', window.location.href).href
   });
   loginError.textContent = error ? friendlyAuthError(error.message) : '';
   if (!error) alert(`${email} adresine bir şifre sıfırlama bağlantısı gönderdik.`);

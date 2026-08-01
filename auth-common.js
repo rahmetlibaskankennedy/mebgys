@@ -39,7 +39,7 @@ document.querySelectorAll('.social-box[data-provider]').forEach(button => {
     try {
       const { error } = await supabaseClient.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/index.html` }
+        options: { redirectTo: new URL('index.html', window.location.href).href }
       });
       if (error) {
         alert(friendlyAuthError(error.message));
