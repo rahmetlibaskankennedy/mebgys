@@ -15,9 +15,19 @@ function startApp(session) {
   const firstNameEl = document.getElementById('userFirstName');
   if (firstNameEl) firstNameEl.textContent = firstName;
   window.currentUser = user;
-  document.dispatchEvent(new CustomEvent('sinavrotasi:authenticated', { detail: { user } }));
-}
 
+  // Sunucudaki kayıtlı kadroyu çek — tarama verisi silinse bile kaybolmasın
+  supabaseClient
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+    .then(({ data, error }) => {
+      if (error) console.error('Profil rolü okunamadı:', error);
+      window.currentUserRole = data?.role || null;
+      document.dispatchEvent(new CustomEvent('sinavrotasi:authenticated', { detail: { user } }));
+    });
+}
 window.signOut = async function signOut() {
   await supabaseClient.auth.signOut();
   window.location.href = 'login.html';
