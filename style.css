@@ -1041,7 +1041,7 @@ body.auth-page{
   color:var(--navy);
 }
 .flip-card-back .flip-card-text{
-  font-size:15px;
+  font-size:19px;
   color:var(--navy);
   max-width:250px;
 }
