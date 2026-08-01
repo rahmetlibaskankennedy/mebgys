@@ -679,53 +679,61 @@ body{background:var(--bg)}
 
 .sheet-primary{ width:100%; border:0; border-radius:14px; padding:15px; background:var(--navy); color:#fff; font-size:14px; font-weight:700; cursor:pointer; }
 
-/* ================= AUTH (ÜYELİK / GİRİŞ) — glassmorphism ================= */
+/* ================= AUTH (ÜYELİK / GİRİŞ) ================= */
 .auth-phone-bg{
   background:
-    linear-gradient(rgba(238,242,247,.55),rgba(238,242,247,.55)),
+    linear-gradient(rgba(255,255,255,.72),rgba(255,255,255,.72)),
     url("images/background.png");
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
 }
-.auth-content{display:flex;flex-direction:column;align-items:center;padding:16px 24px 40px;min-height:calc(100dvh - 30px)}
+.auth-content{
+  display:flex;flex-direction:column;align-items:center;
+  padding:calc(18px + env(safe-area-inset-top)) 22px calc(32px + env(safe-area-inset-bottom));
+  min-height:100dvh;
+}
 .auth-card-wrap{width:100%;display:flex;flex-direction:column;align-items:center}
-.auth-logo-wrap{display:flex;flex-direction:column;align-items:center;margin-top:16px;margin-bottom:6px}
+.auth-card-wrap + .auth-card-wrap{margin-top:0}
+
+/* Brand lockup: icon + wordmark + tagline, mirrors the mockup's compass + wordmark header */
+.auth-brand{display:flex;flex-direction:column;align-items:center;margin:6px 0 22px;text-align:center}
+.auth-brand-icon{width:60px;height:60px;object-fit:contain;margin-bottom:10px}
+.auth-brand-word{font-size:22px;font-weight:800;letter-spacing:-.2px;line-height:1}
+.auth-brand-word .w-navy{color:var(--navy)}
+.auth-brand-word .w-red{color:var(--red)}
+.auth-brand-tag{font-size:11px;color:var(--muted);margin:5px 0 0;font-weight:500}
 
 .auth-card{
   width:100%;
-  margin-top:18px;
-  background:rgba(255,255,255,.82);
-  backdrop-filter:blur(22px);
-  -webkit-backdrop-filter:blur(22px);
-  border:1px solid rgba(255,255,255,.7);
-  border-radius:26px;
-  padding:24px;
-  box-shadow:0 12px 40px rgba(21,59,115,.08);
+  background:#fff;
+  border:1px solid rgba(21,59,115,.06);
+  border-radius:24px;
+  padding:24px 22px;
+  box-shadow:0 16px 40px rgba(13,33,68,.08);
 }
-.auth-heading{text-align:center}
-.auth-heading h1{font-size:19px;margin:0;color:var(--navy);font-weight:700}
-.auth-heading p{font-size:12.5px;color:var(--muted);margin-top:4px}
+.auth-heading{text-align:center;margin-bottom:4px}
+.auth-heading h1{font-size:20px;margin:0;color:var(--navy);font-weight:800;letter-spacing:-.2px}
+.auth-heading p{font-size:12.5px;color:var(--muted);margin:5px 0 0}
 
 .auth-form{display:flex;flex-direction:column}
 .auth-form .field{
-  display:flex;align-items:center;gap:10px;height:48px;border-radius:12px;padding:0 14px;
-  margin-top:14px;background:rgba(255,255,255,.75);border:none;
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  box-shadow:inset 0 0 0 1px rgba(21,59,115,.06);
+  display:flex;align-items:center;gap:10px;height:50px;border-radius:13px;padding:0 14px;
+  margin-top:13px;background:#f6f8fb;border:1px solid var(--line);
 }
+.auth-form .field:focus-within{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(45,126,247,.1)}
 .auth-form .field svg{width:17px;height:17px;flex-shrink:0}
-.auth-form .field input{border:none;outline:none;flex:1;background:transparent;font-size:13.5px;color:var(--text)}
-.auth-form .field input::placeholder{color:#b7c0ce}
+.auth-form .field input{border:none;outline:none;flex:1;min-width:0;background:transparent;font-size:13.5px;color:var(--text)}
+.auth-form .field input::placeholder{color:#a7b0c0}
 .auth-form .field .eye{cursor:pointer}
 
-.row-between{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:12px}
+.row-between{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:12px;flex-wrap:wrap;gap:8px}
 .remember{display:flex;align-items:center;gap:6px;color:#4a5a70}
 .remember input{width:14px;height:14px;accent-color:var(--blue)}
 .forgot{color:var(--blue);font-weight:600;cursor:pointer}
 
-.terms{display:flex;align-items:flex-start;gap:7px;margin-top:12px;font-size:11.5px;color:#4a5a70;line-height:1.4}
-.terms input{width:14px;height:14px;margin-top:2px;accent-color:var(--blue)}
+.terms{display:flex;align-items:flex-start;gap:7px;margin-top:13px;font-size:11.5px;color:#4a5a70;line-height:1.4}
+.terms input{width:14px;height:14px;margin-top:2px;accent-color:var(--blue);flex-shrink:0}
 .terms label{cursor:pointer}
 
 .auth-error{color:var(--red);font-size:11.5px;margin:10px 0 0;min-height:14px}
@@ -733,22 +741,31 @@ body{background:var(--bg)}
 
 .auth-form .primary-btn{
   width:100%;margin-top:18px;color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;border:none;
-  height:54px;border-radius:16px;background:linear-gradient(135deg,var(--blue),var(--navy2));
-  box-shadow:0 12px 28px rgba(45,126,247,.28);transition:.2s;
+  height:52px;border-radius:14px;background:var(--blue);
+  box-shadow:0 10px 24px rgba(45,126,247,.28);transition:.2s;
 }
-.auth-form .primary-btn:disabled{opacity:.6;cursor:default;box-shadow:none}
+.auth-form .primary-btn:active{transform:scale(.98)}
+.auth-form .primary-btn:disabled{opacity:.6;cursor:default;box-shadow:none;transform:none}
 
 .divider{display:flex;align-items:center;gap:10px;margin:20px 0 16px}
-.divider .line{flex:1;height:1px;background:rgba(21,59,115,.1)}
-.divider span{font-size:11.5px;color:var(--muted)}
+.divider .line{flex:1;height:1px;background:var(--line)}
+.divider span{font-size:11.5px;color:var(--muted);white-space:nowrap}
 
 .socials{display:flex;gap:10px;justify-content:center}
 .social-box{
-  width:64px;height:48px;border-radius:12px;cursor:pointer;
-  border:1px solid rgba(21,59,115,.06);display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.6);
+  flex:1;max-width:80px;height:48px;border-radius:13px;cursor:pointer;
+  border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+  background:#f6f8fb;transition:.15s;
 }
+.social-box:active{background:#eef2f7}
 .social-box svg{width:20px;height:20px}
 
-.auth-switch{margin-top:16px;text-align:center;font-size:12.5px;color:#4a5a70}
+.auth-switch{margin-top:18px;text-align:center;font-size:12.5px;color:#4a5a70}
 .auth-switch a{color:var(--blue);font-weight:700;text-decoration:none}
+
+@media(max-width:380px){
+  .auth-content{padding-left:16px;padding-right:16px}
+  .auth-card{padding:20px 16px}
+  .auth-brand-icon{width:52px;height:52px}
+  .auth-brand-word{font-size:20px}
+}
