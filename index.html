@@ -18,7 +18,7 @@
           </div>
           <div class="topbar-actions">
             <button class="round-btn" aria-label="Bildirimler" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><b>3</b></button>
-            <button class="round-btn" aria-label="Ara" type="button" onclick="showToast('Arama yakında')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
+            <button class="round-btn" id="openSearchButton" aria-label="Ara" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
           </div>
         </div>
         <div class="goal-card">
@@ -131,7 +131,25 @@
       </div>
       <div class="topic-list" id="topicList"></div>
     </section>
+
+    <section class="bottom-sheet" id="searchSheet" aria-hidden="true" aria-label="Arama">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <div>
+          <h3 class="sheet-title"><svg class="sheet-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span>Ara</span></h3>
+          <p>Konu, kanun veya kategori ara.</p>
+        </div>
+        <button class="sheet-close" id="closeSearchSheet" type="button" aria-label="Aramayı kapat">×</button>
+      </div>
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" class="search-input" placeholder="Örn. disiplin cezaları, izin süreleri..." autocomplete="off">
+      </div>
+      <div class="topic-list" id="searchResultsList" style="max-height:50vh;"></div>
+    </section>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="supabaseClient.js"></script>
