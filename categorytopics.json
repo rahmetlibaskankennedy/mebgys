@@ -10,7 +10,7 @@
         "type": "topic",
         "title": "Türkçe Dilbilgisi ve Anlatım Bozuklukları",
         "questionCount": 20,
-        "questionFile": "questions-turkce.json",
+        "questionFile": "sorular/questions-turkce.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       },
       {
@@ -18,7 +18,7 @@
         "type": "topic",
         "title": "Atatürk İlkeleri ve İnkılap Tarihi",
         "questionCount": 20,
-        "questionFile": "questions-inkilap.json",
+        "questionFile": "sorular/questions-inkilap.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       },
       {
@@ -26,7 +26,7 @@
         "type": "topic",
         "title": "Türkiye Coğrafyası ve Jeopolitiği",
         "questionCount": 20,
-        "questionFile": "questions-cografya.json",
+        "questionFile": "sorular/questions-cografya.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       },
       {
@@ -34,7 +34,7 @@
         "type": "topic",
         "title": "Yurttaşlık Bilgisi ve Temel Hukuk",
         "questionCount": 20,
-        "questionFile": "questions-yurttaslik.json",
+        "questionFile": "sorular/questions-yurttaslik.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       },
       {
@@ -42,7 +42,7 @@
         "type": "topic",
         "title": "Güncel Bilgiler ve Uluslararası Kuruluşlar",
         "questionCount": 20,
-        "questionFile": "questions-guncel.json",
+        "questionFile": "sorular/questions-guncel.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       }
     ]
@@ -58,7 +58,7 @@
         "type": "document",
         "title": "T.C. Anayasası",
         "questionCount": 20,
-        "questionFile": "questions-anayasa.json",
+        "questionFile": "sorular/questions-anayasa.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       },
       {
@@ -67,7 +67,7 @@
         "documentNumber": "657",
         "title": "657 sayılı Devlet Memurları Kanunu",
         "questionCount": 20,
-        "questionFile": "questions-657.json",
+        "questionFile": "sorular/questions-657.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"],
         "children": [
           { "id": "law-657-section-kapsam-amac-ilkeler", "type": "section", "title": "Kapsam, Amaç ve Temel İlkeler", "articleRange": "Madde 1 – 3" },
@@ -82,7 +82,7 @@
         "type": "document",
         "title": "4483 sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması Hakkında Kanun",
         "questionCount": 20,
-        "questionFile": "questions-4483.json",
+        "questionFile": "sorular/questions-4483.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       },
       {
@@ -90,7 +90,7 @@
         "type": "document",
         "title": "5442 sayılı İl İdaresi Kanunu",
         "questionCount": 20,
-        "questionFile": "questions-5442.json",
+        "questionFile": "sorular/questions-5442.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       },
       {
@@ -98,7 +98,7 @@
         "type": "document",
         "title": "4982 sayılı Bilgi Edinme Hakkı Kanunu",
         "questionCount": 20,
-        "questionFile": "questions-4982.json",
+        "questionFile": "sorular/questions-4982.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       },
       {
@@ -106,7 +106,7 @@
         "type": "document",
         "title": "3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun",
         "questionCount": 20,
-        "questionFile": "questions-3071.json",
+        "questionFile": "sorular/questions-3071.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       },
       {
@@ -114,7 +114,7 @@
         "type": "document",
         "title": "5018 sayılı Kamu Mali Yönetimi ve Kontrol Kanunu",
         "questionCount": 20,
-        "questionFile": "questions-5018.json",
+        "questionFile": "sorular/questions-5018.json",
         "kadrolar": ["sayman", "sube-mudur"]
       }
     ]
@@ -131,7 +131,7 @@
         "title": "1739 sayılı Milli Eğitim Temel Kanunu",
         "questionCount": 20,
         "articleCount": 62,
-        "questionFile": "questions-1739.json",
+        "questionFile": "sorular/questions-1739.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       },
       {
@@ -141,11 +141,21 @@
         "title": "222 sayılı İlköğretim ve Eğitim Kanunu",
         "questionCount": 61,
         "articleCount": 91,
-        "questionFile": "questions-222.json",
+        "questionFile": "sorular/questions-222.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"],
         "children": [
           { "id": "law-222-section-genel-esaslar", "type": "section", "title": "Genel Esaslar", "articleRange": "Madde 1 – 5" },
-          { "id": "law-222-section-te-kilat", "type": "section", "title": "Teşkilat", "articleRange": "Madde 6 – 13" }
+          { "id": "law-222-section-te-kilat", "type": "section", "title": "Teşkilat", "articleRange": "Madde 6 – 13" },
+          { "id": "law-222-section-i-lde-i-lk-retim-g-revlileri", "type": "section", "title": "İlde İlköğretim Görevlileri", "articleRange": "Madde 14 – 25" },
+          { "id": "law-222-section-i-lk-retim-kurullar", "type": "section", "title": "İlköğretim Kurulları", "articleRange": "Madde 26" },
+          { "id": "law-222-section-a-lma-kapanma-ve-tatiller", "type": "section", "title": "Açılma, Kapanma ve Tatiller", "articleRange": "Madde 27 – 45" },
+          { "id": "law-222-section-kay-t-ve-kabul", "type": "section", "title": "Kayıt ve Kabul", "articleRange": "Madde 46 – 54" },
+          { "id": "law-222-section-okula-devam", "type": "section", "title": "Okula Devam", "articleRange": "Madde 55 – 61" },
+          { "id": "law-222-section-okullar-n-arsa-ve-arazi-i-leri", "type": "section", "title": "Okulların Arsa ve Arazi İşleri", "articleRange": "Madde 62 – 68" },
+          { "id": "law-222-section-okul-yap-m-ve-donat-m", "type": "section", "title": "Okul Yapım ve Donatım", "articleRange": "Madde 69 – 70" },
+          { "id": "law-222-section-gelir-gider-ve-planlama", "type": "section", "title": "Gelir, Gider ve Planlama", "articleRange": "Madde 71 – 88" },
+          { "id": "law-222-section-t-rl-h-k-mler", "type": "section", "title": "Türlü Hükümler", "articleRange": "Madde 89" },
+          { "id": "law-222-section-ek-ge-ici-ve-son-h-k-mler", "type": "section", "title": "Ek, Geçici ve Son Hükümler", "articleRange": "Ek ve Geçici Maddeler" }
         ]
       },
       {
@@ -153,7 +163,7 @@
         "type": "document",
         "title": "1 Sayılı Cumhurbaşkanlığı Kararnamesi (MEB Teşkilatı)",
         "questionCount": 20,
-        "questionFile": "questions-cbk1.json",
+        "questionFile": "sorular/questions-cbk1.json",
         "kadrolar": ["memur", "sef", "sayman", "sube-mudur"]
       },
       {
@@ -161,7 +171,7 @@
         "type": "document",
         "title": "5580 sayılı Özel Öğretim Kurumları Kanunu",
         "questionCount": 20,
-        "questionFile": "questions-5580.json",
+        "questionFile": "sorular/questions-5580.json",
         "kadrolar": ["sayman", "sube-mudur"]
       }
     ]
