@@ -119,7 +119,6 @@ const iconPaths = {
   statTopics: '<rect x="4.5" y="4.5" width="15" height="15" rx="4"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/>',
   statQuestions: '<circle cx="12" cy="12" r="8.5"/><path d="m8 12.3 2.7 2.7 5.3-5.7"/>',
   statTrials: '<path d="M12 3.2 13.7 5l2.5-.5.6 2.5 2.4.9-.9 2.4 1.7 1.9-1.7 1.9.9 2.4-2.4.9-.6 2.5-2.5-.5-1.7 1.8-1.7-1.8-2.5.5-.6-2.5-2.4-.9.9-2.4L4 12.2l1.7-1.9-.9-2.4 2.4-.9.6-2.5 2.5.5Z"/><path d="M9 13.5 12.5 21l1-4"/><path d="m15 13.5-1.8 3.7"/>',
-  statFlame: '<path d="M12 3s1.5 2.5 1.5 4c0 1-.6 1.5-1.5 1.5S10.5 8 10.5 7c0-1.5 1.5-4 1.5-4Z"/><path d="M9 8c-2.5 2-3.5 4.3-3.5 6.5a6.5 6.5 0 0 0 13 0c0-1.3-.4-2.6-1.2-3.8-.5 1.6-1.6 2.4-2.8 2.4a2.9 2.9 0 0 1-2.9-2.9c0-1 .4-1.8 1-2.5C11 8.6 9.8 8.2 9 8Z"/>',
   idcard: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 15.5c.7-1 2-1.5 3-1.5s2.3.5 3 1.5"/><path d="M15 9h3M15 12h3M15 15h3"/>',
   clipboard: '<rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 3.5h6a1 1 0 0 1 1 1V6H8V4.5a1 1 0 0 1 1-1Z"/><path d="m9.5 11 1.5 1.5L14.5 9M9.5 15 11 16.5 14.5 13"/>',
   calculator: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01"/><path d="M8 19h8"/>',
@@ -773,6 +772,7 @@ function renderCategoryLevel(categoryKey) {
     element.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') open(); });
   });
   topicSheet.scrollTop = 0;
+  refreshVisibleQuestionCounts(items, () => { if (state.activeCategoryKey === categoryKey && !state.activeDocument) renderCategoryLevel(categoryKey); });
 }
 
 function statusLabel(documentItem) {
@@ -813,6 +813,7 @@ function renderDocumentHub(documentItem, categoryKey) {
     if (mode === 'truefalse') showToast('Doğru / yanlış soru paketi yakında eklenecek.');
   }));
   topicSheet.scrollTop = 0;
+  refreshVisibleQuestionCounts([documentItem], () => { if (state.activeDocument === documentItem) renderDocumentHub(documentItem, categoryKey); });
 }
 
 function modeCard(mode, icon, title, description, enabled) {
@@ -862,6 +863,7 @@ function renderTopicPlan(item, categoryKey) {
     }
   }));
   topicSheet.scrollTop = 0;
+  refreshVisibleQuestionCounts([item], () => { if (state.activeDocument === item) renderTopicPlan(item, categoryKey); });
 }
 
 function renderSections(documentItem, categoryKey) {
@@ -901,6 +903,30 @@ async function loadQuestionBank(documentItem) {
   const questions = Array.isArray(data.questions) ? data.questions : [];
   state.questionBanks.set(documentItem.id, questions);
   return questions;
+}
+
+// --- SORU SAYISINI CANLI (OTOMATİK) HESAPLAMA ---
+// Katalogtaki statik questionCount alanı sadece ilk boyama (paint) için bir tahmindir.
+// Gerçek soru dosyası arka planda indirilip önbelleğe alınır; sayı gerçek uzunlukla
+// eşleşmiyorsa item.questionCount güncellenir ve verilen onUpdate callback'i tetiklenir
+// (genelde ilgili ekranı sessizce yeniden çizer).
+async function refreshVisibleQuestionCounts(items, onUpdate) {
+  const targets = (items || []).filter(item => item && item.questionFile);
+  if (!targets.length) return;
+  const results = await Promise.allSettled(targets.map(async item => {
+    const bank = await loadQuestionBank(item);
+    return { item, count: bank.length };
+  }));
+  let changed = false;
+  results.forEach(result => {
+    if (result.status !== 'fulfilled') return;
+    const { item, count } = result.value;
+    if (item.questionCount !== count) {
+      item.questionCount = count;
+      changed = true;
+    }
+  });
+  if (changed) onUpdate();
 }
 
 function shuffle(list) {
