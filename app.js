@@ -12,6 +12,36 @@ const ROLES = [
 
 const ROLE_ICONS = { memur: 'idcard', sef: 'clipboard', sayman: 'calculator', 'sube-mudur': 'landmark' };
 
+// ↓↓↓ YENİ EKLENEN KISIM BURADAN BAŞLIYOR ↓↓↓
+const CARD_CATEGORY_ORDER = ['general-legislation', 'meb-legislation', 'general-culture'];
+
+const CARD_CATALOGUE = {
+  'general-legislation': {
+    title: 'Genel Mevzuat',
+    description: 'Kanunlar ve temel mevzuat kartları',
+    icon: 'scale', iconClass: '',
+    documents: [
+      { id: 'anayasa', title: 'T.C. Anayasası', cardFile: 'cards/anayasa.json' },
+      { id: '657-sayili-kanun', title: '657 Sayılı Devlet Memurları Kanunu', cardFile: 'cards/657-sayili-kanun.json' },
+      { id: '4483-sayili-kanun', title: '4483 Sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması Hakkında Kanun', cardFile: 'cards/4483-sayili-kanun.json' },
+      { id: '5442-sayili-kanun', title: '5442 Sayılı İl İdaresi Kanunu', cardFile: 'cards/5442-sayili-kanun.json' },
+      { id: '4982-sayili-kanun', title: '4982 Sayılı Bilgi Edinme Hakkı Kanunu', cardFile: 'cards/4982-sayili-kanun.json' },
+      { id: '3071-sayili-kanun', title: '3071 Sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun', cardFile: 'cards/3071-sayili-kanun.json' }
+    ]
+  },
+  'meb-legislation': {
+    title: 'MEB Mevzuatı', description: 'Millî Eğitim Bakanlığı mevzuat kartları',
+    icon: 'schoolbook', iconClass: 'red', documents: []
+  },
+  'general-culture': {
+    title: 'Genel Kültür', description: 'Tarih, coğrafya ve güncel bilgi kartları',
+    icon: 'landmark', iconClass: 'blue', documents: []
+  }
+};
+
+const cardDecks = new Map();
+// ↑↑↑ YENİ EKLENEN KISIM BURADA BİTİYOR ↑↑↑
+
 const state = {
   view: 'home',
   catalogue: null,
@@ -20,7 +50,8 @@ const state = {
   activeDocument: null,
   navStack: [],
   questionBanks: new Map(),
-  quiz: null
+  quiz: null,
+  cardStudy: null
 };
 
 // Rota Ayarları State'i
