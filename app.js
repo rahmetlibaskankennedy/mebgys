@@ -299,8 +299,8 @@ function homeView() {
     <div class="stats">
       ${statCard('statTopics', '', stats.completedSections, 'Konu<br>Tamamlandı', 'wrong')}
       ${statCard('statQuestions', 'accent', stats.solvedQuestions, 'Soru<br>Çözüldü', 'wrong')}
-      ${statCard('statTrials', 'amber', stats.completedMocks, 'Deneme<br>Tamamlandı', 'bank')}
-      ${statCard('statFlame', 'accent', stats.streak, 'Günlük<br>Seri', 'wrong')}
+      ${statCard('trophy', 'amber', stats.completedMocks, 'Deneme<br>Tamamlandı', 'bank')}
+      ${statCard('flame', 'accent', stats.streak, 'Günlük<br>Seri', 'wrong')}
     </div>
     <div class="section-head"><h3>Test Kategorileri</h3></div>
     <section class="categories">${categories}</section>
