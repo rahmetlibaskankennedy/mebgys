@@ -253,10 +253,12 @@ body{background:var(--bg)}
 }
 
 /* Üst Lacivert Alan */
+/* Üst Beyaz Alan */
 .quiz-premium-header {
-  background: #0B1939;
-  padding: 14px 20px 34px;
-  color: #fff;
+  background: #fff;
+  padding: 14px 20px 20px;
+  color: var(--navy);
+  border-bottom: 1px solid var(--line);
 }
 
 .quiz-premium-topbar {
@@ -267,9 +269,9 @@ body{background:var(--bg)}
 }
 
 .quiz-premium-topbar button {
-  background: rgba(255, 255, 255, 0.08);
+  background: #f0f4f8;
   border: none;
-  color: #fff;
+  color: var(--navy);
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -283,8 +285,8 @@ body{background:var(--bg)}
   text-align: center;
   flex: 1;
 }
-.quiz-premium-titles h2 { font-size: 16px; font-weight: 700; margin: 0 0 2px; }
-.quiz-premium-titles span { font-size: 14px; font-weight: 600; color: #8A99BA; }
+.quiz-premium-titles h2 { font-size: 16px; font-weight: 700; margin: 0 0 2px; color: var(--navy); }
+.quiz-premium-titles span { font-size: 14px; font-weight: 600; color: var(--muted); }
 
 .quiz-premium-top-actions {
   display: flex;
@@ -295,10 +297,13 @@ body{background:var(--bg)}
 .quiz-premium-timer {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-size: 13px;
-  font-weight: 600;
-  color: #fff;
+  font-weight: 700;
+  color: var(--red);
+  background: var(--red2);
+  padding: 6px 12px;
+  border-radius: 12px;
 }
 .quiz-premium-timer svg { width: 14px; height: 14px; }
 
@@ -310,40 +315,43 @@ body{background:var(--bg)}
 }
 .progress-text {
   font-size: 12px;
-  color: #8A99BA;
+  color: var(--muted);
   font-weight: 500;
   white-space: nowrap;
 }
 .progress-text strong {
-  color: #fff;
+  color: var(--navy);
   font-weight: 700;
   font-size: 14px;
 }
 .progress-track {
   flex: 1;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.15);
+  height: 5px;
+  background: var(--line);
   border-radius: 4px;
   position: relative;
 }
 .progress-fill {
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  background: #E31E24;
+  background: var(--navy);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
 .progress-handle {
   position: absolute;
   top: 50%;
-  width: 8px;
-  height: 8px;
-  background: #A6B4CE;
+  width: 9px;
+  height: 9px;
+  background: var(--navy);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(13,33,68,.25);
   border-radius: 50%;
   transform: translate(-50%, -50%);
   transition: left 0.3s ease;
 }
 
+/* İçerik Kartı */
 /* İçerik Kartı */
 .quiz-premium-card-wrapper {
   flex: 1;
@@ -352,14 +360,17 @@ body{background:var(--bg)}
 }
 .quiz-premium-card {
   background: #fff;
-  border-radius: 24px 24px 0 0;
+  border-radius: 20px;
+  margin: 14px 14px 0;
   padding: 18px 18px 16px;
   position: absolute;
-  top: -24px; left: 0; right: 0; bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   overflow-y: auto;
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.1);
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 16px rgba(13,33,68,.05);
   scrollbar-width: none;
 }
+
 .quiz-premium-card::-webkit-scrollbar { display: none; }
 
 .quiz-card-header {
