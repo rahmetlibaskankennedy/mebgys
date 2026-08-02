@@ -1252,7 +1252,7 @@ function renderQuiz() {
   const letters = ['A', 'B', 'C', 'D', 'E'];
 
   const timerDisplay = quiz.isTimed ?
-    `<div class="quiz-premium-timer" id="quizTimer">${svg('clock')} ${String(Math.floor(current.timeLeft / 60)).padStart(2, '0')}:${String(current.timeLeft % 60).padStart(2, '0')}</div>` :
+    `<div class="quiz-premium-timer" id="quizTimer">${svg('clock')} ${String(Math.floor(quiz.timeLeft / 60)).padStart(2, '0')}:${String(quiz.timeLeft % 60).padStart(2, '0')}</div>` :
     `<div class="quiz-premium-timer" style="color:var(--green);background:var(--green2);">Süresiz</div>`;
 
   topicList.innerHTML = `
@@ -1342,11 +1342,13 @@ function renderQuiz() {
 function startQuizTimer() {
   clearInterval(timerInterval);
   const quiz = state.quiz;
-  const timer = document.getElementById('quizTimer');
-  if (!quiz || !timer || quiz.timeLeft <= 0) return;
+  if (!quiz || quiz.timeLeft <= 0) return;
   timerInterval = window.setInterval(() => {
-    const currentTimer = document.getElementById('quizTimer');
-    if (!state.quiz || state.quiz !== quiz) return clearInterval(timerInterval);
+    const timer = document.getElementById('quizTimer');
+    if (!timer || !state.quiz || state.quiz !== quiz) {
+      clearInterval(timerInterval);
+      return;
+    }
     if (quiz.timeLeft <= 0) return clearInterval(timerInterval);
     quiz.timeLeft -= 1;
     const m = String(Math.floor(quiz.timeLeft / 60)).padStart(2, '0');
