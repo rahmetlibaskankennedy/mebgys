@@ -1191,7 +1191,7 @@ async function startMixedMock() {
 }
 
 function startQuiz({ questions, documentItem = null, section = null, kind, title, subtitle, returnView }) {
-  clearInterval(timerInterval);
+  clearInterval(timerInterval);  // ← Önceki testi temizle
 
   const isTimed = routeSettings.time === 'Süreli' || kind !== 'route';
   const totalTime = isTimed ? questions.length * QUESTION_TIME_LIMIT : 9999;
@@ -1205,12 +1205,18 @@ function startQuiz({ questions, documentItem = null, section = null, kind, title
     title,
     subtitle,
     isTimed,
-    timeLeft: totalTime,   // <-- tek, teste ait sayaç
+    timeLeft: totalTime,
     returnView,
     index: 0,
     completionRecorded: false
   };
+  
   renderQuiz();
+  
+  // Timer'ı burada başlat
+  if (state.quiz.isTimed) {
+    startQuizTimer();
+  }
 }
 
 function recordAnswer(question, selected) {
@@ -1243,7 +1249,6 @@ function quizScore(quiz) {
 
 
 function renderQuiz() {
-  clearInterval(timerInterval);
   const quiz = state.quiz;
   if (!quiz) return;
   topicSheet.classList.add('quiz-active');
