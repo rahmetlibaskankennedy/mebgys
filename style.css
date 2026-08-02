@@ -286,6 +286,20 @@ body{background:var(--bg)}
   cursor: pointer;
 }
 .quiz-premium-topbar button svg { width: 18px; height: 18px; }
+.quiz-premium-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.topbar-action svg { width: 16px; height: 16px; }
+.topbar-action.active {
+  background: var(--red2);
+  color: var(--red);
+}
+.topbar-action:disabled {
+  opacity: .55;
+  cursor: default;
+}
 
 .quiz-premium-titles {
   text-align: center;
