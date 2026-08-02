@@ -172,8 +172,8 @@ body{background:var(--bg)}
 .quiz-result-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
 .quiz-result-list-title{font-size:9px;font-weight:800;color:var(--red);margin-bottom:4px;display:block}
 .quiz-result-item{padding:12px;background:#fff0f1;border:1px solid #fad4d6;border-radius:10px}
-.quiz-result-item p{margin:0 0 6px;font-size:11px;font-weight:600;color:var(--navy)}
-.quiz-result-item small{display:block;font-size:9.5px;color:var(--red);font-weight:600}
+.quiz-result-item p{margin:0 0 6px;font-size:14px;font-weight:600;color:var(--navy);line-height:1.45}
+.quiz-result-item small{display:block;font-size:12.5px;color:var(--red);font-weight:600;line-height:1.4}
 .quiz-result-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .quiz-result-perfect{text-align:center;padding:20px;background:#eaf8f0;color:var(--green);border-radius:12px;font-weight:700;font-size:13px;margin-bottom:16px}
 
@@ -1289,3 +1289,18 @@ body.auth-page{
   font-weight:800;
   color:var(--navy);
 }
+
+/* Konu bazlı yanlış grupları */
+.mistake-group-list{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.mistake-group{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 3px 8px rgba(13,33,68,.03)}
+.mistake-group-head{width:100%;display:grid;grid-template-columns:40px 1fr 18px;gap:11px;align-items:center;padding:13px;border:0;background:none;cursor:pointer;text-align:left}
+.mistake-group-icon{width:40px;height:40px;border-radius:11px;background:var(--red2);color:var(--red);display:grid;place-items:center}
+.mistake-group-icon svg{width:19px;height:19px}
+.mistake-group-copy h4{margin:0 0 3px;font-size:13px;color:var(--navy);font-weight:700}
+.mistake-group-copy span{font-size:11px;color:var(--red);font-weight:700}
+.mistake-group-arrow{color:#aab2c0;display:grid;place-items:center;transition:transform .2s}
+.mistake-group-arrow svg{width:15px;height:15px}
+.mistake-group-arrow.rotated{transform:rotate(90deg)}
+.mistake-group-body{padding:0 13px 14px}
+.mistake-group-start{width:100%;margin-bottom:10px;border-radius:10px;font-size:12px;padding:11px}
+.mistake-group.open .mistake-group-head{border-bottom:1px solid var(--line)}
