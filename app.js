@@ -167,7 +167,7 @@ function loadProgress() {
 function saveProgress() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   updateHeader();
-  if (state.view === 'home' || state.view === 'wrong' || state.view === 'profile') render();
+  if (state.view === 'home' || state.view === 'wrong' || state.view === 'profile' || state.view === 'mistakes') render();
 }
 
 function dateKey(date = new Date()) {
