@@ -366,16 +366,45 @@ function studiesView() {
   </section>`;
 }
 
-function groupWrongQuestions() {
-  const groups = new Map();
+function getWrongQuestionsGrouped() {
+  const map = new Map();
   Object.values(progress.wrongQuestions).forEach(q => {
-    const key = q.documentId || 'diger';
-    if (!groups.has(key)) {
-      groups.set(key, { key, title: q.documentTitle || 'Diğer Sorular', questions: [] });
-    }
-    groups.get(key).questions.push(q);
+    const catKey = q.categoryKey || 'other';
+    const docKey = q.documentId || 'other-doc';
+    if (!map.has(catKey)) map.set(catKey, new Map());
+    const docMap = map.get(catKey);
+    if (!docMap.has(docKey)) docMap.set(docKey, { documentId: docKey, documentTitle: q.documentTitle || 'Diğer Sorular', questions: [] });
+    docMap.get(docKey).questions.push(q);
   });
-  return [...groups.values()].sort((a, b) => b.questions.length - a.questions.length);
+  return map;
+}
+
+function getMistakeDocuments(categoryKey) {
+  const grouped = getWrongQuestionsGrouped();
+  const docMap = grouped.get(categoryKey);
+  if (!docMap) return [];
+  let list = [...docMap.values()];
+  if (categoryKey !== 'other' && getCategory(categoryKey)) {
+    const allowedIds = new Set(getCategoryItems(categoryKey).map(item => item.id));
+    list = list.filter(doc => allowedIds.has(doc.documentId));
+  }
+  return list.sort((a, b) => b.questions.length - a.questions.length);
+}
+
+function mistakeCategoryMeta(categoryKey) {
+  if (categoryKey === 'other' || !getCategory(categoryKey)) return { title: 'Diğer Sorular', icon: 'book', iconClass: '' };
+  return categoryCardMeta(categoryKey);
+}
+
+function getMistakeCategories() {
+  const grouped = getWrongQuestionsGrouped();
+  return [...grouped.keys()].map(key => {
+    const docs = getMistakeDocuments(key);
+    const count = docs.reduce((sum, d) => sum + d.questions.length, 0);
+    if (!count) return null;
+    const meta = mistakeCategoryMeta(key);
+    return { key, title: meta.title, icon: meta.icon, iconClass: meta.iconClass, count };
+  }).filter(Boolean).sort((a, b) => b.count - a.count);
 }
 
 function mistakesView() {
@@ -386,46 +415,82 @@ function mistakesView() {
       <div class="empty-inline">Henüz yanlış yaptığın bir soru yok.</div>
     </section>`;
   }
-  const groups = groupWrongQuestions();
+  const categories = getMistakeCategories();
   return `<section class="screen content-screen">
     <div class="page-heading"><span>TEKRAR HAVUZU</span><h2>Yanlışlarım</h2><p>Daha önce yanlış yaptığın tüm sorular burada birikir.</p></div>
     <article class="practice-card">
       <div class="practice-card-icon">${svg('flame')}</div>
-      <div><span>TEKRAR HAVUZU</span><h3>${totalCount} soru</h3><p>Hepsini karışık sırayla tekrar çöz.</p></div>
+      <div><span>TEKRAR HAVUZU</span><h3>${totalCount} soru</h3><p>Tüm yanlış sorularını sırasıyla tekrar çöz.</p></div>
       <button class="reader-primary" id="startWrongPoolButton" type="button">Başlat</button>
     </article>
-    <div class="mistake-group-list">
-      ${groups.map(group => {
-        const isOpen = state.expandedMistakeGroup === group.key;
-        return `<article class="mistake-group ${isOpen ? 'open' : ''}">
-          <button class="mistake-group-head" data-toggle-group="${group.key}" type="button">
-            <div class="mistake-group-icon">${svg('book')}</div>
-            <div class="mistake-group-copy"><h4>${escapeHtml(group.title)}</h4><span>${group.questions.length} soru</span></div>
-            <div class="mistake-group-arrow ${isOpen ? 'rotated' : ''}">${svg('arrow')}</div>
-          </button>
-          ${isOpen ? `<div class="mistake-group-body">
-            <button class="reader-primary mistake-group-start" data-start-group="${group.key}" type="button">Bu konudaki ${group.questions.length} soruyu çöz</button>
-            <div class="quiz-result-list">
-              ${group.questions.map(q => `<article class="quiz-result-item"><p>${escapeHtml(q.prompt)}</p><small>Doğru cevap: ${escapeHtml(q.options[q.answerIndex])}</small></article>`).join('')}
-            </div>
-          </div>` : ''}
-        </article>`;
-      }).join('')}
-    </div>
+    <div class="section-head" style="margin-top:18px"><h3>Yanlışlarım</h3></div>
+    <section class="categories">
+      ${categories.map(cat => `<article class="category" role="button" tabindex="0" data-open-mistake-category="${cat.key}">
+        <div class="cat-icon ${cat.iconClass}">${svg(cat.icon)}</div>
+        <div class="cat-copy"><h4>${escapeHtml(cat.title)}</h4><small>${cat.count} soru</small></div>
+        <div class="chevron">${svg('arrow')}</div>
+      </article>`).join('')}
+    </section>
   </section>`;
 }
 
-function startWrongGroupQuiz(groupKey) {
-  const group = groupWrongQuestions().find(g => g.key === groupKey);
-  if (!group || !group.questions.length) return showToast('Bu konuda tekrar edilecek soru yok.');
+function openMistakeCategorySheet(categoryKey) {
+  clearInterval(timerInterval);
   topicSheet.classList.add('open');
   topicBackdrop.classList.add('open');
+  renderMistakeCategoryLevel(categoryKey);
+}
+
+function renderMistakeCategoryLevel(categoryKey) {
+  resetSheetClasses();
+  const meta = mistakeCategoryMeta(categoryKey);
+  const docs = getMistakeDocuments(categoryKey);
+  const total = docs.reduce((sum, d) => sum + d.questions.length, 0);
+  applySheetHeader({ title: meta.title, subtitle: `${total} yanlış soru`, eyebrow: 'YANLIŞLARIM', icon: meta.icon, iconClass: meta.iconClass });
+  topicBreadcrumbWrap.innerHTML = '';
+  setSheetProgress(`${docs.length} konu`, 0);
+  if (!docs.length) {
+    topicList.innerHTML = `<div class="empty-inline">Bu kategoride yanlış sorun yok.</div>`;
+    topicSheet.scrollTop = 0;
+    return;
+  }
+  topicList.innerHTML = docs.map((doc, index) => `
+    <article class="topic-item" data-mistake-doc-index="${index}" role="button" tabindex="0">
+      <div class="topic-number">${String(index + 1).padStart(2, '0')}</div>
+      <div class="topic-copy"><h4>${escapeHtml(doc.documentTitle)}</h4><p>${doc.questions.length} yanlış soru</p></div>
+      <div class="topic-arrow">${svg('arrow')}</div>
+    </article>`).join('');
+  topicList.querySelectorAll('[data-mistake-doc-index]').forEach(element => {
+    const open = () => renderMistakeDocument(categoryKey, docs[Number(element.dataset.mistakeDocIndex)]);
+    element.addEventListener('click', open);
+    element.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') open(); });
+  });
+  topicSheet.scrollTop = 0;
+}
+
+function renderMistakeDocument(categoryKey, doc) {
+  topicSheet.classList.add('document-flow');
+  const meta = mistakeCategoryMeta(categoryKey);
+  applySheetHeader({ title: doc.documentTitle, subtitle: `${doc.questions.length} yanlış soru`, eyebrow: 'YANLIŞLARIM', icon: 'book', iconClass: meta.iconClass });
+  renderBreadcrumb(meta.title, () => renderMistakeCategoryLevel(categoryKey));
+  setSheetProgress(`${doc.questions.length} soru`, 0);
+  topicList.innerHTML = `
+    <button class="reader-primary" id="startMistakeDocButton" type="button" style="width:100%;margin-bottom:14px">Bu konudaki ${doc.questions.length} soruyu çöz</button>
+    <div class="quiz-result-list">
+      ${doc.questions.map(q => `<article class="quiz-result-item"><p>${escapeHtml(q.prompt)}</p><small>Doğru cevap: ${escapeHtml(q.options[q.answerIndex])}</small></article>`).join('')}
+    </div>`;
+  document.getElementById('startMistakeDocButton').addEventListener('click', () => startMistakeDocumentQuiz(categoryKey, doc));
+  topicSheet.scrollTop = 0;
+}
+
+function startMistakeDocumentQuiz(categoryKey, doc) {
+  if (!doc.questions.length) return showToast('Bu konuda tekrar edilecek soru yok.');
   startQuiz({
-    questions: group.questions,
+    questions: doc.questions,
     kind: 'wrong-group',
-    title: group.title,
-    subtitle: `${group.questions.length} soru • tekrar`,
-    returnView: closeTopicSheet
+    title: doc.documentTitle,
+    subtitle: `${doc.questions.length} soru • tekrar`,
+    returnView: () => renderMistakeCategoryLevel(categoryKey)
   });
 }
 
@@ -613,12 +678,11 @@ function bindViewEvents() {
   
   document.getElementById('startMockButton')?.addEventListener('click', startMixedMock);
   document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
-  app.querySelectorAll('[data-toggle-group]').forEach(element => element.addEventListener('click', () => {
-  const key = element.dataset.toggleGroup;
-  state.expandedMistakeGroup = state.expandedMistakeGroup === key ? null : key;
-  render();
-}));
-app.querySelectorAll('[data-start-group]').forEach(element => element.addEventListener('click', () => startWrongGroupQuiz(element.dataset.startGroup)));
+   document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
+  app.querySelectorAll('[data-open-mistake-category]').forEach(element => {
+  element.addEventListener('click', () => openMistakeCategorySheet(element.dataset.openMistakeCategory));
+  element.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') openMistakeCategorySheet(element.dataset.openMistakeCategory); });
+    });
   document.getElementById('resetProgressButton')?.addEventListener('click', resetProgress);
   document.getElementById('signOutButton')?.addEventListener('click', () => window.signOut());
 
