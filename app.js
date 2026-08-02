@@ -1,6 +1,8 @@
 const STORAGE_KEY = 'sinavrotasi-study-progress-v2';
 const CATALOGUE_URL = 'categorytopics.json';
-const DAILY_GOAL = 20;
+const DEFAULT_DAILY_GOAL = 20;
+const DAILY_GOAL_MIN = 1;
+const DAILY_GOAL_MAX = 500;
 const QUESTION_TIME_LIMIT = 45;
 
 const ROLES = [
@@ -92,6 +94,13 @@ const closeSearchSheetButton = document.getElementById('closeSearchSheet');
 const searchInput = document.getElementById('searchInput');
 const searchResultsList = document.getElementById('searchResultsList');
 
+// Günlük Hedef Düzenleme (header) Elementleri
+const dailyGoalEditButton = document.getElementById('dailyGoalEditButton');
+const dailyGoalEditForm = document.getElementById('dailyGoalEditForm');
+const dailyGoalInput = document.getElementById('dailyGoalInput');
+const dailyGoalSaveButton = document.getElementById('dailyGoalSaveButton');
+const dailyGoalCancelButton = document.getElementById('dailyGoalCancelButton');
+
 let timerInterval = null;
 let progress = loadProgress();
 
@@ -147,14 +156,16 @@ function haptic(duration = 18) {
 }
 
 function defaultProgress() {
-  return { userId: null, answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [], flaggedQuestions: {}, reportedQuestions: {}, selectedRole: null, purchasedRoles: [], wrongQuestions: {} };
+  return { userId: null, answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [], flaggedQuestions: {}, reportedQuestions: {}, selectedRole: null, purchasedRoles: [], wrongQuestions: {}, dailyGoal: DEFAULT_DAILY_GOAL };
 }
 
 function loadProgress() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved || typeof saved !== 'object') return defaultProgress();
-    return { ...defaultProgress(), ...saved, dailyAnswers: saved.dailyAnswers || {}, completedSections: saved.completedSections || {}, completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : [], flaggedQuestions: saved.flaggedQuestions || {}, reportedQuestions: saved.reportedQuestions || {}, purchasedRoles: Array.isArray(saved.purchasedRoles) ? saved.purchasedRoles : [], wrongQuestions: saved.wrongQuestions || {} };
+    const parsedGoal = Number(saved.dailyGoal);
+    const safeGoal = Number.isFinite(parsedGoal) && parsedGoal >= DAILY_GOAL_MIN && parsedGoal <= DAILY_GOAL_MAX ? Math.round(parsedGoal) : DEFAULT_DAILY_GOAL;
+    return { ...defaultProgress(), ...saved, dailyAnswers: saved.dailyAnswers || {}, completedSections: saved.completedSections || {}, completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : [], flaggedQuestions: saved.flaggedQuestions || {}, reportedQuestions: saved.reportedQuestions || {}, purchasedRoles: Array.isArray(saved.purchasedRoles) ? saved.purchasedRoles : [], wrongQuestions: saved.wrongQuestions || {}, dailyGoal: safeGoal };
   } catch (error) {
     return defaultProgress();
   }
@@ -163,7 +174,7 @@ function loadProgress() {
 function saveProgress() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   updateHeader();
-  if (state.view === 'home' || state.view === 'wrong') render();
+  if (state.view === 'home' || state.view === 'wrong' || state.view === 'profile') render();
 }
 
 function dateKey(date = new Date()) {
@@ -183,17 +194,36 @@ function getStreak() {
   return streak;
 }
 
+function getDailyGoal() {
+  const value = Number(progress.dailyGoal);
+  return Number.isFinite(value) && value >= DAILY_GOAL_MIN && value <= DAILY_GOAL_MAX ? value : DEFAULT_DAILY_GOAL;
+}
+
+function setDailyGoal(rawValue) {
+  const parsed = Math.round(Number(rawValue));
+  if (!Number.isFinite(parsed) || parsed < DAILY_GOAL_MIN || parsed > DAILY_GOAL_MAX) {
+    showToast(`Lütfen ${DAILY_GOAL_MIN} ile ${DAILY_GOAL_MAX} arasında bir sayı gir.`);
+    return false;
+  }
+  progress.dailyGoal = parsed;
+  saveProgress();
+  showToast(`Günlük hedef ${parsed} soru olarak güncellendi.`);
+  return true;
+}
+
 function getStats() {
   const completedSections = Object.keys(progress.completedSections).length;
   const completedMocks = progress.completedTests.filter(test => test.kind === 'mock').length;
   const todayAnswers = Number(progress.dailyAnswers[dateKey()] || 0);
+  const dailyGoal = getDailyGoal();
   return {
     completedSections,
     solvedQuestions: Number(progress.answers || 0),
     completedMocks,
     streak: getStreak(),
     todayAnswers,
-    dailyPercentage: Math.min(100, Math.round((todayAnswers / DAILY_GOAL) * 100)),
+    dailyGoal,
+    dailyPercentage: Math.min(100, Math.round((todayAnswers / dailyGoal) * 100)),
     accuracy: progress.answers ? Math.round((progress.correctAnswers / progress.answers) * 100) : 0
   };
 }
@@ -317,6 +347,7 @@ function homeView() {
 function bankView() {
   const stats = getStats();
   const activeDocuments = getActiveDocuments();
+  const recentTests = progress.completedTests.slice(-3).reverse();
   return `<section class="screen content-screen">
     <div class="page-heading"><span>DENEMELER</span><h2>Hızlı denemeler</h2><p>Aktif soru bankalarından oluşan denemelerle performansını ölç.</p></div>
     <article class="practice-card">
@@ -325,13 +356,12 @@ function bankView() {
       <button class="reader-primary" id="startMockButton" type="button" ${activeDocuments.length ? '' : 'disabled'}>Başlat</button>
     </article>
     <div class="metric-strip"><div><strong>${stats.completedMocks}</strong><span>Tamamlanan deneme</span></div><div><strong>%${stats.accuracy}</strong><span>Genel doğruluk</span></div></div>
+    <section class="recent-tests"><h3>Son testler</h3>${recentTests.length ? recentTests.map(test => `<article><div><strong>${escapeHtml(test.title)}</strong><span>${test.score}/${test.total} doğru</span></div><small>${test.kind === 'mock' ? 'Deneme' : 'Konu testi'}</small></article>`).join('') : '<div class="empty-inline">Henüz tamamlanan bir test yok.</div>'}</section>
   </section>`;
 }
 
 function studiesView() {
   const stats = getStats();
-  const recentTests = progress.completedTests.slice(-3).reverse();
-  const wrongCount = Object.keys(progress.wrongQuestions).length;
   return `<section class="screen content-screen">
     <div class="page-heading"><span>ÇALIŞMALARIM</span><h2>İlerlemen</h2><p>Bu değerler cevapların ve tamamladığın testlerle otomatik güncellenir.</p></div>
     <div class="study-grid">
@@ -340,8 +370,6 @@ function studiesView() {
       <article><span>Tamamlanan bölüm</span><strong>${stats.completedSections}</strong></article>
       <article><span>Günlük seri</span><strong>${stats.streak} gün</strong></article>
     </div>
-    <section class="recent-tests"><h3>Son testler</h3>${recentTests.length ? recentTests.map(test => `<article><div><strong>${escapeHtml(test.title)}</strong><span>${test.score}/${test.total} doğru</span></div><small>${test.kind === 'mock' ? 'Deneme' : 'Konu testi'}</small></article>`).join('') : '<div class="empty-inline">Henüz tamamlanan bir test yok.</div>'}</section>
-    <button class="reset-progress" id="resetProgressButton" type="button">İlerleme verisini sıfırla</button>
   </section>`;
 }
 
@@ -508,7 +536,16 @@ function profileView() {
   const fullName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Aday';
   const email = user?.email || '';
   const initial = fullName.trim().charAt(0).toUpperCase() || '?';
-  return `<section class="screen content-screen"><div class="page-heading"><span>PROFİL</span><h2>${escapeHtml(fullName)}</h2><p>${escapeHtml(email)}</p></div><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>Hedef: MEB GYS</strong><span>${stats.solvedQuestions} soru • %${stats.accuracy} doğruluk</span></div></article><div class="profile-notice">İstatistikler şu an cihazında saklanır; hesap bazlı senkronizasyon yakında eklenecek.</div><button class="signout-btn" id="signOutButton" type="button">${svg('lock')}<span>Çıkış Yap</span></button></section>`;
+  return `<section class="screen content-screen"><div class="page-heading"><span>PROFİL</span><h2>${escapeHtml(fullName)}</h2><p>${escapeHtml(email)}</p></div><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>Hedef: MEB GYS</strong><span>${stats.solvedQuestions} soru • %${stats.accuracy} doğruluk</span></div></article>
+  <section class="profile-goal-card">
+    <div class="profile-goal-head"><span>GÜNLÜK ÇALIŞMA HEDEFİ</span><strong>${stats.dailyGoal} soru / gün</strong></div>
+    <p class="profile-goal-desc">Her gün çözmek istediğin soru sayısını belirle, ana sayfadaki ilerleme halkası buna göre hesaplanır.</p>
+    <div class="profile-goal-edit">
+      <input type="number" id="profileDailyGoalInput" class="goal-edit-input" min="${DAILY_GOAL_MIN}" max="${DAILY_GOAL_MAX}" step="1" inputmode="numeric" value="${stats.dailyGoal}" aria-label="Günlük hedef soru sayısı">
+      <button class="reader-primary" id="profileDailyGoalSaveButton" type="button">Kaydet</button>
+    </div>
+  </section>
+  <div class="profile-notice">İstatistikler şu an cihazında saklanır; hesap bazlı senkronizasyon yakında eklenecek.</div><section class="profile-account-actions"><button class="reset-progress" id="resetProgressButton" type="button">İlerleme verisini sıfırla</button><button class="signout-btn" id="signOutButton" type="button">${svg('lock')}<span>Çıkış Yap</span></button></section></section>`;
 }
 
 function render() {
@@ -537,6 +574,11 @@ function bindViewEvents() {
   document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
   document.getElementById('resetProgressButton')?.addEventListener('click', resetProgress);
   document.getElementById('signOutButton')?.addEventListener('click', () => window.signOut());
+
+  const profileGoalInput = document.getElementById('profileDailyGoalInput');
+  const profileGoalSaveButton = document.getElementById('profileDailyGoalSaveButton');
+  profileGoalSaveButton?.addEventListener('click', () => { if (profileGoalInput) setDailyGoal(profileGoalInput.value); });
+  profileGoalInput?.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); profileGoalSaveButton?.click(); } });
 }
 
 function updateHeader() {
@@ -553,7 +595,7 @@ function updateHeader() {
   ring.setAttribute('stroke-dasharray', `${stats.dailyPercentage}, 100`);
   percent.textContent = `%${stats.dailyPercentage}`;
   solved.textContent = stats.todayAnswers;
-  total.textContent = DAILY_GOAL;
+  total.textContent = stats.dailyGoal;
   progressFill.style.width = `${stats.dailyPercentage}%`;
   message.textContent = stats.dailyPercentage >= 100 ? 'Günlük hedefini tamamladın. Harika iş!' : stats.todayAnswers ? 'Hedefine düzenli biçimde yaklaşıyorsun.' : 'İlk soruyla günlük hedefini başlat.';
 }
@@ -700,6 +742,32 @@ function openSearchResult(result) {
 openSearchButton?.addEventListener('click', openSearchSheet);
 closeSearchSheetButton?.addEventListener('click', closeSearchSheet);
 searchInput?.addEventListener('input', () => runSearch(searchInput.value));
+
+// --- GÜNLÜK HEDEF DÜZENLEME (header) ---
+function openDailyGoalEdit() {
+  if (!dailyGoalEditForm || !dailyGoalInput) return;
+  dailyGoalInput.value = getDailyGoal();
+  dailyGoalEditForm.hidden = false;
+  if (dailyGoalEditButton) dailyGoalEditButton.hidden = true;
+  dailyGoalInput.focus();
+  dailyGoalInput.select();
+}
+
+function closeDailyGoalEdit() {
+  if (!dailyGoalEditForm) return;
+  dailyGoalEditForm.hidden = true;
+  if (dailyGoalEditButton) dailyGoalEditButton.hidden = false;
+}
+
+dailyGoalEditButton?.addEventListener('click', () => { haptic(14); openDailyGoalEdit(); });
+dailyGoalCancelButton?.addEventListener('click', closeDailyGoalEdit);
+dailyGoalSaveButton?.addEventListener('click', () => {
+  if (setDailyGoal(dailyGoalInput.value)) closeDailyGoalEdit();
+});
+dailyGoalInput?.addEventListener('keydown', event => {
+  if (event.key === 'Enter') { event.preventDefault(); dailyGoalSaveButton?.click(); }
+  if (event.key === 'Escape') closeDailyGoalEdit();
+});
 
 function resetSheetClasses() {
   topicSheet.classList.remove('document-flow', 'quiz-active', 'card-study-active');
