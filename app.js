@@ -152,20 +152,57 @@ function defaultProgress() {
   return { userId: null, answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [], flaggedQuestions: {}, reportedQuestions: {}, selectedRole: null, purchasedRoles: [], wrongQuestions: {}, dailyGoal: DEFAULT_DAILY_GOAL };
 }
 
+function sanitizeProgress(saved) {
+  if (!saved || typeof saved !== 'object') return defaultProgress();
+  const parsedGoal = Number(saved.dailyGoal);
+  const safeGoal = Number.isFinite(parsedGoal) && parsedGoal >= DAILY_GOAL_MIN && parsedGoal <= DAILY_GOAL_MAX ? Math.round(parsedGoal) : DEFAULT_DAILY_GOAL;
+  return { ...defaultProgress(), ...saved, dailyAnswers: saved.dailyAnswers || {}, completedSections: saved.completedSections || {}, completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : [], flaggedQuestions: saved.flaggedQuestions || {}, reportedQuestions: saved.reportedQuestions || {}, purchasedRoles: Array.isArray(saved.purchasedRoles) ? saved.purchasedRoles : [], wrongQuestions: saved.wrongQuestions || {}, dailyGoal: safeGoal };
+}
+
 function loadProgress() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (!saved || typeof saved !== 'object') return defaultProgress();
-    const parsedGoal = Number(saved.dailyGoal);
-    const safeGoal = Number.isFinite(parsedGoal) && parsedGoal >= DAILY_GOAL_MIN && parsedGoal <= DAILY_GOAL_MAX ? Math.round(parsedGoal) : DEFAULT_DAILY_GOAL;
-    return { ...defaultProgress(), ...saved, dailyAnswers: saved.dailyAnswers || {}, completedSections: saved.completedSections || {}, completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : [], flaggedQuestions: saved.flaggedQuestions || {}, reportedQuestions: saved.reportedQuestions || {}, purchasedRoles: Array.isArray(saved.purchasedRoles) ? saved.purchasedRoles : [], wrongQuestions: saved.wrongQuestions || {}, dailyGoal: safeGoal };
+    return sanitizeProgress(saved);
   } catch (error) {
     return defaultProgress();
   }
 }
 
+let cloudSyncTimer = null;
+let cloudSyncInFlight = false;
+let cloudSyncPending = false;
+
+function scheduleCloudSync() {
+  if (!window.currentUser?.id) return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = window.setTimeout(pushProgressToCloud, 1500);
+}
+
+async function pushProgressToCloud() {
+  const userId = window.currentUser?.id;
+  if (!userId) return;
+  if (cloudSyncInFlight) { cloudSyncPending = true; return; }
+  cloudSyncInFlight = true;
+  try {
+    const { error } = await supabaseClient
+      .from('profiles')
+      .update({ progress })
+      .eq('id', userId);
+    if (error) console.error('İlerleme sunucuya kaydedilemedi:', error);
+  } catch (err) {
+    console.error('İlerleme senkronizasyonu başarısız:', err);
+  } finally {
+    cloudSyncInFlight = false;
+    if (cloudSyncPending) {
+      cloudSyncPending = false;
+      pushProgressToCloud();
+    }
+  }
+}
+
 function saveProgress() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  scheduleCloudSync();
   updateHeader();
   if (state.view === 'home' || state.view === 'wrong' || state.view === 'profile' || state.view === 'mistakes') render();
 }
@@ -653,7 +690,7 @@ function profileView() {
       <button class="reader-primary" id="profileDailyGoalSaveButton" type="button">Kaydet</button>
     </div>
   </section>
-  <div class="profile-notice">İstatistikler şu an cihazında saklanır; hesap bazlı senkronizasyon yakında eklenecek.</div><section class="profile-account-actions"><button class="reset-progress" id="resetProgressButton" type="button">İlerleme verisini sıfırla</button><button class="signout-btn" id="signOutButton" type="button">${svg('lock')}<span>Çıkış Yap</span></button></section></section>`;
+  <div class="profile-notice">İstatistiklerin hesabına otomatik olarak senkronize ediliyor; başka bir cihazdan giriş yaptığında da seninle gelir.</div><section class="profile-account-actions"><button class="reset-progress" id="resetProgressButton" type="button">İlerleme verisini sıfırla</button><button class="signout-btn" id="signOutButton" type="button">${svg('lock')}<span>Çıkış Yap</span></button></section></section>`;
 }
 
 function render() {
@@ -714,7 +751,9 @@ function updateHeader() {
 
 function resetProgress() {
   if (!window.confirm('Tüm yerel çalışma ilerlemesi sıfırlansın mı?')) return;
+  const userId = progress.userId;
   progress = defaultProgress();
+  progress.userId = userId;
   saveProgress();
   showToast('İlerleme verisi sıfırlandı.');
 }
@@ -1638,7 +1677,7 @@ function initializeApp() {
 }
 
 let authHandledOnce = false;
-function handleAuthenticated() {
+async function handleAuthenticated() {
   if (authHandledOnce) return;
   authHandledOnce = true;
 
@@ -1647,6 +1686,27 @@ function handleAuthenticated() {
     progress = defaultProgress();
     progress.userId = currentUserId;
   }
+
+  // Bulutta kayıtlı ilerleme var mı diye kontrol et — varsa cihazdaki yerine geçer.
+  // Böylece kullanıcı başka bir cihazdan giriş yaptığında istatistikleri kaybolmaz.
+  if (currentUserId) {
+    try {
+      const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('progress')
+        .eq('id', currentUserId)
+        .maybeSingle();
+      if (error) {
+        console.error('İlerleme sunucudan okunamadı:', error);
+      } else if (data?.progress) {
+        progress = sanitizeProgress(data.progress);
+        progress.userId = currentUserId;
+      }
+    } catch (err) {
+      console.error('İlerleme senkronizasyonu başarısız:', err);
+    }
+  }
+
   if (window.currentUserRole && !progress.selectedRole) {
     progress.selectedRole = window.currentUserRole;
   }
