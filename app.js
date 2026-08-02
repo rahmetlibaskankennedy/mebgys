@@ -1367,13 +1367,15 @@ function startQuizTimer() {
     if (quiz.timeLeft <= 0) {
       clearInterval(timerInterval);
       timerInterval = null;
+      renderQuizResult(); // süre dolunca testi otomatik bitir
       return;
     }
 
     quiz.timeLeft -= 1;
-    // ...
+    timer.innerHTML = `${svg('clock')} ${String(Math.floor(quiz.timeLeft / 60)).padStart(2, '0')}:${String(quiz.timeLeft % 60).padStart(2, '0')}`;
   }, 1000);
 }
+
 function toggleQuestionFlag(question) {
   if (progress.flaggedQuestions[question.id]) {
     delete progress.flaggedQuestions[question.id];
