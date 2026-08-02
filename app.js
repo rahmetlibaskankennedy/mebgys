@@ -94,13 +94,6 @@ const closeSearchSheetButton = document.getElementById('closeSearchSheet');
 const searchInput = document.getElementById('searchInput');
 const searchResultsList = document.getElementById('searchResultsList');
 
-// Günlük Hedef Düzenleme (header) Elementleri
-const dailyGoalEditButton = document.getElementById('dailyGoalEditButton');
-const dailyGoalEditForm = document.getElementById('dailyGoalEditForm');
-const dailyGoalInput = document.getElementById('dailyGoalInput');
-const dailyGoalSaveButton = document.getElementById('dailyGoalSaveButton');
-const dailyGoalCancelButton = document.getElementById('dailyGoalCancelButton');
-
 let timerInterval = null;
 let progress = loadProgress();
 
@@ -124,7 +117,6 @@ const iconPaths = {
   chart: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 2 5-6"/>',
   refresh: '<path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4"/>',
   lock: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
-  // --- Ana sayfa istatistik kartları için özgün ikonlar ---
   statTopics: '<rect x="4.5" y="4.5" width="15" height="15" rx="4"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/>',
   statQuestions: '<circle cx="12" cy="12" r="8.5"/><path d="m8 12.3 2.7 2.7 5.3-5.7"/>',
   statTrials: '<path d="M12 3.2 13.7 5l2.5-.5.6 2.5 2.4.9-.9 2.4 1.7 1.9-1.7 1.9.9 2.4-2.4.9-.6 2.5-2.5-.5-1.7 1.8-1.7-1.8-2.5.5-.6-2.5-2.4-.9.9-2.4L4 12.2l1.7-1.9-.9-2.4 2.4-.9.6-2.5 2.5.5Z"/><path d="M9 13.5 12.5 21l1-4"/><path d="m15 13.5-1.8 3.7"/>',
@@ -666,6 +658,7 @@ function bindRouteSheetEvents() {
   startSmartPractice();
   });
 }
+
 // --- ARAMA PANELİ YÖNETİMİ ---
 function openSearchSheet() {
   routeSheet.classList.remove('open');
@@ -742,32 +735,6 @@ function openSearchResult(result) {
 openSearchButton?.addEventListener('click', openSearchSheet);
 closeSearchSheetButton?.addEventListener('click', closeSearchSheet);
 searchInput?.addEventListener('input', () => runSearch(searchInput.value));
-
-// --- GÜNLÜK HEDEF DÜZENLEME (header) ---
-function openDailyGoalEdit() {
-  if (!dailyGoalEditForm || !dailyGoalInput) return;
-  dailyGoalInput.value = getDailyGoal();
-  dailyGoalEditForm.hidden = false;
-  if (dailyGoalEditButton) dailyGoalEditButton.hidden = true;
-  dailyGoalInput.focus();
-  dailyGoalInput.select();
-}
-
-function closeDailyGoalEdit() {
-  if (!dailyGoalEditForm) return;
-  dailyGoalEditForm.hidden = true;
-  if (dailyGoalEditButton) dailyGoalEditButton.hidden = false;
-}
-
-dailyGoalEditButton?.addEventListener('click', () => { haptic(14); openDailyGoalEdit(); });
-dailyGoalCancelButton?.addEventListener('click', closeDailyGoalEdit);
-dailyGoalSaveButton?.addEventListener('click', () => {
-  if (setDailyGoal(dailyGoalInput.value)) closeDailyGoalEdit();
-});
-dailyGoalInput?.addEventListener('keydown', event => {
-  if (event.key === 'Enter') { event.preventDefault(); dailyGoalSaveButton?.click(); }
-  if (event.key === 'Escape') closeDailyGoalEdit();
-});
 
 function resetSheetClasses() {
   topicSheet.classList.remove('document-flow', 'quiz-active', 'card-study-active');
@@ -973,11 +940,6 @@ async function loadQuestionBank(documentItem) {
   return questions;
 }
 
-// --- SORU SAYISINI CANLI (OTOMATİK) HESAPLAMA ---
-// Katalogtaki statik questionCount alanı sadece ilk boyama (paint) için bir tahmindir.
-// Gerçek soru dosyası arka planda indirilip önbelleğe alınır; sayı gerçek uzunlukla
-// eşleşmiyorsa item.questionCount güncellenir ve verilen onUpdate callback'i tetiklenir
-// (genelde ilgili ekranı sessizce yeniden çizer).
 async function refreshVisibleQuestionCounts(items, onUpdate) {
   const targets = (items || []).filter(item => item && item.questionFile);
   if (!targets.length) return;
@@ -1420,7 +1382,7 @@ async function loadCatalogue() {
   render();
   try {
     const response = await fetch(CATALOGUE_URL, { cache: 'no-store' });
-    if (!response.ok) throw new Error('categoryTopics.json dosyası okunamadı.');
+    if (!response.ok) throw new Error('categoryTopics.json dosyasını okunamadı.');
     const data = await response.json();
     if (!data || typeof data !== 'object') throw new Error('Konu verisi geçerli değil.');
     state.catalogue = data;
@@ -1474,7 +1436,6 @@ roleGateContinue?.addEventListener('click', async () => {
   progress.selectedRole = pendingRoleSelection;
   saveProgress();
 
-  // Sunucuya da kaydet — tarama verisi silinse bile kalıcı olsun
   const { error } = await supabaseClient
   .from('profiles')
   .update({ role: pendingRoleSelection })
@@ -1495,7 +1456,7 @@ function initializeApp() {
 
 let authHandledOnce = false;
 function handleAuthenticated() {
-  if (authHandledOnce) return; // Aynı oturum için ikinci kez çalışmasın (yarış durumu koruması)
+  if (authHandledOnce) return;
   authHandledOnce = true;
 
   const currentUserId = window.currentUser?.id || null;
@@ -1503,7 +1464,6 @@ function handleAuthenticated() {
     progress = defaultProgress();
     progress.userId = currentUserId;
   }
-  // Sunucuda kayıtlı rol varsa onu esas al (localStorage silinmiş olsa bile kaybolmaz)
   if (window.currentUserRole && !progress.selectedRole) {
     progress.selectedRole = window.currentUserRole;
   }
@@ -1517,9 +1477,4 @@ function handleAuthenticated() {
 }
 
 document.addEventListener('sinavrotasi:authenticated', handleAuthenticated);
-// app-guard.js, app.js yüklenmeden önce oturumu bulup rol bilgisiyle birlikte event'i
-// tetiklemiş olabilir (yarış durumu). Bu durumda window.currentUserAuthReady zaten
-// true'dur ve rol bilgisi de (window.currentUserRole) hazırdır — hemen başlatmak güvenlidir.
-// window.currentUser'a bakmıyoruz çünkü o, rol sorgusu tamamlanmadan senkron olarak
-// set edilir ve bu, kadro ekranının erken/yanlışlıkla açılmasına yol açardı.
 if (window.currentUserAuthReady) handleAuthenticated();
