@@ -1241,6 +1241,7 @@ function quizScore(quiz) {
   return quiz.questions.filter(question => question.userSelected === question.answerIndex).length;
 }
 
+
 function renderQuiz() {
   const quiz = state.quiz;
   if (!quiz) return;
@@ -1249,26 +1250,22 @@ function renderQuiz() {
   const total = quiz.questions.length;
   const letters = ['A', 'B', 'C', 'D', 'E'];
   
-const timerDisplay = quiz.isTimed ?
-  `<div class="quiz-premium-timer" id="quizTimer">${svg('clock')} ${String(Math.floor(quiz.timeLeft / 60)).padStart(2, '0')}:${String(quiz.timeLeft % 60).padStart(2, '0')}</div>` :
-  `<div class="quiz-premium-timer" style="color:#1f9d62;">Süresiz</div>`;
+  const timerDisplay = quiz.isTimed ? 
+    `<div class="quiz-premium-timer" id="quizTimer">${svg('clock')} ${String(Math.floor(current.timeLeft / 60)).padStart(2, '0')}:${String(current.timeLeft % 60).padStart(2, '0')}</div>` : 
+    `<div class="quiz-premium-timer" style="color:#1f9d62;">Süresiz</div>`;
 
-  const titleText = quiz.kind === 'mock' ? 'Deneme' : quiz.kind === 'route' ? 'Rota' : 'MEB GYS';
-
+  // "MEB GYS" / "Deneme" / "Rota" yerine artık rozet metni (Rastgele 20 soru vb.) kullanılıyor
   topicList.innerHTML = `
     <div class="quiz-premium-layout">
       <div class="quiz-premium-header">
         <div class="quiz-premium-topbar">
           <button id="quizBackButton" type="button" aria-label="Geri">${svg('back')}</button>
           <div class="quiz-premium-titles">
-            <h2>${escapeHtml(titleText)}</h2>
+            <h2>${escapeHtml(quiz.subtitle)}</h2>
             <span>${escapeHtml(quiz.title)}</span>
           </div>
           <div class="quiz-premium-top-actions">
             ${timerDisplay}
-            <button type="button" id="quizGridTopButton" aria-label="Soru haritası">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-            </button>
           </div>
         </div>
         
@@ -1284,7 +1281,6 @@ const timerDisplay = quiz.isTimed ?
       <div class="quiz-premium-card-wrapper">
         <div class="quiz-premium-card">
           <div class="quiz-card-header">
-            <span class="quiz-badge">${escapeHtml(quiz.subtitle)}</span>
             <div class="quiz-card-actions">
               <button type="button" class="action-btn ${progress.flaggedQuestions[current.id] ? 'active' : ''}" id="quizBookmarkButton">${svg('bookmark')}<span>${progress.flaggedQuestions[current.id] ? 'İşaretli' : 'Soruyu İşaretle'}</span></button>
               <button type="button" class="action-btn ${progress.reportedQuestions[current.id] ? 'active' : ''}" id="quizReportButton" ${progress.reportedQuestions[current.id] ? 'disabled' : ''}>
