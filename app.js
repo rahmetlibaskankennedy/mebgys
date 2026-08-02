@@ -1411,29 +1411,39 @@ function openQuizNav() {
 
 function bindQuizEvents() {
   const quiz = state.quiz;
-  document.getElementById('quizBackButton').addEventListener('click', () => {
-    clearInterval(timerInterval);
-    const returnView = quiz.returnView;
-    state.quiz = null;
-    topicSheet.classList.remove('quiz-active');
-    returnView();
+  if (!quiz) return;
+  
+  const quizBackButton = document.getElementById('quizBackButton');
+  if (quizBackButton) {
+    quizBackButton.addEventListener('click', () => {
+      clearInterval(timerInterval);
+      const returnView = quiz.returnView;
+      state.quiz = null;
+      topicSheet.classList.remove('quiz-active');
+      returnView();
+    });
+  }
+  
+  topicList.querySelectorAll('[data-answer-index]').forEach(button => {
+    button.addEventListener('click', () => {
+      const current = quiz.questions[quiz.index];
+      if (current.userSelected !== null) return;
+      const selected = Number(button.dataset.answerIndex);
+      current.userSelected = selected;
+      recordAnswer(current, selected);
+      haptic(selected === current.answerIndex ? 16 : [12, 40, 12]);
+      renderQuiz();
+    });
   });
-  topicList.querySelectorAll('[data-answer-index]').forEach(button => button.addEventListener('click', () => {
-    const current = quiz.questions[quiz.index];
-    if (current.userSelected !== null) return;
-    const selected = Number(button.dataset.answerIndex);
-    current.userSelected = selected;
-    recordAnswer(current, selected);
-    haptic(selected === current.answerIndex ? 16 : [12, 40, 12]);
-    renderQuiz();
-  }));
-  document.getElementById('quizPrevButton').addEventListener('click', () => {
+  
+  document.getElementById('quizPrevButton')?.addEventListener('click', () => {
     if (quiz.index < 1) return;
     clearInterval(timerInterval);
     quiz.index -= 1;
     renderQuiz();
   });
-  document.getElementById('quizNextButton').addEventListener('click', () => {
+  
+  document.getElementById('quizNextButton')?.addEventListener('click', () => {
     clearInterval(timerInterval);
     if (quiz.index < quiz.questions.length - 1) {
       quiz.index += 1;
@@ -1442,12 +1452,18 @@ function bindQuizEvents() {
       renderQuizResult();
     }
   });
+  
   document.getElementById('quizBookmarkButton')?.addEventListener('click', () => toggleQuestionFlag(quiz.questions[quiz.index]));
   document.getElementById('quizReportButton')?.addEventListener('click', () => reportQuestion(quiz.questions[quiz.index]));
   document.getElementById('quizGridButton')?.addEventListener('click', openQuizNav);
-  document.getElementById('quizGridTopButton')?.addEventListener('click', openQuizNav);
-  document.getElementById('quizNavClose')?.addEventListener('click', () => document.getElementById('quizNavOverlay')?.classList.remove('open'));
-  document.getElementById('quizNavOverlay')?.addEventListener('click', event => { if (event.target.id === 'quizNavOverlay') event.currentTarget.classList.remove('open'); });
+  document.getElementById('quizNavClose')?.addEventListener('click', () => {
+    const overlay = document.getElementById('quizNavOverlay');
+    if (overlay) overlay.classList.remove('open');
+  });
+  
+  document.getElementById('quizNavOverlay')?.addEventListener('click', event => {
+    if (event.target.id === 'quizNavOverlay') event.currentTarget.classList.remove('open');
+  });
 }
 
 function recordQuizCompletion(quiz) {
