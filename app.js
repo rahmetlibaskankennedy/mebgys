@@ -1340,8 +1340,6 @@ function renderQuiz() {
     </div>`;
 
   topicSheet.scrollTop = 0;
-  bindQuizEvents();
-  if(quiz.isTimed) startQuizTimer();
 }
 
 function startQuizTimer() {
