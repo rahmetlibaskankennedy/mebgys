@@ -3,7 +3,7 @@ const CATALOGUE_URL = 'categorytopics.json';
 const DEFAULT_DAILY_GOAL = 20;
 const DAILY_GOAL_MIN = 1;
 const DAILY_GOAL_MAX = 500;
-const QUESTION_TIME_LIMIT = 45;
+const QUESTION_TIME_LIMIT = 60;
 
 const ROLES = [
   { key: 'memur', label: 'Memur' },
@@ -736,8 +736,7 @@ function updateRouteSummary() {
   if (routeSettings.time === 'Süresiz') {
     summaryDuration.textContent = 'Süresiz';
   } else {
-    const minutes = Math.ceil((routeSettings.questions * QUESTION_TIME_LIMIT) / 60);
-    summaryDuration.textContent = `${minutes} dakika`;
+    summaryDuration.textContent = `${routeSettings.questions} dakika`; // artık soru sayısı = dakika
   }
 }
 
@@ -1193,12 +1192,12 @@ async function startMixedMock() {
 
 function startQuiz({ questions, documentItem = null, section = null, kind, title, subtitle, returnView }) {
   clearInterval(timerInterval);
-  
+
   const isTimed = routeSettings.time === 'Süreli' || kind !== 'route';
-  const initialTime = isTimed ? QUESTION_TIME_LIMIT : 9999;
-  
+  const totalTime = isTimed ? questions.length * QUESTION_TIME_LIMIT : 9999;
+
   state.quiz = {
-    questions: shuffle(questions).map(question => ({ ...question, userSelected: null, timeLeft: initialTime, answerRecorded: false })),
+    questions: shuffle(questions).map(question => ({ ...question, userSelected: null, answerRecorded: false })),
     sourceQuestions: questions,
     documentItem,
     section,
@@ -1206,6 +1205,7 @@ function startQuiz({ questions, documentItem = null, section = null, kind, title
     title,
     subtitle,
     isTimed,
+    timeLeft: totalTime,   // <-- tek, teste ait sayaç
     returnView,
     index: 0,
     completionRecorded: false
@@ -1249,9 +1249,9 @@ function renderQuiz() {
   const total = quiz.questions.length;
   const letters = ['A', 'B', 'C', 'D', 'E'];
   
-  const timerDisplay = quiz.isTimed ? 
-    `<div class="quiz-premium-timer" id="quizTimer">${svg('clock')} ${String(Math.floor(current.timeLeft / 60)).padStart(2, '0')}:${String(current.timeLeft % 60).padStart(2, '0')}</div>` : 
-    `<div class="quiz-premium-timer" style="color:#1f9d62;">Süresiz</div>`;
+const timerDisplay = quiz.isTimed ?
+  `<div class="quiz-premium-timer" id="quizTimer">${svg('clock')} ${String(Math.floor(quiz.timeLeft / 60)).padStart(2, '0')}:${String(quiz.timeLeft % 60).padStart(2, '0')}</div>` :
+  `<div class="quiz-premium-timer" style="color:#1f9d62;">Süresiz</div>`;
 
   const titleText = quiz.kind === 'mock' ? 'Deneme' : quiz.kind === 'route' ? 'Rota' : 'MEB GYS';
 
@@ -1360,19 +1360,19 @@ function renderQuiz() {
 function startQuizTimer() {
   clearInterval(timerInterval);
   const quiz = state.quiz;
-  const current = quiz?.questions[quiz.index];
   const timer = document.getElementById('quizTimer');
-  if (!current || !timer || current.userSelected !== null || current.timeLeft <= 0) return;
+  if (!quiz || !timer || quiz.timeLeft <= 0) return;
   timerInterval = window.setInterval(() => {
     if (!state.quiz || state.quiz !== quiz) return clearInterval(timerInterval);
-    if (current.timeLeft <= 0 || current.userSelected !== null) return clearInterval(timerInterval);
-    current.timeLeft -= 1;
-    const m = String(Math.floor(current.timeLeft / 60)).padStart(2, '0');
-    const s = String(current.timeLeft % 60).padStart(2, '0');
+    if (quiz.timeLeft <= 0) return clearInterval(timerInterval);
+    quiz.timeLeft -= 1;
+    const m = String(Math.floor(quiz.timeLeft / 60)).padStart(2, '0');
+    const s = String(quiz.timeLeft % 60).padStart(2, '0');
     timer.innerHTML = `${svg('clock')} ${m}:${s}`;
-    if (current.timeLeft === 0) {
+    if (quiz.timeLeft === 0) {
       clearInterval(timerInterval);
-      showToast('Bu sorunun süresi doldu.');
+      showToast('Sınavın süresi doldu.');
+      renderQuizResult();
     }
   }, 1000);
 }
