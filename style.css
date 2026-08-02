@@ -1,10 +1,14 @@
 :root{--navy:#071f49;--navy2:#123b77;--blue:#2d7ef7;--red:#e93238;--red2:#fff0f1;--green:#1f9d62;--green2:#eaf8f0;--amber:#d99019;--text:#10213f;--muted:#778196;--line:#e7ebf1;--bg:#f5f7fb;--white:#fff;--shadow:0 12px 32px rgba(13,33,68,.09)}
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:var(--bg)}
+html:has(body:not(.auth-page)), body:not(.auth-page){
+  height:100%;
+  overflow:hidden;
+}
 button{font:inherit}
 .ui-icon{display:block}
 body{background:var(--bg)}
-.phone{width:100%;max-width:480px;margin:0 auto;height:100dvh;position:relative;overflow:hidden;background:var(--bg);transition:max-width .2s}
+.phone{width:100%;max-width:480px;margin:0 auto;height:100vh;height:100dvh;position:relative;overflow:hidden;background:var(--bg);transition:max-width .2s}
 
 .scroll-area{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
 .scroll-area::-webkit-scrollbar{display:none}
@@ -504,7 +508,7 @@ body{background:var(--bg)}
 .quiz-premium-footer {
   display: flex;
   gap: 10px;
-  padding: 16px 20px 24px;
+  padding: 16px 20px calc(20px + env(safe-area-inset-bottom));
   background: #fff;
   border-top: 1px solid #E5E9F0;
   box-shadow: 0 -4px 16px rgba(0,0,0,0.02);
