@@ -543,6 +543,7 @@ body{background:var(--bg)}
   background: #fff;
   color: #10213F;
   flex: 1;
+  white-space: nowrap;
 }
 .footer-btn svg { width: 18px; height: 18px; stroke-width: 2.5;}
 .footer-btn.btn-grid {
@@ -1292,4 +1293,17 @@ body.auth-page{
   background:#eef3fc;
   padding:3px 9px;
   border-radius:10px;
+}
+
+@media(max-width:400px){
+  .quiz-premium-footer{
+    gap: 6px;
+    padding: 14px 12px calc(18px + env(safe-area-inset-bottom));
+  }
+  .footer-btn{
+    padding: 14px 8px;
+    font-size: 12px;
+    gap: 5px;
+  }
+  .footer-btn svg{ width:15px; height:15px; }
 }
