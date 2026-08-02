@@ -1053,12 +1053,22 @@ function renderSummary(documentItem, categoryKey) {
 async function loadQuestionBank(documentItem) {
   if (!documentItem.questionFile) throw new Error('Bu başlık için soru bankası henüz tanımlanmamış.');
   if (state.questionBanks.has(documentItem.id)) return state.questionBanks.get(documentItem.id);
-  const response = await fetch(documentItem.questionFile, { cache: 'no-store' });
-  if (!response.ok) throw new Error('Soru dosyası okunamadı.');
-  const data = await response.json();
-  const questions = Array.isArray(data.questions) ? data.questions : [];
-  state.questionBanks.set(documentItem.id, questions);
-  return questions;
+  try {
+    const response = await fetch(documentItem.questionFile, { cache: 'no-store' });
+    if (!response.ok) throw new Error('Soru dosyası okunamadı.');
+    const data = await response.json();
+    const questions = Array.isArray(data.questions) ? data.questions : [];
+    state.questionBanks.set(documentItem.id, questions);
+    return questions;
+  } catch (error) {
+    // categorytopics.json bu başlık için questionFile tanımlamış olsa da dosya
+    // gerçekte yoksa (henüz eklenmediyse), başlığı kalıcı olarak "aktif değil"
+    // işaretle. Böylece getActiveDocuments() bir daha bu başlığı seçmez ve
+    // arayüz onu yanlışlıkla "içerik paketi aktif" göstermeye devam etmez.
+    documentItem.questionFile = null;
+    documentItem.contentStatus = 'planned';
+    throw error;
+  }
 }
 
 async function refreshVisibleQuestionCounts(items, onUpdate) {
@@ -1069,11 +1079,18 @@ async function refreshVisibleQuestionCounts(items, onUpdate) {
     return { item, count: bank.length };
   }));
   let changed = false;
-  results.forEach(result => {
-    if (result.status !== 'fulfilled') return;
-    const { item, count } = result.value;
-    if (item.questionCount !== count) {
-      item.questionCount = count;
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      const { item, count } = result.value;
+      if (item.questionCount !== count) {
+        item.questionCount = count;
+        changed = true;
+      }
+    } else {
+      // loadQuestionBank başarısız olduğunda ilgili belgeyi zaten "aktif değil"
+      // olarak işaretledi (questionFile = null) — bunu arayüze yansıtmak için
+      // yeniden render tetikle, aksi halde başlık yanlışlıkla "aktif" görünmeye
+      // devam eder.
       changed = true;
     }
   });
@@ -1137,61 +1154,68 @@ async function openRandomQuiz(documentItem, categoryKey) {
 }
 
 async function startSmartPractice() {
-  const activeDocuments = getActiveDocuments();
+  let activeDocuments = getActiveDocuments();
   if (!activeDocuments.length) {
     closeRouteSheet();
     return showToast('Henüz aktif soru paketi bulunmuyor.');
   }
-  
-  const selected = activeDocuments[Math.floor(Math.random() * activeDocuments.length)];
-  
-  try {
-    showToast('Rota hazırlanıyor…');
-    const bank = tagQuestions(await loadQuestionBank(selected.item), selected.item, selected.categoryKey);
-    if (!bank.length) {
-      closeRouteSheet();
-      return showToast('Bu başlık için henüz soru bulunmuyor.');
+
+  showToast('Rota hazırlanıyor…');
+  // categorytopics.json'da "aktif" görünen ama soru dosyası gerçekte eksik olan
+  // başlıklar olabilir. Rastgele seçilen başlık başarısız olursa listeden düşürüp
+  // (loadQuestionBank onu zaten kalıcı olarak işaretler) başka bir aktif başlıkla
+  // yeniden dene — kullanıcı tek bir şanssız seçim yüzünden boş dönmesin.
+  const candidates = shuffle(activeDocuments);
+  for (const selected of candidates) {
+    try {
+      const bank = tagQuestions(await loadQuestionBank(selected.item), selected.item, selected.categoryKey);
+      if (!bank.length) continue;
+
+      topicSheet.classList.add('open');
+      topicBackdrop.classList.add('open');
+
+      startQuiz({
+        questions: shuffle(bank).slice(0, Math.min(routeSettings.questions, bank.length)),
+        documentItem: selected.item,
+        kind: 'route',
+        title: 'Bugünkü Rota',
+        subtitle: `${routeSettings.mode} • ${routeSettings.questions} Soru`,
+        returnView: closeTopicSheet
+      });
+      return;
+    } catch (error) {
+      // Bu başlık yüklenemedi, sıradaki adaya geç.
     }
-    
-    topicSheet.classList.add('open');
-    topicBackdrop.classList.add('open');
-    
-    startQuiz({
-      questions: shuffle(bank).slice(0, Math.min(routeSettings.questions, bank.length)),
-      documentItem: selected.item,
-      kind: 'route',
-      title: 'Bugünkü Rota',
-      subtitle: `${routeSettings.mode} • ${routeSettings.questions} Soru`,
-      returnView: closeTopicSheet
-    });
-  } catch (error) {
-    closeRouteSheet();
-    showToast(error.message || 'Sorular yüklenemedi.');
   }
+
+  closeRouteSheet();
+  showToast('Şu an hazır bir soru paketi bulunamadı, lütfen tekrar dene.');
 }
 
 async function startMixedMock() {
   const activeDocuments = getActiveDocuments();
   if (!activeDocuments.length) return showToast('Henüz aktif soru paketi bulunmuyor.');
-  try {
-    showToast('Deneme hazırlanıyor…');
-    const banks = await Promise.all(activeDocuments.map(async ({ item, categoryKey }) =>
+  showToast('Deneme hazırlanıyor…');
+  // Promise.all yerine Promise.allSettled: "aktif" görünen 16 başlıktan biri bile
+  // gerçekte eksikse (dosya yoksa) eskiden TÜM deneme başarısız oluyordu. Artık
+  // sadece gerçekten yüklenebilen paketlerden soru toplanıyor, eksik olanlar
+  // loadQuestionBank tarafından otomatik olarak "aktif değil" işaretleniyor.
+  const results = await Promise.allSettled(activeDocuments.map(async ({ item, categoryKey }) =>
     tagQuestions(await loadQuestionBank(item), item, categoryKey)
-      ));
-    const questions = shuffle(banks.flat()).slice(0, Math.min(20, banks.flat().length));
-    if (!questions.length) return showToast('Deneme için soru bulunamadı.');
-    topicSheet.classList.add('open');
-    topicBackdrop.classList.add('open');
-    startQuiz({
-      questions,
-      kind: 'mock',
-      title: 'Karma Mevzuat Denemesi',
-      subtitle: `${questions.length} soru • aktif paketlerden rastgele`,
-      returnView: closeTopicSheet
-    });
-  } catch (error) {
-    showToast(error.message || 'Deneme hazırlanamadı.');
-  }
+  ));
+  const banks = results.filter(result => result.status === 'fulfilled').map(result => result.value);
+  const pool = banks.flat();
+  const questions = shuffle(pool).slice(0, Math.min(20, pool.length));
+  if (!questions.length) return showToast('Deneme için soru bulunamadı.');
+  topicSheet.classList.add('open');
+  topicBackdrop.classList.add('open');
+  startQuiz({
+    questions,
+    kind: 'mock',
+    title: 'Karma Mevzuat Denemesi',
+    subtitle: `${questions.length} soru • aktif paketlerden rastgele`,
+    returnView: closeTopicSheet
+  });
 }
 
 function startQuiz({ questions, documentItem = null, section = null, kind, title, subtitle, returnView }) {
