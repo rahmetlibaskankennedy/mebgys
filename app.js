@@ -1243,6 +1243,7 @@ function quizScore(quiz) {
 
 
 function renderQuiz() {
+  clearInterval(timerInterval);
   const quiz = state.quiz;
   if (!quiz) return;
   topicSheet.classList.add('quiz-active');
@@ -1344,6 +1345,7 @@ function startQuizTimer() {
   const timer = document.getElementById('quizTimer');
   if (!quiz || !timer || quiz.timeLeft <= 0) return;
   timerInterval = window.setInterval(() => {
+    const currentTimer = document.getElementById('quizTimer');
     if (!state.quiz || state.quiz !== quiz) return clearInterval(timerInterval);
     if (quiz.timeLeft <= 0) return clearInterval(timerInterval);
     quiz.timeLeft -= 1;
