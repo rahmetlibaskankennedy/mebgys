@@ -436,6 +436,7 @@ function mistakesView() {
 
 function openMistakeCategorySheet(categoryKey) {
   clearInterval(timerInterval);
+  timerInterval = null;
   topicSheet.classList.add('open');
   topicBackdrop.classList.add('open');
   renderMistakeCategoryLevel(categoryKey);
@@ -531,6 +532,7 @@ function openCardCategorySheet(categoryKey) {
   const category = CARD_CATALOGUE[categoryKey];
   if (!category) return showToast('Kategori bulunamadı.');
   clearInterval(timerInterval);
+  timerInterval = null;
   topicSheet.classList.add('open');
   topicBackdrop.classList.add('open');
   renderCardCategoryLevel(categoryKey);
@@ -861,6 +863,7 @@ function openTopicSheet(categoryKey) {
   const category = getCategory(categoryKey);
   if (!category) return showToast('Kategori bulunamadı.');
   clearInterval(timerInterval);
+  timerInterval = null;
   state.activeCategoryKey = categoryKey;
   state.activeDocument = null;
   state.navStack = [{ kind: 'category', categoryKey }];
@@ -871,6 +874,7 @@ function openTopicSheet(categoryKey) {
 
 function closeTopicSheet() {
   clearInterval(timerInterval);
+  timerInterval = null;
   state.quiz = null;
   state.cardStudy = null;
   resetSheetClasses();
@@ -1192,6 +1196,7 @@ async function startMixedMock() {
 
 function startQuiz({ questions, documentItem = null, section = null, kind, title, subtitle, returnView }) {
   clearInterval(timerInterval);  // ← Önceki testi temizle
+  timerInterval = null;
 
   const isTimed = routeSettings.time === 'Süreli' || kind !== 'route';
   const totalTime = isTimed ? questions.length * QUESTION_TIME_LIMIT : 9999;
@@ -1351,28 +1356,30 @@ function renderQuiz() {
 function startQuizTimer() {
   clearInterval(timerInterval);
   timerInterval = null;
-
   const quiz = state.quiz;
   if (!quiz || quiz.timeLeft <= 0) return;
-
   timerInterval = window.setInterval(() => {
     const timer = document.getElementById('quizTimer');
-
     if (!timer || !state.quiz || state.quiz !== quiz) {
       clearInterval(timerInterval);
       timerInterval = null;
       return;
     }
-
     if (quiz.timeLeft <= 0) {
       clearInterval(timerInterval);
       timerInterval = null;
-      renderQuizResult(); // süre dolunca testi otomatik bitir
       return;
     }
-
     quiz.timeLeft -= 1;
-    timer.innerHTML = `${svg('clock')} ${String(Math.floor(quiz.timeLeft / 60)).padStart(2, '0')}:${String(quiz.timeLeft % 60).padStart(2, '0')}`;
+    const m = String(Math.floor(quiz.timeLeft / 60)).padStart(2, '0');
+    const s = String(quiz.timeLeft % 60).padStart(2, '0');
+    timer.innerHTML = `${svg('clock')} ${m}:${s}`;
+    if (quiz.timeLeft === 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      showToast('Sınavın süresi doldu.');
+      renderQuizResult();
+    }
   }, 1000);
 }
 
@@ -1412,6 +1419,7 @@ function openQuizNav() {
   }).join('');
   grid.querySelectorAll('[data-jump-index]').forEach(button => button.addEventListener('click', () => {
     clearInterval(timerInterval);
+    timerInterval = null;
     quiz.index = Number(button.dataset.jumpIndex);
     overlay.classList.remove('open');
     renderQuiz();
@@ -1427,6 +1435,7 @@ function bindQuizEvents() {
   if (quizBackButton) {
     quizBackButton.addEventListener('click', () => {
       clearInterval(timerInterval);
+      timerInterval = null;
       const returnView = quiz.returnView;
       state.quiz = null;
       topicSheet.classList.remove('quiz-active');
@@ -1449,12 +1458,14 @@ function bindQuizEvents() {
   document.getElementById('quizPrevButton')?.addEventListener('click', () => {
     if (quiz.index < 1) return;
     clearInterval(timerInterval);
+    timerInterval = null;
     quiz.index -= 1;
     renderQuiz();
   });
   
   document.getElementById('quizNextButton')?.addEventListener('click', () => {
     clearInterval(timerInterval);
+    timerInterval = null;
     if (quiz.index < quiz.questions.length - 1) {
       quiz.index += 1;
       renderQuiz();
@@ -1496,6 +1507,7 @@ function recordQuizCompletion(quiz) {
 
 function renderQuizResult() {
   clearInterval(timerInterval);
+  timerInterval = null;
   const quiz = state.quiz;
   if (!quiz) return;
   recordQuizCompletion(quiz);
