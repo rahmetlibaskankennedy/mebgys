@@ -52,7 +52,8 @@ const state = {
   navStack: [],
   questionBanks: new Map(),
   quiz: null,
-  cardStudy: null
+  cardStudy: null,
+  expandedMistakeGroup: null
 };
 
 // Rota Ayarları State'i
@@ -564,6 +565,12 @@ function bindViewEvents() {
   
   document.getElementById('startMockButton')?.addEventListener('click', startMixedMock);
   document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
+  app.querySelectorAll('[data-toggle-group]').forEach(element => element.addEventListener('click', () => {
+  const key = element.dataset.toggleGroup;
+  state.expandedMistakeGroup = state.expandedMistakeGroup === key ? null : key;
+  render();
+}));
+app.querySelectorAll('[data-start-group]').forEach(element => element.addEventListener('click', () => startWrongGroupQuiz(element.dataset.startGroup)));
   document.getElementById('resetProgressButton')?.addEventListener('click', resetProgress);
   document.getElementById('signOutButton')?.addEventListener('click', () => window.signOut());
 
@@ -881,7 +888,7 @@ function renderTopicPlan(item, categoryKey) {
     const mode = button.dataset.documentMode;
     try {
       showToast('Sorular hazırlanıyor…');
-      const bank = await loadQuestionBank(item);
+      const bank = tagQuestions(await loadQuestionBank(item), item, categoryKey);
       if (!bank.length) return showToast('Bu konu için henüz soru bulunmuyor.');
       const questions = mode === 'topic-quiz' ? shuffle(bank).slice(0, Math.min(20, bank.length)) : bank;
       startQuiz({
@@ -968,10 +975,19 @@ function shuffle(list) {
   return items;
 }
 
+function tagQuestions(bank, documentItem, categoryKey) {
+  return bank.map(question => ({
+    ...question,
+    documentId: documentItem.id,
+    documentTitle: documentItem.title,
+    categoryKey: categoryKey || null
+  }));
+}
+
 async function openSectionQuiz(documentItem, section, categoryKey) {
   try {
     showToast('Sorular hazırlanıyor…');
-    const bank = await loadQuestionBank(documentItem);
+    const bank = tagQuestions(await loadQuestionBank(documentItem), documentItem, categoryKey);
     const questions = bank.filter(question => question.sectionId === section.id);
     if (!questions.length) return showToast('Bu bölüm için henüz soru bulunmuyor.');
     startQuiz({
@@ -991,7 +1007,7 @@ async function openSectionQuiz(documentItem, section, categoryKey) {
 async function openRandomQuiz(documentItem, categoryKey) {
   try {
     showToast('Rastgele test hazırlanıyor…');
-    const bank = await loadQuestionBank(documentItem);
+    const bank = tagQuestions(await loadQuestionBank(documentItem), documentItem, categoryKey);
     if (!bank.length) return showToast('Bu başlık için henüz soru bulunmuyor.');
     startQuiz({
       questions: shuffle(bank).slice(0, Math.min(20, bank.length)),
@@ -1017,7 +1033,7 @@ async function startSmartPractice() {
   
   try {
     showToast('Rota hazırlanıyor…');
-    const bank = await loadQuestionBank(selected.item);
+    const bank = tagQuestions(await loadQuestionBank(selected.item), selected.item, selected.categoryKey);
     if (!bank.length) {
       closeRouteSheet();
       return showToast('Bu başlık için henüz soru bulunmuyor.');
@@ -1045,7 +1061,9 @@ async function startMixedMock() {
   if (!activeDocuments.length) return showToast('Henüz aktif soru paketi bulunmuyor.');
   try {
     showToast('Deneme hazırlanıyor…');
-    const banks = await Promise.all(activeDocuments.map(({ item }) => loadQuestionBank(item)));
+    const banks = await Promise.all(activeDocuments.map(async ({ item, categoryKey }) =>
+    tagQuestions(await loadQuestionBank(item), item, categoryKey)
+      ));
     const questions = shuffle(banks.flat()).slice(0, Math.min(20, banks.flat().length));
     if (!questions.length) return showToast('Deneme için soru bulunamadı.');
     topicSheet.classList.add('open');
@@ -1092,7 +1110,16 @@ function recordAnswer(question, selected) {
     progress.correctAnswers += 1;
     delete progress.wrongQuestions[question.id];
   } else {
-    progress.wrongQuestions[question.id] = { id: question.id, prompt: question.prompt, options: question.options, answerIndex: question.answerIndex, sectionId: question.sectionId || null };
+    progress.wrongQuestions[question.id] = {
+      id: question.id,
+      prompt: question.prompt,
+      options: question.options,
+      answerIndex: question.answerIndex,
+      sectionId: question.sectionId || null,
+      documentId: question.documentId || null,
+      documentTitle: question.documentTitle || null,
+      categoryKey: question.categoryKey || null
+    };
   }
   const today = dateKey();
   progress.dailyAnswers[today] = Number(progress.dailyAnswers[today] || 0) + 1;
