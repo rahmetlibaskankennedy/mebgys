@@ -1341,6 +1341,11 @@ function renderQuiz() {
   
   topicSheet.scrollTop = 0;
   bindQuizEvents();
+  
+  // Timer durmuşsa tekrar başlat
+  if (state.quiz && state.quiz.isTimed && !timerInterval) {
+    startQuizTimer();
+  }
 }
 
 function startQuizTimer() {
