@@ -1249,12 +1249,11 @@ function renderQuiz() {
   const current = quiz.questions[quiz.index];
   const total = quiz.questions.length;
   const letters = ['A', 'B', 'C', 'D', 'E'];
-  
-  const timerDisplay = quiz.isTimed ? 
-    `<div class="quiz-premium-timer" id="quizTimer">${svg('clock')} ${String(Math.floor(current.timeLeft / 60)).padStart(2, '0')}:${String(current.timeLeft % 60).padStart(2, '0')}</div>` : 
-    `<div class="quiz-premium-timer" style="color:#1f9d62;">Süresiz</div>`;
 
-  // "MEB GYS" / "Deneme" / "Rota" yerine artık rozet metni (Rastgele 20 soru vb.) kullanılıyor
+  const timerDisplay = quiz.isTimed ?
+    `<div class="quiz-premium-timer" id="quizTimer">${svg('clock')} ${String(Math.floor(current.timeLeft / 60)).padStart(2, '0')}:${String(current.timeLeft % 60).padStart(2, '0')}</div>` :
+    `<div class="quiz-premium-timer" style="color:var(--green);background:var(--green2);">Süresiz</div>`;
+
   topicList.innerHTML = `
     <div class="quiz-premium-layout">
       <div class="quiz-premium-header">
@@ -1264,31 +1263,31 @@ function renderQuiz() {
             <h2>${escapeHtml(quiz.subtitle)}</h2>
             <span>${escapeHtml(quiz.title)}</span>
           </div>
-          <div class="quiz-premium-top-actions">
-            ${timerDisplay}
-          </div>
+          <div class="quiz-premium-top-actions"></div>
         </div>
-        
+
         <div class="quiz-premium-progress">
           <span class="progress-text"><strong>${quiz.index + 1}</strong> / ${total}</span>
           <div class="progress-track">
             <div class="progress-fill" style="width:${Math.round(((quiz.index + 1) / total) * 100)}%"></div>
             <div class="progress-handle" style="left:${Math.round(((quiz.index + 1) / total) * 100)}%"></div>
           </div>
+          ${timerDisplay}
         </div>
       </div>
 
       <div class="quiz-premium-card-wrapper">
         <div class="quiz-premium-card">
-          <div class="quiz-card-header" style="justify-content:flex-end;">
-       <div class="quiz-card-actions">
-         <button type="button" class="action-btn ${progress.flaggedQuestions[current.id] ? 'active' : ''}" id="quizBookmarkButton">${svg('bookmark')}<span>${progress.flaggedQuestions[current.id] ? 'İşaretli' : 'Soruyu İşaretle'}</span></button>
-        <button type="button" class="action-btn ${progress.reportedQuestions[current.id] ? 'active' : ''}" id="quizReportButton" ${progress.reportedQuestions[current.id] ? 'disabled' : ''}>
-           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-           <span>${progress.reportedQuestions[current.id] ? 'Bildirildi' : 'Soruyu Bildir'}</span>
-        </button>
-       </div>
-      </div>
+          <div class="quiz-card-header">
+            <span class="quiz-badge">${escapeHtml(quiz.subtitle)}</span>
+            <div class="quiz-card-actions">
+              <button type="button" class="action-btn ${progress.flaggedQuestions[current.id] ? 'active' : ''}" id="quizBookmarkButton">${svg('bookmark')}<span>${progress.flaggedQuestions[current.id] ? 'İşaretli' : 'Soruyu İşaretle'}</span></button>
+              <button type="button" class="action-btn ${progress.reportedQuestions[current.id] ? 'active' : ''}" id="quizReportButton" ${progress.reportedQuestions[current.id] ? 'disabled' : ''}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                <span>${progress.reportedQuestions[current.id] ? 'Bildirildi' : 'Soruyu Bildir'}</span>
+              </button>
+            </div>
+          </div>
 
           <h3 class="quiz-question-text">${escapeHtml(current.prompt)}</h3>
 
@@ -1314,17 +1313,6 @@ function renderQuiz() {
               </button>`;
             }).join('')}
           </div>
-          
-          <div class="quiz-hint">
-            <div class="hint-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v1"/><path d="M12 7a5 5 0 1 0 5 5c0 1.5-1 3-3 4H10c-2-1-3-2.5-3-4a5 5 0 1 0 5-5z"/></svg>
-            </div>
-            <div class="hint-text">
-              <strong>İpucu</strong>
-              <span>Doğru cevabı düşünmeden önce sorudaki anahtar kelimelere odaklanın.</span>
-            </div>
-            <div class="hint-arrow">${svg('arrowRight')}</div>
-          </div>
         </div>
       </div>
 
@@ -1347,12 +1335,11 @@ function renderQuiz() {
         </div>
       </div>
     </div>`;
-    
+
   topicSheet.scrollTop = 0;
   bindQuizEvents();
   if(quiz.isTimed) startQuizTimer();
 }
-
 function startQuizTimer() {
   clearInterval(timerInterval);
   const quiz = state.quiz;
