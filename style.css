@@ -236,10 +236,12 @@ body{background:var(--bg)}
   border-radius: 0 !important;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 .topic-sheet.quiz-active .topic-sheet-head,
 .topic-sheet.quiz-active .topic-progress-card,
-.topic-sheet.quiz-active #topicBreadcrumbWrap { display: none !important; }
+.topic-sheet.quiz-active #topicBreadcrumbWrap,
+.topic-sheet.quiz-active .topic-handle { display: none !important; }
 
 .topic-sheet.quiz-active .topic-list {
   padding: 0;
