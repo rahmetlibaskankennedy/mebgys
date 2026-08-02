@@ -1338,8 +1338,9 @@ function renderQuiz() {
         </div>
       </div>
     </div>`;
-
+  
   topicSheet.scrollTop = 0;
+  bindQuizEvents();
 }
 
 function startQuizTimer() {
