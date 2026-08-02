@@ -1442,8 +1442,6 @@ function openQuizNav() {
     return `<button class="${className}" data-jump-index="${index}" type="button">${index + 1}</button>`;
   }).join('');
   grid.querySelectorAll('[data-jump-index]').forEach(button => button.addEventListener('click', () => {
-    clearInterval(timerInterval);
-    timerInterval = null;
     quiz.index = Number(button.dataset.jumpIndex);
     overlay.classList.remove('open');
     renderQuiz();
@@ -1481,15 +1479,11 @@ function bindQuizEvents() {
   
   document.getElementById('quizPrevButton')?.addEventListener('click', () => {
     if (quiz.index < 1) return;
-    clearInterval(timerInterval);
-    timerInterval = null;
     quiz.index -= 1;
     renderQuiz();
   });
   
   document.getElementById('quizNextButton')?.addEventListener('click', () => {
-    clearInterval(timerInterval);
-    timerInterval = null;
     if (quiz.index < quiz.questions.length - 1) {
       quiz.index += 1;
       renderQuiz();
