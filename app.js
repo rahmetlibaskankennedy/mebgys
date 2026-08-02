@@ -366,19 +366,67 @@ function studiesView() {
   </section>`;
 }
 
+function groupWrongQuestions() {
+  const groups = new Map();
+  Object.values(progress.wrongQuestions).forEach(q => {
+    const key = q.documentId || 'diger';
+    if (!groups.has(key)) {
+      groups.set(key, { key, title: q.documentTitle || 'Diğer Sorular', questions: [] });
+    }
+    groups.get(key).questions.push(q);
+  });
+  return [...groups.values()].sort((a, b) => b.questions.length - a.questions.length);
+}
+
 function mistakesView() {
-  const questions = Object.values(progress.wrongQuestions);
+  const totalCount = Object.keys(progress.wrongQuestions).length;
+  if (!totalCount) {
+    return `<section class="screen content-screen">
+      <div class="page-heading"><span>TEKRAR HAVUZU</span><h2>Yanlışlarım</h2><p>Daha önce yanlış yaptığın tüm sorular burada birikir.</p></div>
+      <div class="empty-inline">Henüz yanlış yaptığın bir soru yok.</div>
+    </section>`;
+  }
+  const groups = groupWrongQuestions();
   return `<section class="screen content-screen">
     <div class="page-heading"><span>TEKRAR HAVUZU</span><h2>Yanlışlarım</h2><p>Daha önce yanlış yaptığın tüm sorular burada birikir.</p></div>
-    ${questions.length ? `<article class="practice-card">
+    <article class="practice-card">
       <div class="practice-card-icon">${svg('flame')}</div>
-      <div><span>TEKRAR HAVUZU</span><h3>${questions.length} soru</h3><p>Hepsini karışık sırayla tekrar çöz.</p></div>
+      <div><span>TEKRAR HAVUZU</span><h3>${totalCount} soru</h3><p>Hepsini karışık sırayla tekrar çöz.</p></div>
       <button class="reader-primary" id="startWrongPoolButton" type="button">Başlat</button>
     </article>
-    <div class="quiz-result-list" style="margin-top:16px">
-      ${questions.map(q => `<article class="quiz-result-item"><p>${escapeHtml(q.prompt)}</p><small>Doğru cevap: ${escapeHtml(q.options[q.answerIndex])}</small></article>`).join('')}
-    </div>` : '<div class="empty-inline">Henüz yanlış yaptığın bir soru yok.</div>'}
+    <div class="mistake-group-list">
+      ${groups.map(group => {
+        const isOpen = state.expandedMistakeGroup === group.key;
+        return `<article class="mistake-group ${isOpen ? 'open' : ''}">
+          <button class="mistake-group-head" data-toggle-group="${group.key}" type="button">
+            <div class="mistake-group-icon">${svg('book')}</div>
+            <div class="mistake-group-copy"><h4>${escapeHtml(group.title)}</h4><span>${group.questions.length} soru</span></div>
+            <div class="mistake-group-arrow ${isOpen ? 'rotated' : ''}">${svg('arrow')}</div>
+          </button>
+          ${isOpen ? `<div class="mistake-group-body">
+            <button class="reader-primary mistake-group-start" data-start-group="${group.key}" type="button">Bu konudaki ${group.questions.length} soruyu çöz</button>
+            <div class="quiz-result-list">
+              ${group.questions.map(q => `<article class="quiz-result-item"><p>${escapeHtml(q.prompt)}</p><small>Doğru cevap: ${escapeHtml(q.options[q.answerIndex])}</small></article>`).join('')}
+            </div>
+          </div>` : ''}
+        </article>`;
+      }).join('')}
+    </div>
   </section>`;
+}
+
+function startWrongGroupQuiz(groupKey) {
+  const group = groupWrongQuestions().find(g => g.key === groupKey);
+  if (!group || !group.questions.length) return showToast('Bu konuda tekrar edilecek soru yok.');
+  topicSheet.classList.add('open');
+  topicBackdrop.classList.add('open');
+  startQuiz({
+    questions: group.questions,
+    kind: 'wrong-group',
+    title: group.title,
+    subtitle: `${group.questions.length} soru • tekrar`,
+    returnView: closeTopicSheet
+  });
 }
 
 function startWrongPool() {
