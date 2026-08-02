@@ -1350,27 +1350,30 @@ function renderQuiz() {
 
 function startQuizTimer() {
   clearInterval(timerInterval);
+  timerInterval = null;
+
   const quiz = state.quiz;
   if (!quiz || quiz.timeLeft <= 0) return;
+
   timerInterval = window.setInterval(() => {
     const timer = document.getElementById('quizTimer');
+
     if (!timer || !state.quiz || state.quiz !== quiz) {
       clearInterval(timerInterval);
+      timerInterval = null;
       return;
     }
-    if (quiz.timeLeft <= 0) return clearInterval(timerInterval);
-    quiz.timeLeft -= 1;
-    const m = String(Math.floor(quiz.timeLeft / 60)).padStart(2, '0');
-    const s = String(quiz.timeLeft % 60).padStart(2, '0');
-    timer.innerHTML = `${svg('clock')} ${m}:${s}`;
-    if (quiz.timeLeft === 0) {
+
+    if (quiz.timeLeft <= 0) {
       clearInterval(timerInterval);
-      showToast('Sınavın süresi doldu.');
-      renderQuizResult();
+      timerInterval = null;
+      return;
     }
+
+    quiz.timeLeft -= 1;
+    // ...
   }, 1000);
 }
-
 function toggleQuestionFlag(question) {
   if (progress.flaggedQuestions[question.id]) {
     delete progress.flaggedQuestions[question.id];
