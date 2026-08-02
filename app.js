@@ -678,7 +678,6 @@ function bindViewEvents() {
   
   document.getElementById('startMockButton')?.addEventListener('click', startMixedMock);
   document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
-   document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
   app.querySelectorAll('[data-open-mistake-category]').forEach(element => {
   element.addEventListener('click', () => openMistakeCategorySheet(element.dataset.openMistakeCategory));
   element.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') openMistakeCategorySheet(element.dataset.openMistakeCategory); });
