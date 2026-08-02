@@ -1289,18 +1289,3 @@ body.auth-page{
   font-weight:800;
   color:var(--navy);
 }
-
-/* Konu bazlı yanlış grupları */
-.mistake-group-list{display:flex;flex-direction:column;gap:10px;margin-top:16px}
-.mistake-group{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 3px 8px rgba(13,33,68,.03)}
-.mistake-group-head{width:100%;display:grid;grid-template-columns:40px 1fr 18px;gap:11px;align-items:center;padding:13px;border:0;background:none;cursor:pointer;text-align:left}
-.mistake-group-icon{width:40px;height:40px;border-radius:11px;background:var(--red2);color:var(--red);display:grid;place-items:center}
-.mistake-group-icon svg{width:19px;height:19px}
-.mistake-group-copy h4{margin:0 0 3px;font-size:13px;color:var(--navy);font-weight:700}
-.mistake-group-copy span{font-size:11px;color:var(--red);font-weight:700}
-.mistake-group-arrow{color:#aab2c0;display:grid;place-items:center;transition:transform .2s}
-.mistake-group-arrow svg{width:15px;height:15px}
-.mistake-group-arrow.rotated{transform:rotate(90deg)}
-.mistake-group-body{padding:0 13px 14px}
-.mistake-group-start{width:100%;margin-bottom:10px;border-radius:10px;font-size:12px;padding:11px}
-.mistake-group.open .mistake-group-head{border-bottom:1px solid var(--line)}
