@@ -1260,10 +1260,14 @@ function renderQuiz() {
         <div class="quiz-premium-topbar">
           <button id="quizBackButton" type="button" aria-label="Geri">${svg('back')}</button>
           <div class="quiz-premium-titles">
-            <h2>${escapeHtml(quiz.subtitle)}</h2>
-            <span>${escapeHtml(quiz.title)}</span>
+            <h2>${escapeHtml(quiz.title)}</h2>
           </div>
-          <div class="quiz-premium-top-actions"></div>
+          <div class="quiz-premium-top-actions">
+            <button type="button" class="topbar-action ${progress.flaggedQuestions[current.id] ? 'active' : ''}" id="quizBookmarkButton" aria-label="Soruyu İşaretle">${svg('bookmark')}</button>
+            <button type="button" class="topbar-action ${progress.reportedQuestions[current.id] ? 'active' : ''}" id="quizReportButton" aria-label="Soruyu Bildir" ${progress.reportedQuestions[current.id] ? 'disabled' : ''}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            </button>
+          </div>
         </div>
 
         <div class="quiz-premium-progress">
@@ -1280,13 +1284,6 @@ function renderQuiz() {
         <div class="quiz-premium-card">
           <div class="quiz-card-header">
             <span class="quiz-badge">${escapeHtml(quiz.subtitle)}</span>
-            <div class="quiz-card-actions">
-              <button type="button" class="action-btn ${progress.flaggedQuestions[current.id] ? 'active' : ''}" id="quizBookmarkButton">${svg('bookmark')}<span>${progress.flaggedQuestions[current.id] ? 'İşaretli' : 'Soruyu İşaretle'}</span></button>
-              <button type="button" class="action-btn ${progress.reportedQuestions[current.id] ? 'active' : ''}" id="quizReportButton" ${progress.reportedQuestions[current.id] ? 'disabled' : ''}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-                <span>${progress.reportedQuestions[current.id] ? 'Bildirildi' : 'Soruyu Bildir'}</span>
-              </button>
-            </div>
           </div>
 
           <h3 class="quiz-question-text">${escapeHtml(current.prompt)}</h3>
@@ -1340,6 +1337,7 @@ function renderQuiz() {
   bindQuizEvents();
   if(quiz.isTimed) startQuizTimer();
 }
+
 function startQuizTimer() {
   clearInterval(timerInterval);
   const quiz = state.quiz;
