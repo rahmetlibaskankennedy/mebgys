@@ -204,7 +204,7 @@ function saveProgress() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   scheduleCloudSync();
   updateHeader();
-  if (state.view === 'home' || state.view === 'wrong' || state.view === 'profile' || state.view === 'mistakes') render();
+  if (state.view === 'home' || state.view === 'profile' || state.view === 'mistakes') render();
 }
 
 function dateKey(date = new Date()) {
@@ -359,10 +359,10 @@ function homeView() {
 
   return `<section class="screen home-screen">
     <div class="stats">
-      ${statCard('squareCheck', '', stats.completedSections, 'Konu<br>Tamamlandı', 'wrong')}
-      ${statCard('circleCheckBig', 'accent', stats.solvedQuestions, 'Soru<br>Çözüldü', 'wrong')}
+      ${statCard('squareCheck', '', stats.completedSections, 'Konu<br>Tamamlandı', 'profile')}
+      ${statCard('circleCheckBig', 'accent', stats.solvedQuestions, 'Soru<br>Çözüldü', 'profile')}
       ${statCard('award', 'amber', stats.completedMocks, 'Deneme<br>Tamamlandı', 'bank')}
-      ${statCard('flame', 'accent', stats.streak, 'Günlük<br>Seri', 'wrong')}
+      ${statCard('flame', 'accent', stats.streak, 'Günlük<br>Seri', 'profile')}
     </div>
     <div class="section-head"><h3>Test Kategorileri</h3></div>
     <section class="categories">${categories}</section>
@@ -387,19 +387,6 @@ function bankView() {
     </article>
     <div class="metric-strip"><div><strong>${stats.completedMocks}</strong><span>Tamamlanan deneme</span></div><div><strong>%${stats.accuracy}</strong><span>Genel doğruluk</span></div></div>
     <section class="recent-tests"><h3>Son testler</h3>${recentTests.length ? recentTests.map(test => `<article><div><strong>${escapeHtml(test.title)}</strong><span>${test.score}/${test.total} doğru</span></div><small>${test.kind === 'mock' ? 'Deneme' : 'Konu testi'}</small></article>`).join('') : '<div class="empty-inline">Henüz tamamlanan bir test yok.</div>'}</section>
-  </section>`;
-}
-
-function studiesView() {
-  const stats = getStats();
-  return `<section class="screen content-screen">
-    <div class="page-heading"><span>ÇALIŞMALARIM</span><h2>İlerlemen</h2><p>Bu değerler cevapların ve tamamladığın testlerle otomatik güncellenir.</p></div>
-    <div class="study-grid">
-      <article><span>Çözülen soru</span><strong>${stats.solvedQuestions}</strong></article>
-      <article><span>Doğruluk oranı</span><strong>%${stats.accuracy}</strong></article>
-      <article><span>Tamamlanan bölüm</span><strong>${stats.completedSections}</strong></article>
-      <article><span>Günlük seri</span><strong>${stats.streak} gün</strong></article>
-    </div>
   </section>`;
 }
 
@@ -683,6 +670,16 @@ function profileView() {
   const initial = fullName.trim().charAt(0).toUpperCase() || '?';
   return `<section class="screen content-screen"><div class="page-heading"><span>PROFİL</span><h2>${escapeHtml(fullName)}</h2><p>${escapeHtml(email)}</p></div><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>Hedef: MEB GYS</strong><span>${stats.solvedQuestions} soru • %${stats.accuracy} doğruluk</span></div></article>
   <section class="profile-goal-card">
+    <div class="profile-goal-head"><span>ÇALIŞMALARIM</span><strong>İlerlemen</strong></div>
+    <p class="profile-goal-desc">Bu değerler cevapların ve tamamladığın testlerle otomatik güncellenir.</p>
+    <div class="study-grid">
+      <article><span>Çözülen soru</span><strong>${stats.solvedQuestions}</strong></article>
+      <article><span>Doğruluk oranı</span><strong>%${stats.accuracy}</strong></article>
+      <article><span>Tamamlanan bölüm</span><strong>${stats.completedSections}</strong></article>
+      <article><span>Günlük seri</span><strong>${stats.streak} gün</strong></article>
+    </div>
+  </section>
+  <section class="profile-goal-card">
     <div class="profile-goal-head"><span>GÜNLÜK ÇALIŞMA HEDEFİ</span><strong>${stats.dailyGoal} soru / gün</strong></div>
     <p class="profile-goal-desc">Her gün çözmek istediğin soru sayısını belirle, ana sayfadaki ilerleme halkası buna göre hesaplanır.</p>
     <div class="profile-goal-edit">
@@ -694,7 +691,7 @@ function profileView() {
 }
 
 function render() {
-  const views = { home: homeView, bank: bankView, wrong: studiesView, mistakes: mistakesView, cards: cardsView, profile: profileView };
+  const views = { home: homeView, bank: bankView, mistakes: mistakesView, cards: cardsView, profile: profileView };
   app.innerHTML = (views[state.view] || homeView)();
   bindViewEvents();
   updateHeader();
