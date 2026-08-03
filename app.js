@@ -446,6 +446,11 @@ function bankView() {
   return `<section class="screen content-screen">
     <div class="page-heading"><span>DENEMELER</span><h2>Hızlı denemeler</h2><p>Aktif soru bankalarından oluşan denemelerle performansını ölç.</p></div>
     <article class="practice-card">
+      <div class="practice-card-icon">${svg('target')}</div>
+      <div><span>GERÇEK SINAV FORMATI</span><h3>${ROLES.find(r => r.key === progress.selectedRole)?.label || 'Kadrona'} özel deneme</h3><p>MEB'in resmi konu ağırlıklarına göre 60 soruluk tam kapsamlı deneme.</p></div>
+      <button class="reader-primary" id="startKadroExamButton" type="button" ${progress.selectedRole ? '' : 'disabled'}>Başlat</button>
+    </article>
+    <article class="practice-card">
       <div class="practice-card-icon">${svg('trophy')}</div>
       <div><span>KARMA MEVZUAT</span><h3>20 soruluk hızlı deneme</h3><p>${activeDocuments.length ? `${activeDocuments.length} aktif paketten dengeli rastgele seçilir.` : 'Aktif soru paketi bulunmuyor.'}</p></div>
       <button class="reader-primary" id="startMockButton" type="button" ${activeDocuments.length ? '' : 'disabled'}>Başlat</button>
@@ -779,6 +784,7 @@ function bindViewEvents() {
   document.getElementById('openRouteSheetButton')?.addEventListener('click', openRouteSheet);
   
   document.getElementById('startMockButton')?.addEventListener('click', startMixedMock);
+  document.getElementById('startKadroExamButton')?.addEventListener('click', startKadroExam);
   document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
   app.querySelectorAll('[data-open-mistake-category]').forEach(element => {
   element.addEventListener('click', () => openMistakeCategorySheet(element.dataset.openMistakeCategory));
@@ -1415,12 +1421,12 @@ async function startMixedMock() {
   });
 }
 
-function startQuiz({ questions, documentItem = null, section = null, kind, title, subtitle, returnView }) {
+function startQuiz({ questions, documentItem = null, section = null, kind, title, subtitle, returnView, customTimeSeconds = null }) {
   clearInterval(timerInterval);
   timerInterval = null;
 
-  const isTimed = routeSettings.time === 'Süreli' || kind !== 'route';
-  const totalTime = isTimed ? questions.length * QUESTION_TIME_LIMIT : 9999;
+  const isTimed = customTimeSeconds !== null ? true : (routeSettings.time === 'Süreli' || kind !== 'route');
+  const totalTime = customTimeSeconds !== null ? customTimeSeconds : (isTimed ? questions.length * QUESTION_TIME_LIMIT : 9999);
 
   state.quiz = {
     questions: shuffle(questions).map(question => ({ ...question, userSelected: null, answerRecorded: false })),
@@ -1876,3 +1882,113 @@ async function handleAuthenticated() {
 
 document.addEventListener('sinavrotasi:authenticated', handleAuthenticated);
 if (window.currentUserAuthReady) handleAuthenticated();
+
+// ================= KADRO BAZLI GERÇEK SINAV DENEMESİ =================
+// Ek-2 (Konu Başlıkları, Ağırlık Yüzdeleri ve Soru Sayılarını Gösteren
+// Tablo) kaynaklı resmi soru dağılımına göre kadroya özel deneme üretir.
+const EXAM_TOPIC_REGISTRY_URL = 'exam-blueprint/topics-taxonomy.json';
+const EXAM_BLUEPRINT_URL = 'exam-blueprint/exam-blueprint.json';
+
+let examTopicRegistry = null;
+let examBlueprints = null;
+
+async function loadExamConfig() {
+  if (examTopicRegistry && examBlueprints) return;
+  const [topicsRes, blueprintRes] = await Promise.all([
+    fetch(EXAM_TOPIC_REGISTRY_URL, { cache: 'no-store' }),
+    fetch(EXAM_BLUEPRINT_URL, { cache: 'no-store' })
+  ]);
+  if (!topicsRes.ok || !blueprintRes.ok) throw new Error('Sınav yapılandırması okunamadı.');
+  const topicsData = await topicsRes.json();
+  examTopicRegistry = topicsData.topics || {};
+  examBlueprints = await blueprintRes.json();
+}
+
+async function loadExamTopicBank(topicId) {
+  const topic = examTopicRegistry?.[topicId];
+  if (!topic || !topic.questionFile) return [];
+  const cacheKey = `exam-topic:${topicId}`;
+  if (state.questionBanks.has(cacheKey)) return state.questionBanks.get(cacheKey);
+  try {
+    const response = await fetch(topic.questionFile, { cache: 'no-store' });
+    if (!response.ok) throw new Error('okunamadı');
+    const data = await response.json();
+    const questions = Array.isArray(data.questions) ? data.questions : [];
+    state.questionBanks.set(cacheKey, questions);
+    return questions;
+  } catch {
+    state.questionBanks.set(cacheKey, []);
+    return [];
+  }
+}
+
+// Tekli konu ({topicId, count}) ve grup / "bağlı mevzuat" ({topics:[...], count})
+// girdilerini düz bir [{topicId, count}] listesine açar. Grup içindeki toplam
+// soru sayısı, konular arasında olabildiğince eşit dağıtılır.
+function expandBlueprintEntries(entries) {
+  const flat = [];
+  entries.forEach(entry => {
+    if (entry.topics && entry.topics.length) {
+      const base = Math.floor(entry.count / entry.topics.length);
+      let remainder = entry.count - base * entry.topics.length;
+      entry.topics.forEach(topicId => {
+        const extra = remainder > 0 ? 1 : 0;
+        if (remainder > 0) remainder -= 1;
+        flat.push({ topicId, count: base + extra });
+      });
+    } else {
+      flat.push({ topicId: entry.topicId, count: entry.count });
+    }
+  });
+  return flat;
+}
+
+async function buildKadroExamPool(roleKey) {
+  await loadExamConfig();
+  const blueprint = examBlueprints?.[roleKey];
+  if (!blueprint) throw new Error('Bu kadro için sınav planı tanımlı değil.');
+  const flatEntries = expandBlueprintEntries(blueprint.topics);
+  const missingTopics = [];
+  const pool = [];
+  for (const { topicId, count } of flatEntries) {
+    const topicMeta = examTopicRegistry[topicId];
+    const bank = await loadExamTopicBank(topicId);
+    if (!bank.length) { missingTopics.push(topicMeta?.title || topicId); continue; }
+    const picked = shuffle(bank).slice(0, count).map(q => ({
+      ...q,
+      documentId: topicId,
+      documentTitle: topicMeta?.title || topicId,
+      categoryKey: topicMeta?.category || null
+    }));
+    pool.push(...picked);
+    if (picked.length < count) missingTopics.push(`${topicMeta?.title || topicId} (${picked.length}/${count})`);
+  }
+  return { pool: shuffle(pool), missingTopics, blueprint };
+}
+
+async function startKadroExam() {
+  const roleKey = progress.selectedRole;
+  if (!roleKey) return showToast('Önce kadronu seçmelisin.');
+  showToast('Gerçek sınav formatı hazırlanıyor…');
+  try {
+    const { pool, missingTopics, blueprint } = await buildKadroExamPool(roleKey);
+    if (!pool.length) return showToast('Bu kadro için henüz soru bankası eklenmedi.');
+    if (missingTopics.length) {
+      showToast(`Bazı konularda içerik eksik: ${missingTopics.slice(0, 2).join(', ')}${missingTopics.length > 2 ? '…' : ''}`);
+    }
+    topicSheet.classList.add('open');
+    topicBackdrop.classList.add('open');
+    const roleLabel = ROLES.find(r => r.key === roleKey)?.label || '';
+    const customTimeSeconds = blueprint.durationMinutes ? blueprint.durationMinutes * 60 : null;
+    startQuiz({
+      questions: pool,
+      kind: 'kadro-exam',
+      title: `${roleLabel} - Gerçek Sınav Formatı`,
+      subtitle: `${pool.length} soru • resmi ağırlık dağılımı`,
+      returnView: closeTopicSheet,
+      customTimeSeconds
+    });
+  } catch (error) {
+    showToast(error.message || 'Sınav hazırlanamadı.');
+  }
+}
