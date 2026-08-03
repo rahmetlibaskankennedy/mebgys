@@ -1079,47 +1079,45 @@ function modeCard(mode, icon, title, description, enabled) {
 }
 
 function renderTopicPlan(item, categoryKey) {
+  state.activeDocument = item;
+  state.activeCategoryKey = categoryKey;
   topicSheet.classList.add('document-flow');
+  topicSheet.classList.remove('quiz-active', 'card-study-active');
   const isActive = Boolean(item.questionFile);
-  applySheetHeader({ title: item.title, subtitle: isActive ? `${item.questionCount || 0} soru • aktif soru bankası` : 'İçerik şablonu hazır', eyebrow: 'KONU ÇALIŞMA MERKEZİ', icon: 'book', iconClass: categoryCardMeta(categoryKey).iconClass });
+  const sectionsReady = Boolean(item.children && item.children.length);
+  applySheetHeader({
+    title: item.title,
+    subtitle: isActive ? `${item.questionCount || 0} soru • aktif soru bankası` : 'İçerik yapısı hazır, kaynak paketi bekleniyor',
+    eyebrow: 'KONU ÇALIŞMA MERKEZİ',
+    icon: 'book',
+    iconClass: categoryCardMeta(categoryKey).iconClass
+  });
   renderBreadcrumb(getCategory(categoryKey).title, () => renderCategoryLevel(categoryKey));
-  setSheetProgress('Henüz çalışılmadı', isActive && progress.completedSections[item.id] ? 100 : 0);
-  if (!isActive) {
-    topicList.innerHTML = `<section class="empty-state content-plan"><span class="empty-state-icon">${svg('book')}</span><h3>Bu konu için altyapı hazır</h3><p>Soru bankası JSON ile eklendiğinde bu ekran otomatik olarak çalışma akışına dönüşür.</p><div class="plan-points"><span>${svg('check')} Konu geneli test</span><span>${svg('check')} Karışık soru havuzu</span><span>${svg('check')} İlerleme takibi</span></div></section>`;
-    topicSheet.scrollTop = 0;
-    return;
-  }
-  const completed = Boolean(progress.completedSections[item.id]);
+  const topicProgress = progress.completedSections[item.id] ? 100 : 0;
+  setSheetProgress('Henüz çalışılmadı', topicProgress);
+
   topicList.innerHTML = `<section class="document-overview-card">
-      <div class="document-overview-top"><span class="document-number">KONU</span><span class="document-status">AKTİF SORU BANKASI</span></div>
-      <h4>${escapeHtml(item.title)}</h4><p>Konunun tamamından karışık sorularla çalış, ilerlemen otomatik kaydedilir.</p>
-      <div class="document-stats"><span><strong>${item.questionCount || 0}</strong> soru</span><span><strong>%${completed ? 100 : 0}</strong> ilerleme</span></div>
+      <div class="document-overview-top"><span class="document-number">KONU</span><span class="document-status ${isActive ? '' : 'is-pending'}">${statusLabel(item)}</span></div>
+      <h4>${escapeHtml(item.title)}</h4><p>${isActive ? 'Bölüm bazında çalışabilir, rastgele test çözebilir ve kritik notlarla hızlı tekrar yapabilirsin.' : 'Bu başlık için akış hazır. Bölüm ve soru verisi eklendiğinde kartlar otomatik olarak aktifleşir.'}</p>
+      <div class="document-stats"><span><strong>${item.articleCount || 0}</strong> madde</span><span><strong>${item.questionCount || 0}</strong> soru</span><span><strong>%${topicProgress}</strong> ilerleme</span></div>
     </section>
     <div class="document-mode-grid">
-      ${modeCard('topic-quiz', 'target', `${Math.min(20, item.questionCount || 20)} Soruluk Test`, 'Konunun tüm soru havuzundan karışık test başlat.', true)}
-      ${modeCard('topic-all', 'book', 'Tüm Soruları Çöz', 'Bankadaki bütün soruları sırayla çöz.', true)}
+      ${modeCard('sections', 'book', 'Madde Madde Çalış', 'Bölüm ve madde listesinden istediğin yere git.', sectionsReady)}
+      ${modeCard('random', 'target', 'Rastgele 20 Soru', 'Konunun tamamından rastgele sorular çöz.', isActive)}
+      ${modeCard('truefalse', 'check', 'Doğru / Yanlış', 'İçerik paketi eklendiğinde çalışır.', Boolean(item.trueFalseFile))}
+      ${modeCard('summary', 'trophy', 'Özet ve Kritik Noktalar', 'Sınavda öne çıkan maddeleri hızlı tekrar et.', sectionsReady)}
     </div>`;
-  topicList.querySelectorAll('[data-document-mode]').forEach(button => button.addEventListener('click', async () => {
+
+  topicList.querySelectorAll('[data-document-mode]').forEach(button => button.addEventListener('click', () => {
+    if (button.disabled) return showToast('Bu mod, ilgili içerik paketi eklendiğinde açılacak.');
     haptic(18);
     const mode = button.dataset.documentMode;
-    try {
-      showToast('Sorular hazırlanıyor…');
-      const bank = tagQuestions(await loadQuestionBank(item), item, categoryKey);
-      if (!bank.length) return showToast('Bu konu için henüz soru bulunmuyor.');
-      const questions = mode === 'topic-quiz' ? shuffle(bank).slice(0, Math.min(20, bank.length)) : bank;
-      startQuiz({
-        questions,
-        documentItem: item,
-        section: { id: item.id, title: item.title },
-        kind: 'topic',
-        title: item.title,
-        subtitle: `${questions.length} soru`,
-        returnView: () => renderTopicPlan(item, categoryKey)
-      });
-    } catch (error) {
-      showToast(error.message || 'Sorular yüklenemedi.');
-    }
+    if (mode === 'sections') renderSections(item, categoryKey);
+    if (mode === 'random') openRandomQuiz(item, categoryKey);
+    if (mode === 'summary') renderSummary(item, categoryKey);
+    if (mode === 'truefalse') showToast('Doğru / yanlış soru paketi yakında eklenecek.');
   }));
+
   topicSheet.scrollTop = 0;
   refreshVisibleQuestionCounts([item], () => { if (state.activeDocument === item) renderTopicPlan(item, categoryKey); });
 }
