@@ -202,14 +202,26 @@ function haptic(duration = 18) {
 }
 
 function defaultProgress() {
-  return { userId: null, answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [], flaggedQuestions: {}, reportedQuestions: {}, selectedRole: null, purchasedRoles: [], wrongQuestions: {}, dailyGoal: DEFAULT_DAILY_GOAL };
+  return { userId: null, answers: 0, correctAnswers: 0, dailyAnswers: {}, completedSections: {}, completedTests: [], flaggedQuestions: {}, reportedQuestions: {}, selectedRole: null, purchasedRoles: [], wrongQuestions: {}, dailyGoal: DEFAULT_DAILY_GOAL, docStats: {}, lastActivity: null };
 }
 
 function sanitizeProgress(saved) {
   if (!saved || typeof saved !== 'object') return defaultProgress();
   const parsedGoal = Number(saved.dailyGoal);
   const safeGoal = Number.isFinite(parsedGoal) && parsedGoal >= DAILY_GOAL_MIN && parsedGoal <= DAILY_GOAL_MAX ? Math.round(parsedGoal) : DEFAULT_DAILY_GOAL;
-  return { ...defaultProgress(), ...saved, dailyAnswers: saved.dailyAnswers || {}, completedSections: saved.completedSections || {}, completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : [], flaggedQuestions: saved.flaggedQuestions || {}, reportedQuestions: saved.reportedQuestions || {}, purchasedRoles: Array.isArray(saved.purchasedRoles) ? saved.purchasedRoles : [], wrongQuestions: saved.wrongQuestions || {}, dailyGoal: safeGoal };
+  return {
+    ...defaultProgress(), ...saved,
+    dailyAnswers: saved.dailyAnswers || {},
+    completedSections: saved.completedSections || {},
+    completedTests: Array.isArray(saved.completedTests) ? saved.completedTests : [],
+    flaggedQuestions: saved.flaggedQuestions || {},
+    reportedQuestions: saved.reportedQuestions || {},
+    purchasedRoles: Array.isArray(saved.purchasedRoles) ? saved.purchasedRoles : [],
+    wrongQuestions: saved.wrongQuestions || {},
+    dailyGoal: safeGoal,
+    docStats: (saved.docStats && typeof saved.docStats === 'object') ? saved.docStats : {},
+    lastActivity: (saved.lastActivity && typeof saved.lastActivity === 'object') ? saved.lastActivity : null
+  };
 }
 
 function loadProgress() {
@@ -1243,43 +1255,140 @@ async function openRandomQuiz(documentItem, categoryKey) {
   }
 }
 
+function dedupeQuestionsById(list) {
+  const seen = new Set();
+  const out = [];
+  for (const q of list) {
+    if (q.id) { if (seen.has(q.id)) continue; seen.add(q.id); }
+    out.push(q);
+  }
+  return out;
+}
+
+async function loadBanksForEntries(entries) {
+  const results = await Promise.allSettled(entries.map(async entry =>
+    tagQuestions(await loadQuestionBank(entry.item), entry.item, entry.categoryKey)
+  ));
+  return results.filter(r => r.status === 'fulfilled').map(r => r.value).flat();
+}
+
+function getDocAccuracy(documentId) {
+  const stats = progress.docStats[documentId];
+  if (!stats || stats.attempts < 3) return null; // yeterli veri yok
+  return stats.correct / stats.attempts;
+}
+
+function getWeakEntries(entries, limit = 5) {
+  return entries
+    .map(entry => ({ entry, accuracy: getDocAccuracy(entry.item.id) }))
+    .filter(x => x.accuracy !== null)
+    .sort((a, b) => a.accuracy - b.accuracy)
+    .slice(0, limit)
+    .map(x => x.entry);
+}
+
+function getUnseenEntries(entries, exclude = []) {
+  return entries.filter(entry =>
+    (!progress.docStats[entry.item.id] || progress.docStats[entry.item.id].attempts === 0) &&
+    !exclude.includes(entry)
+  );
+}
+
+function findLastActivityEntry(entries) {
+  const last = progress.lastActivity;
+  if (!last || !last.documentId) return null;
+  return entries.find(entry => entry.item.id === last.documentId) || null;
+}
+
+// RASTGELE KARMA: tüm aktif konulardan karışık havuz
+async function buildRandomPool(entries) {
+  return await loadBanksForEntries(shuffle(entries));
+}
+
+// ZAYIF KONULAR: en düşük doğruluklu konular + hâlâ yanlış bilinen sorular
+async function buildWeakPool(entries) {
+  const weakEntries = getWeakEntries(entries);
+  const wrongPool = Object.values(progress.wrongQuestions);
+  if (!weakEntries.length && !wrongPool.length) return null;
+  const weakBank = weakEntries.length ? await loadBanksForEntries(weakEntries) : [];
+  const combined = dedupeQuestionsById([...shuffle(wrongPool), ...shuffle(weakBank)]);
+  return combined.length ? combined : null;
+}
+
+// SON ÇALIŞILAN KONU: en son bırakılan konudan devam, gerekirse aynı kategoriden tamamla
+async function buildLastActivityPool(entries) {
+  const lastEntry = findLastActivityEntry(entries);
+  if (!lastEntry) return null;
+  let bank;
+  try { bank = tagQuestions(await loadQuestionBank(lastEntry.item), lastEntry.item, lastEntry.categoryKey); }
+  catch { return null; }
+  if (!bank.length) return null;
+  const sameCategoryEntries = entries.filter(e => e.categoryKey === lastEntry.categoryKey && e.item.id !== lastEntry.item.id);
+  const extra = sameCategoryEntries.length ? await loadBanksForEntries(shuffle(sameCategoryEntries)) : [];
+  return dedupeQuestionsById([...shuffle(bank), ...shuffle(extra)]);
+}
+
+// SANA ÖZEL KARMA: zayıf + son çalışılan + hiç görülmemiş konuları harmanla
+async function buildPersonalPool(entries) {
+  const weakEntries = getWeakEntries(entries, 4);
+  const lastEntry = findLastActivityEntry(entries);
+  const unseenEntries = getUnseenEntries(entries, lastEntry ? [lastEntry] : []);
+
+  const wrongPool = shuffle(Object.values(progress.wrongQuestions));
+  const weakBank = weakEntries.length ? shuffle(await loadBanksForEntries(weakEntries)) : [];
+  let lastBank = [];
+  if (lastEntry) {
+    try { lastBank = shuffle(tagQuestions(await loadQuestionBank(lastEntry.item), lastEntry.item, lastEntry.categoryKey)); }
+    catch { lastBank = []; }
+  }
+  const unseenBank = unseenEntries.length ? shuffle(await loadBanksForEntries(unseenEntries)) : [];
+
+  const combined = dedupeQuestionsById([...wrongPool, ...weakBank, ...lastBank, ...unseenBank]);
+  return combined.length ? combined : null;
+}
+
 async function startSmartPractice() {
-  let activeDocuments = getActiveDocuments();
-  if (!activeDocuments.length) {
+  const entries = getActiveDocuments();
+  if (!entries.length) {
     closeRouteSheet();
     return showToast('Henüz aktif soru paketi bulunmuyor.');
   }
 
   showToast('Rota hazırlanıyor…');
-  // categorytopics.json'da "aktif" görünen ama soru dosyası gerçekte eksik olan
-  // başlıklar olabilir. Rastgele seçilen başlık başarısız olursa listeden düşürüp
-  // (loadQuestionBank onu zaten kalıcı olarak işaretler) başka bir aktif başlıkla
-  // yeniden dene — kullanıcı tek bir şanssız seçim yüzünden boş dönmesin.
-  const candidates = shuffle(activeDocuments);
-  for (const selected of candidates) {
-    try {
-      const bank = tagQuestions(await loadQuestionBank(selected.item), selected.item, selected.categoryKey);
-      if (!bank.length) continue;
 
-      topicSheet.classList.add('open');
-      topicBackdrop.classList.add('open');
-
-      startQuiz({
-        questions: shuffle(bank).slice(0, Math.min(routeSettings.questions, bank.length)),
-        documentItem: selected.item,
-        kind: 'route',
-        title: 'Bugünkü Rota',
-        subtitle: `${routeSettings.mode} • ${routeSettings.questions} Soru`,
-        returnView: closeTopicSheet
-      });
-      return;
-    } catch (error) {
-      // Bu başlık yüklenemedi, sıradaki adaya geç.
+  let pool = null;
+  try {
+    if (routeSettings.mode === 'Zayıf Konular') {
+      pool = await buildWeakPool(entries);
+      if (!pool) showToast('Henüz yeterli zayıf konu verisi yok, karma sorular getiriliyor.');
+    } else if (routeSettings.mode === 'Son Çalışılan Konu') {
+      pool = await buildLastActivityPool(entries);
+      if (!pool) showToast('Daha önce çalışılan bir konu bulunamadı, karma sorular getiriliyor.');
+    } else if (routeSettings.mode === 'Sana Özel Karma') {
+      pool = await buildPersonalPool(entries);
     }
+    if (!pool || !pool.length) pool = await buildRandomPool(entries);
+  } catch (error) {
+    pool = null;
   }
 
-  closeRouteSheet();
-  showToast('Şu an hazır bir soru paketi bulunamadı, lütfen tekrar dene.');
+  if (!pool || !pool.length) {
+    closeRouteSheet();
+    return showToast('Şu an hazır bir soru paketi bulunamadı, lütfen tekrar dene.');
+  }
+
+  const questions = shuffle(dedupeQuestionsById(pool)).slice(0, Math.min(routeSettings.questions, pool.length));
+
+  topicSheet.classList.add('open');
+  topicBackdrop.classList.add('open');
+
+  startQuiz({
+    questions,
+    kind: 'route',
+    title: 'Bugünkü Rota',
+    subtitle: `${routeSettings.mode} • ${routeSettings.questions} Soru`,
+    returnView: closeTopicSheet
+  });
 }
 
 async function startMixedMock() {
@@ -1309,7 +1418,7 @@ async function startMixedMock() {
 }
 
 function startQuiz({ questions, documentItem = null, section = null, kind, title, subtitle, returnView }) {
-  clearInterval(timerInterval);  // ← Önceki testi temizle
+  clearInterval(timerInterval);
   timerInterval = null;
 
   const isTimed = routeSettings.time === 'Süreli' || kind !== 'route';
@@ -1318,24 +1427,19 @@ function startQuiz({ questions, documentItem = null, section = null, kind, title
   state.quiz = {
     questions: shuffle(questions).map(question => ({ ...question, userSelected: null, answerRecorded: false })),
     sourceQuestions: questions,
-    documentItem,
-    section,
-    kind,
-    title,
-    subtitle,
-    isTimed,
-    timeLeft: totalTime,
-    returnView,
-    index: 0,
-    completionRecorded: false
+    documentItem, section, kind, title, subtitle, isTimed, timeLeft: totalTime, returnView,
+    index: 0, completionRecorded: false
   };
-  
-  renderQuiz();
-  
-  // Timer'ı burada başlat
-  if (state.quiz.isTimed) {
-    startQuizTimer();
+
+  // YENİ: son çalışılan konuyu işaretle
+  if (documentItem && ['section', 'random', 'topic'].includes(kind)) {
+    const categoryKeyGuess = state.quiz.questions[0]?.categoryKey || null;
+    progress.lastActivity = { documentId: documentItem.id, categoryKey: categoryKeyGuess, timestamp: new Date().toISOString() };
+    saveProgress();
   }
+
+  renderQuiz();
+  if (state.quiz.isTimed) startQuizTimer();
 }
 
 function recordAnswer(question, selected) {
@@ -1347,21 +1451,22 @@ function recordAnswer(question, selected) {
     delete progress.wrongQuestions[question.id];
   } else {
     progress.wrongQuestions[question.id] = {
-      id: question.id,
-      prompt: question.prompt,
-      options: question.options,
-      answerIndex: question.answerIndex,
-      sectionId: question.sectionId || null,
-      documentId: question.documentId || null,
-      documentTitle: question.documentTitle || null,
-      categoryKey: question.categoryKey || null
+      id: question.id, prompt: question.prompt, options: question.options, answerIndex: question.answerIndex,
+      sectionId: question.sectionId || null, documentId: question.documentId || null,
+      documentTitle: question.documentTitle || null, categoryKey: question.categoryKey || null
     };
+  }
+  // YENİ: konu bazlı doğruluk istatistiği
+  if (question.documentId) {
+    const stats = progress.docStats[question.documentId] || { attempts: 0, correct: 0 };
+    stats.attempts += 1;
+    if (selected === question.answerIndex) stats.correct += 1;
+    progress.docStats[question.documentId] = stats;
   }
   const today = dateKey();
   progress.dailyAnswers[today] = Number(progress.dailyAnswers[today] || 0) + 1;
   saveProgress();
 }
-
 function quizScore(quiz) {
   return quiz.questions.filter(question => question.userSelected === question.answerIndex).length;
 }
