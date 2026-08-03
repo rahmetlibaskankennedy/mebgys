@@ -674,9 +674,9 @@ body{background:var(--bg)}
 .empty-inline{padding:14px;text-align:center;border:1px dashed #d9dfe9;border-radius:11px;font-size:10px;color:var(--muted)}
 .reset-progress{display:block;width:100%;margin-top:18px;border:0;background:transparent;color:var(--red);font-size:10px;font-weight:700;cursor:pointer;padding:8px}
 .profile-summary{display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid var(--line);border-radius:15px}
-.profile-summary-avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--navy);color:#fff;font-size:14px;font-weight:800}
-.profile-summary strong{display:block;font-size:12px;color:var(--navy);margin-bottom:4px}
-.profile-summary span{display:block;font-size:9.5px;color:var(--muted)}
+.profile-summary-avatar{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--navy);color:#fff;font-size:16px;font-weight:800}
+.profile-summary strong{display:block;font-size:16px;color:var(--navy);margin-bottom:4px}
+.profile-summary span{display:block;font-size:10.5px;color:var(--muted)}
 
 /* Profil sayfası — Günlük çalışma hedefi kartı (beyaz zemin) */
 .profile-goal-card{margin-top:12px;padding:14px;background:#fff;border:1px solid var(--line);border-radius:15px}
@@ -957,8 +957,6 @@ body.auth-page{
 .sheet-head p{font-size:11.5px}
 .mode-option>span{font-size:10px}
 
-/* Alt menü 6 buton */
-.bottom-nav{grid-template-columns:repeat(6,1fr)}
 @media(max-width:430px){
   .bottom-nav button>svg{width:21px;height:21px}
   .bottom-nav button span{font-size:8px}

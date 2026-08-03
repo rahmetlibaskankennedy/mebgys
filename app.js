@@ -668,7 +668,7 @@ function profileView() {
   const fullName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Aday';
   const email = user?.email || '';
   const initial = fullName.trim().charAt(0).toUpperCase() || '?';
-  return `<section class="screen content-screen"><div class="page-heading"><span>PROFİL</span><h2>${escapeHtml(fullName)}</h2><p>${escapeHtml(email)}</p></div><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>Hedef: MEB GYS</strong><span>${stats.solvedQuestions} soru • %${stats.accuracy} doğruluk</span></div></article>
+  return `<section class="screen content-screen"><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>${escapeHtml(fullName)}</strong><span>${escapeHtml(email)}</span></div></article>
   <section class="profile-goal-card">
     <div class="profile-goal-head"><span>ÇALIŞMALARIM</span><strong>İlerlemen</strong></div>
     <p class="profile-goal-desc">Bu değerler cevapların ve tamamladığın testlerle otomatik güncellenir.</p>
