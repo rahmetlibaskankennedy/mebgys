@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'sinavrotasi-study-progress-v2';
+const EXAM_KINDS = ['mock', 'kadro-exam'];
 const CATALOGUE_URL = 'categorytopics.json';
 const DEFAULT_DAILY_GOAL = 20;
 const DAILY_GOAL_MIN = 1;
@@ -308,7 +309,7 @@ function setDailyGoal(rawValue) {
 
 function getStats() {
   const completedSections = Object.keys(progress.completedSections).length;
-  const completedMocks = progress.completedTests.filter(test => test.kind === 'mock').length;
+  const completedMocks = progress.completedTests.filter(test => EXAM_KINDS.includes(test.kind)).length;
   const todayAnswers = Number(progress.dailyAnswers[dateKey()] || 0);
   const dailyGoal = getDailyGoal();
   return {
@@ -456,7 +457,7 @@ function bankView() {
       <button class="reader-primary" id="startMockButton" type="button" ${activeDocuments.length ? '' : 'disabled'}>Başlat</button>
     </article>
     <div class="metric-strip"><div><strong>${stats.completedMocks}</strong><span>Tamamlanan deneme</span></div><div><strong>%${stats.accuracy}</strong><span>Genel doğruluk</span></div></div>
-    <section class="recent-tests"><h3>Son testler</h3>${recentTests.length ? recentTests.map(test => `<article><div><strong>${escapeHtml(test.title)}</strong><span>${test.score}/${test.total} doğru</span></div><small>${test.kind === 'mock' ? 'Deneme' : 'Konu testi'}</small></article>`).join('') : '<div class="empty-inline">Henüz tamamlanan bir test yok.</div>'}</section>
+    <section class="recent-tests"><h3>Son testler</h3>${recentTests.length ? recentTests.map(test => `<article><div><strong>${escapeHtml(test.title)}</strong><span>${test.score}/${test.total} doğru</span></div><small>${EXAM_KINDS.includes(test.kind) ? 'Deneme' : 'Konu testi'}</small></article>`).join('') : '<div class="empty-inline">Henüz tamamlanan bir test yok.</div>'}</section>
   </section>`;
 }
 
