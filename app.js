@@ -724,6 +724,14 @@ function profileView() {
   const initial = fullName.trim().charAt(0).toUpperCase() || '?';
   return `<section class="screen content-screen"><article class="profile-summary"><div class="profile-summary-avatar">${escapeHtml(initial)}</div><div><strong>${escapeHtml(fullName)}</strong><span>${escapeHtml(email)}</span></div></article>
   <section class="profile-goal-card">
+    <div class="profile-goal-head"><span>GÜNLÜK ÇALIŞMA HEDEFİ</span><strong>${stats.dailyGoal} soru / gün</strong></div>
+    <p class="profile-goal-desc">Her gün çözmek istediğin soru sayısını belirle, ana sayfadaki ilerleme halkası buna göre hesaplanır.</p>
+    <div class="profile-goal-edit">
+      <input type="number" id="profileDailyGoalInput" class="goal-edit-input" min="${DAILY_GOAL_MIN}" max="${DAILY_GOAL_MAX}" step="1" inputmode="numeric" value="${stats.dailyGoal}" aria-label="Günlük hedef soru sayısı">
+      <button class="reader-primary" id="profileDailyGoalSaveButton" type="button">Kaydet</button>
+    </div>
+  </section>
+  <section class="profile-goal-card">
     <div class="profile-goal-head"><span>ÇALIŞMALARIM</span><strong>İlerlemen</strong></div>
     <p class="profile-goal-desc">Bu değerler cevapların ve tamamladığın testlerle otomatik güncellenir.</p>
     <div class="study-grid">
@@ -733,15 +741,7 @@ function profileView() {
       <article><span>Günlük seri</span><strong>${stats.streak} gün</strong></article>
     </div>
   </section>
-  <section class="profile-goal-card">
-    <div class="profile-goal-head"><span>GÜNLÜK ÇALIŞMA HEDEFİ</span><strong>${stats.dailyGoal} soru / gün</strong></div>
-    <p class="profile-goal-desc">Her gün çözmek istediğin soru sayısını belirle, ana sayfadaki ilerleme halkası buna göre hesaplanır.</p>
-    <div class="profile-goal-edit">
-      <input type="number" id="profileDailyGoalInput" class="goal-edit-input" min="${DAILY_GOAL_MIN}" max="${DAILY_GOAL_MAX}" step="1" inputmode="numeric" value="${stats.dailyGoal}" aria-label="Günlük hedef soru sayısı">
-      <button class="reader-primary" id="profileDailyGoalSaveButton" type="button">Kaydet</button>
-    </div>
-  </section>
-  <div class="profile-notice">İstatistiklerin hesabına otomatik olarak senkronize ediliyor; başka bir cihazdan giriş yaptığında da seninle gelir.</div><section class="profile-account-actions"><button class="reset-progress" id="resetProgressButton" type="button">İlerleme verisini sıfırla</button><button class="signout-btn" id="signOutButton" type="button">${svg('lock')}<span>Çıkış Yap</span></button></section></section>`;
+  <div class="profile-notice">İstatistiklerin hesabına otomatik olarak senkronize ediliyor; başka bir cihazdan giriş yaptığında da seninle gelir.</div><section class="profile-account-actions"><button class="reset-progress" id="resetProgressButton" type="button">${svg('refresh')}<span>İlerleme verisini sıfırla</span></button><button class="signout-btn" id="signOutButton" type="button">${svg('lock')}<span>Çıkış Yap</span></button></section></section>`;
 }
 
 function render() {

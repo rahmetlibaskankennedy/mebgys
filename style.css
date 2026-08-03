@@ -676,7 +676,9 @@ body{background:var(--bg)}
 .recent-tests span,.recent-tests small{font-size:8.5px;color:var(--muted)}
 .recent-tests small{color:var(--red);font-weight:700}
 .empty-inline{padding:14px;text-align:center;border:1px dashed #d9dfe9;border-radius:11px;font-size:10px;color:var(--muted)}
-.reset-progress{display:block;width:100%;margin-top:18px;border:0;background:transparent;color:var(--red);font-size:10px;font-weight:700;cursor:pointer;padding:8px}
+.reset-progress{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;border:1.5px solid var(--line);background:#fff;color:var(--navy2);font-size:11.5px;font-weight:700;cursor:pointer;padding:14px 10px;border-radius:14px;transition:.15s}
+.reset-progress:hover{background:#f7f9fc;border-color:#d7deea}
+.reset-progress svg{width:16px;height:16px;flex-shrink:0}
 .profile-summary{display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border:1px solid var(--line);border-radius:15px}
 .profile-summary-avatar{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--navy);color:#fff;font-size:16px;font-weight:800}
 .profile-summary strong{display:block;font-size:16px;color:var(--navy);margin-bottom:4px}
@@ -697,7 +699,7 @@ body{background:var(--bg)}
 .profile-goal-edit .reader-primary{flex-shrink:0;min-height:42px;padding:0 16px}
 
 .profile-notice{padding:12px;margin-top:10px;border-radius:12px;background:#edf3fb;color:var(--navy2);font-size:9.5px;line-height:1.5}
-.profile-account-actions{display:flex;flex-direction:column}
+.profile-account-actions{display:flex;flex-direction:row;gap:10px;margin-top:18px}
 .quiz-modern-badge{max-width:100%;line-height:1.35}
 @media(max-width:370px){.practice-card{grid-template-columns:38px 1fr}.practice-card .reader-primary{grid-column:2;justify-self:start}.document-flow .document-mode-grid{grid-template-columns:1fr}.topic-sheet{padding-left:14px;padding-right:14px}}
 
@@ -968,10 +970,10 @@ body.auth-page{
 
 /* Çıkış Yap tasarımı */
 .signout-btn{
-  width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
-  margin-top:18px;padding:14px;border-radius:14px;
+  flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:14px 10px;border-radius:14px;
   border:1.5px solid #fad4d6;background:var(--red2);color:var(--red);
-  font-size:13px;font-weight:700;cursor:pointer;transition:.15s;
+  font-size:11.5px;font-weight:700;cursor:pointer;transition:.15s;
 }
 .signout-btn:hover{background:#fde3e4}
 .signout-btn svg{width:17px;height:17px}
