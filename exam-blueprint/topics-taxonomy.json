@@ -1,0 +1,16 @@
+{
+  "topics": {
+    "turkce": { "title": "Türkçe Dilbilgisi", "category": "general-culture", "questionFile": "cards/turkce.json" },
+    "insan-haklari": { "title": "İnsan Hakları ve Demokrasi", "category": "general-culture", "questionFile": "cards/insan-haklari.json" },
+    "idare-sistemi": { "title": "Türk İdare Sistemi", "category": "general-culture", "questionFile": "cards/idare-sistemi.json" },
+    "protokol": { "title": "Protokol Kuralları", "category": "general-culture", "questionFile": "cards/protokol.json" },
+    "ataturk": { "title": "Atatürk İlkeleri ve İnkılap Tarihi", "category": "general-culture", "questionFile": "cards/ataturk.json" },
+    "genel-kultur-diger": { "title": "Genel Kültür", "category": "general-culture", "questionFile": "cards/genel-kultur.json" },
+    "anayasa": { "title": "T.C. Anayasası", "category": "general-legislation", "questionFile": "cards/anayasa.json" },
+    "657-kanun": { "title": "657 Sayılı Devlet Memurları Kanunu", "category": "general-legislation", "questionFile": "cards/657.json" },
+    "4483-kanun": { "title": "4483 Sayılı Kanun", "category": "general-legislation", "questionFile": "cards/4483.json" },
+    "5442-kanun": { "title": "5442 Sayılı İl İdaresi Kanunu", "category": "general-legislation", "questionFile": "cards/5442.json" },
+    "bilgi-dilekce": { "title": "4982 ve 3071 Sayılı Kanunlar", "category": "general-legislation", "questionFile": "cards/4982.json" },
+    "meb-teskilat": { "title": "MEB Teşkilat ve Görevleri", "category": "meb-legislation", "questionFile": "cards/meb-teskilat.json" }
+  }
+}

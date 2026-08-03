@@ -1,0 +1,42 @@
+{
+  "memur": {
+    "durationMinutes": 75,
+    "topics": [
+      { "topicId": "turkce", "count": 6 },
+      { "topicId": "insan-haklari", "count": 2 },
+      { "topicId": "idare-sistemi", "count": 2 },
+      { "topicId": "protokol", "count": 2 },
+      { "topicId": "ataturk", "count": 4 },
+      { "topicId": "genel-kultur-diger", "count": 5 },
+      { "topicId": "anayasa", "count": 5 },
+      { "topicId": "657-kanun", "count": 6 },
+      { "topicId": "4483-kanun", "count": 3 },
+      { "topicId": "5442-kanun", "count": 3 },
+      { "topicId": "bilgi-dilekce", "count": 4 },
+      { "topicId": "meb-teskilat", "count": 18 }
+    ]
+  },
+  "sef": {
+    "durationMinutes": 75,
+    "topics": [
+      { "topicId": "turkce", "count": 6 },
+      { "topicId": "anayasa", "count": 4 },
+      { "topicId": "657-kanun", "count": 10 },
+      { "topicId": "meb-teskilat", "count": 40 }
+    ]
+  },
+  "sayman": {
+    "durationMinutes": 75,
+    "topics": [
+      { "topicId": "657-kanun", "count": 20 },
+      { "topicId": "meb-teskilat", "count": 40 }
+    ]
+  },
+  "sube-mudur": {
+    "durationMinutes": 75,
+    "topics": [
+      { "topicId": "657-kanun", "count": 20 },
+      { "topicId": "meb-teskilat", "count": 40 }
+    ]
+  }
+}
