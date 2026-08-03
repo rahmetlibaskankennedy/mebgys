@@ -144,6 +144,59 @@ function showToast(message) {
   showToast.timeout = window.setTimeout(() => toast.classList.remove('show'), 2400);
 }
 
+// --- YAPAY ZEKA İLE AÇIKLAMA (Gemini üzerinden Supabase Edge Function) ---
+async function fetchAnswerExplanation(question) {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) throw new Error('Oturum bulunamadı.');
+  const selectedAnswer = (question.userSelected !== undefined && question.userSelected !== null)
+    ? question.options[question.userSelected]
+    : null;
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/explain-answer`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+    body: JSON.stringify({
+      prompt: question.prompt,
+      options: question.options,
+      correctAnswer: question.options[question.answerIndex],
+      selectedAnswer
+    })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Açıklama alınamadı.');
+  return data.explanation;
+}
+
+function mistakeItemHTML(question, idx) {
+  return `<article class="quiz-result-item" data-explain-item="${idx}">
+    <p>${escapeHtml(question.prompt)}</p>
+    <small>Doğru cevap: ${escapeHtml(question.options[question.answerIndex])}</small>
+    <button class="explain-btn" data-explain-trigger="${idx}" type="button">✨ Yapay zeka ile açıkla</button>
+    <div class="explain-box" data-explain-box="${idx}" hidden></div>
+  </article>`;
+}
+
+function bindExplainButtons(container, questions) {
+  container.querySelectorAll('[data-explain-trigger]').forEach(button => {
+    button.addEventListener('click', async () => {
+      const idx = Number(button.dataset.explainTrigger);
+      const question = questions[idx];
+      const box = container.querySelector(`[data-explain-box="${idx}"]`);
+      button.disabled = true;
+      button.textContent = 'Açıklanıyor...';
+      try {
+        const explanation = await fetchAnswerExplanation(question);
+        box.hidden = false;
+        box.textContent = explanation;
+        button.remove();
+      } catch (err) {
+        showToast(err.message || 'Açıklama alınamadı, tekrar dene.');
+        button.disabled = false;
+        button.textContent = '✨ Yapay zeka ile açıkla';
+      }
+    });
+  });
+}
+
 function haptic(duration = 18) {
   if ('vibrate' in navigator) navigator.vibrate(duration);
 }
@@ -502,8 +555,9 @@ function renderMistakeDocument(categoryKey, doc) {
   topicList.innerHTML = `
     <button class="reader-primary" id="startMistakeDocButton" type="button" style="width:100%;margin-bottom:14px">Bu konudaki ${doc.questions.length} soruyu çöz</button>
     <div class="quiz-result-list">
-      ${doc.questions.map(q => `<article class="quiz-result-item"><p>${escapeHtml(q.prompt)}</p><small>Doğru cevap: ${escapeHtml(q.options[q.answerIndex])}</small></article>`).join('')}
+      ${doc.questions.map((q, idx) => mistakeItemHTML(q, idx)).join('')}
     </div>`;
+  bindExplainButtons(topicList, doc.questions);
   document.getElementById('startMistakeDocButton').addEventListener('click', () => startMistakeDocumentQuiz(categoryKey, doc));
   topicSheet.scrollTop = 0;
 }
@@ -1574,7 +1628,8 @@ function renderQuizResult() {
   topicBreadcrumbWrap.innerHTML = '';
   setSheetProgress('Henüz yanıtlanmış soru yok', percentage, 'başarı');
   const wrongAnswers = quiz.questions.filter(question => question.userSelected !== null && question.userSelected !== question.answerIndex);
-  topicList.innerHTML = `<section class="quiz-result-card"><strong>${score} / ${total}</strong><span>Doğru cevap • %${percentage} başarı</span></section>${wrongAnswers.length ? `<div class="quiz-result-list"><span class="quiz-result-list-title">YANLIŞ YAPILAN SORULAR</span>${wrongAnswers.map(question => `<article class="quiz-result-item"><p>${escapeHtml(question.prompt)}</p><small>Doğru cevap: ${escapeHtml(question.options[question.answerIndex])}</small></article>`).join('')}</div>` : '<p class="quiz-result-perfect">Tebrikler, yanıtladığın soruların tamamı doğru!</p>'}<div class="quiz-result-actions"><button class="reader-secondary" id="quizRetryButton" type="button">Tekrar Dene</button><button class="reader-primary" id="quizReturnButton" type="button">Listeye Dön</button></div>`;
+  topicList.innerHTML = `<section class="quiz-result-card"><strong>${score} / ${total}</strong><span>Doğru cevap • %${percentage} başarı</span></section>${wrongAnswers.length ? `<div class="quiz-result-list"><span class="quiz-result-list-title">YANLIŞ YAPILAN SORULAR</span>${wrongAnswers.map((question, idx) => mistakeItemHTML(question, idx)).join('')}</div>` : '<p class="quiz-result-perfect">Tebrikler, yanıtladığın soruların tamamı doğru!</p>'}<div class="quiz-result-actions"><button class="reader-secondary" id="quizRetryButton" type="button">Tekrar Dene</button><button class="reader-primary" id="quizReturnButton" type="button">Listeye Dön</button></div>`;
+  bindExplainButtons(topicList, wrongAnswers);
   document.getElementById('quizRetryButton').addEventListener('click', () => {
     const retry = { ...quiz, questions: quiz.sourceQuestions };
     startQuiz({ questions: retry.questions, documentItem: retry.documentItem, section: retry.section, kind: retry.kind, title: retry.title, subtitle: retry.subtitle, returnView: retry.returnView });
