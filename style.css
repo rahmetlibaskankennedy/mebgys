@@ -18,41 +18,41 @@ body{background:var(--bg)}
 .home-screen{padding-top:6px}
 
 /* HEADER */
-.app-header{position:relative;z-index:10;color:#fff;background:#061229;padding:calc(14px + env(safe-area-inset-top)) 14px 14px;border-radius:0 0 22px 22px}
+.app-header{position:relative;z-index:10;color:#fff;background:#061229;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;border-radius:0 0 22px 22px}
 .app-header.hidden{display:none}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .topbar-user{display:flex;align-items:center;gap:10px; flex:1;}
 .avatar-wrap{position:relative;flex-shrink:0}
-.avatar-wrap img{width:42px;height:42px;border-radius:50%;object-fit:cover;display:block}
+.avatar-wrap img{width:40px;height:40px;border-radius:50%;object-fit:cover;display:block}
 .avatar-dot{position:absolute;top:0;right:0;width:11px;height:11px;border-radius:50%;background:#ff4d52;border:2px solid #061229}
-.user-text h1{font-size:15px;margin:0 0 2px;font-weight:400}
+.user-text h1{font-size:14.5px;margin:0 0 2px;font-weight:400}
 .user-text h1 b{font-weight:600}
-.user-text p{font-size:10px;color:#8c9eb9;margin:0;line-height:1.3}
+.user-text p{font-size:10.5px;color:#8c9eb9;margin:0;line-height:1.3}
 .topbar-actions{display:flex;gap:8px;flex-shrink:0}
 .round-btn{width:38px;height:38px;border:0;border-radius:50%;background:#112143;color:#fff;position:relative;display:grid;place-items:center}
 .round-btn svg{width:16px;height:16px}
 .round-btn b{position:absolute;right:0px;top:0px;width:14px;height:14px;border-radius:50%;background:#ff4d52;display:grid;place-items:center;font-size:8px;font-weight:700;border:2px solid #061229}
 
 /* GÜNLÜK ÇALIŞMA KARTI */
-.goal-card{margin-top:14px;padding:12px;background:#101f3f;border-radius:14px}
-.goal-card-top{display:flex;align-items:center;gap:14px;}
-.goal-ring-wrap { position: relative; width: 78px; height: 78px; flex-shrink: 0;}
+.goal-card{margin-top:10px;padding:10px;background:#101f3f;border-radius:14px}
+.goal-card-top{display:flex;align-items:center;gap:12px;}
+.goal-ring-wrap { position: relative; width: 66px; height: 66px; flex-shrink: 0;}
 .circular-chart { display: block; margin: 0 auto; max-width: 100%; max-height: 100%; }
 .circle-bg { fill: none; stroke: #1f3152; stroke-width: 2.8; }
 .circle { fill: none; stroke-width: 2.8; stroke-linecap: round; stroke: #ff4c4f; }
 .ring-content { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; padding:6px 4px 5px; text-align: center; }
-.ring-content span { font-size: 21px; font-weight: 500; color: #fff; line-height: 1; margin-top:0; letter-spacing: -0.5px;}
-.ring-content small { font-size: 8px; color: #8c9eb9; font-weight: 500; margin-top: 2px; line-height: 1; max-width:none; white-space:nowrap; }
+.ring-content span { font-size: 18px; font-weight: 500; color: #fff; line-height: 1; margin-top:0; letter-spacing: -0.5px;}
+.ring-content small { font-size: 9px; color: #8c9eb9; font-weight: 500; margin-top: 2px; line-height: 1; max-width:none; white-space:nowrap; }
 .goal-copy { flex: 1; min-width:0; }
-.goal-copy h3{font-size:13.5px;margin:0 0 4px;font-weight:600;color:#fff; letter-spacing:0.2px;}
-.goal-copy p{font-size:9.5px;color:#8c9eb9;margin:0 0 8px;line-height:1.35;font-weight:400}
-.progress-wrap{display:flex;flex-direction:column;gap:6px}
+.goal-copy h3{font-size:13px;margin:0 0 3px;font-weight:600;color:#fff; letter-spacing:0.2px;}
+.goal-copy p{font-size:10.5px;color:#8c9eb9;margin:0 0 6px;line-height:1.3;font-weight:400}
+.progress-wrap{display:flex;flex-direction:column;gap:5px}
 .progress{height:4px;border-radius:10px;overflow:hidden;background:#1f3152}
 .progress i{height:100%;display:block;border-radius:10px;background:#ff4c4f}
 .goal-line{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.goal-line .count{color:#8c9eb9; font-size:9.5px; font-weight:400; flex:1; min-width:0;}
+.goal-line .count{color:#8c9eb9; font-size:10.5px; font-weight:400; flex:1; min-width:0;}
 .goal-line .count strong{color:#ff4c4f;font-weight:600;font-size:11px}
-.goal-line .deadline{color:#8c9eb9;font-weight:400; font-size:9.5px; flex-shrink:0;}
+.goal-line .deadline{color:#8c9eb9;font-weight:400; font-size:10.5px; flex-shrink:0;}
 
 /* Günlük hedef düzenleme (kalem ikonu + form) — hem header'daki koyu kartta
    hem de profil sayfasındaki beyaz kartta (.profile-goal-edit) kullanılır. */
@@ -82,28 +82,28 @@ body{background:var(--bg)}
 .goal-edit-cancel:hover{background:rgba(255,255,255,.18);color:#fff}
 
 /* STATS */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-radius:14px;padding:14px 4px 12px;margin-bottom:12px;box-shadow:0 4px 12px rgba(13,33,68,.03)}
-.stat{text-align:center;position:relative;padding:0 4px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-radius:14px;padding:10px 4px 9px;margin-bottom:10px;box-shadow:0 4px 12px rgba(13,33,68,.03)}
+.stat{text-align:center;position:relative;padding:0 4px;display:flex;flex-direction:column;align-items:center;gap:4px}
 .stat:not(:last-child)::after{content:'';position:absolute;right:0;top:6px;bottom:6px;width:1px;background:var(--line)}
-.stat-icon{width:34px;height:34px;border-radius:11px;background:#edf3fb;color:var(--navy2);display:grid;place-items:center;flex-shrink:0}
+.stat-icon{width:30px;height:30px;border-radius:10px;background:#edf3fb;color:var(--navy2);display:grid;place-items:center;flex-shrink:0}
 .stat-icon.accent{background:var(--red2);color:var(--red)}
 .stat-icon.amber{background:#fdf1de;color:var(--amber)}
-.stat-icon svg{width:18px;height:18px}
-.stat strong{display:block;font-size:15px;color:var(--text);font-weight:800;line-height:1}
-.stat span{display:block;font-size:9px;color:var(--muted);line-height:1.25;font-weight:600}
+.stat-icon svg{width:16px;height:16px}
+.stat strong{display:block;font-size:14px;color:var(--text);font-weight:800;line-height:1}
+.stat span{display:block;font-size:10.5px;color:var(--muted);line-height:1.2;font-weight:600}
 
 /* SECTIONS */
 .section-head{display:flex;align-items:flex-end;justify-content:flex-start;margin:0 4px 6px}
 .section-head h3{font-size:13.5px;font-weight:700;color:var(--text);margin:0}
-.categories{display:flex;flex-direction:column;gap:8px}
-.category{background:#fff;border:1px solid transparent;border-radius:12px;padding:13px 12px;display:grid;grid-template-columns:46px 1fr 18px;gap:10px;align-items:center;box-shadow:0 3px 8px rgba(13,33,68,.02);cursor:pointer}
-.cat-icon{width:46px;height:46px;border-radius:10px;background:var(--navy);color:#fff;display:grid;place-items:center}
-.cat-icon svg{width:22px;height:22px}
+.categories{display:flex;flex-direction:column;gap:7px}
+.category{background:#fff;border:1px solid transparent;border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:42px 1fr 18px;gap:10px;align-items:center;box-shadow:0 3px 8px rgba(13,33,68,.02);cursor:pointer}
+.cat-icon{width:42px;height:42px;border-radius:10px;background:var(--navy);color:#fff;display:grid;place-items:center}
+.cat-icon svg{width:20px;height:20px}
 .cat-icon.blue{background:var(--blue);color:#fff}
 .cat-icon.red{background:var(--red);color:#fff}
 .cat-copy h4{margin:0 0 2px;font-size:13px;color:var(--text);font-weight:700}
-.cat-copy p{margin:0 0 2px;font-size:10.5px;line-height:1.3;color:var(--muted)}
-.cat-copy small{font-size:9px;color:var(--red);font-weight:700}
+.cat-copy p{margin:0 0 2px;font-size:10.5px;line-height:1.25;color:var(--muted);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.cat-copy small{font-size:9.5px;color:var(--red);font-weight:700}
 .chevron{color:#c4c8d4;display:grid;place-items:center}
 .chevron svg{width:16px;height:16px}
 
@@ -942,30 +942,51 @@ body.auth-page{
 .role-gate-cta.enabled{background:var(--navy);cursor:pointer;box-shadow:0 10px 24px rgba(7,31,73,.22)}
 @media(min-width:641px){.role-gate-card{max-width:440px}}
 
-/* Font büyütme */
-.user-text p{font-size:11px}
+/* Font büyütme — site genelinde tutarlı, okunabilir bir ölçek: gövde metni ~10.5px,
+   etiket/eyebrow metni ~9.5px. Çok küçük (8-9px) punto boyutları buradan büyütülür. */
+.user-text p{font-size:10.5px}
 .goal-copy p{font-size:10.5px}
 .goal-line .count{font-size:10.5px}
 .goal-line .deadline{font-size:10.5px}
-.stat span{font-size:10px}
-.cat-copy p{font-size:11.5px}
-.cta-btn span{font-size:11px}
+.stat span{font-size:10.5px}
+.cat-copy p{font-size:10.5px}
+.cta-btn span{font-size:10.5px}
 .page-heading p{font-size:12px}
+.page-heading>span{font-size:9.5px}
 .empty-state p{font-size:11.5px}
-.document-mode-card small{font-size:9.5px}
+.document-flow .document-mode-card small{font-size:9.5px}
+.document-flow .document-status{font-size:9.5px}
+.document-flow .document-stats{font-size:10px}
+.document-flow .document-section-head span{font-size:9.5px}
+.document-flow .document-section-item p{font-size:10px}
 .practice-card p{font-size:10px}
+.practice-card span{font-size:9.5px}
 .metric-strip span,.study-grid span{font-size:10px}
 .recent-tests span,.recent-tests small{font-size:9.5px}
 .profile-summary span{font-size:10.5px}
 .profile-goal-desc{font-size:11px}
+.profile-goal-head>span{font-size:9.5px}
 .profile-notice{font-size:10.5px}
 .topic-copy p{font-size:10.5px}
+.topic-eyebrow{font-size:9.5px}
+.article-range{font-size:9px}
 .sheet-head p{font-size:11.5px}
+.sheet-label{font-size:9.5px}
+.sheet-summary span{font-size:9.5px}
 .mode-option>span{font-size:10px}
+.quiz-result-list-title{font-size:9.5px}
+.summary-item>span{font-size:9.5px}
+.summary-item li{font-size:10.5px}
+.action-btn{font-size:9.5px}
+.bottom-nav button span{font-size:9.5px}
+.flip-card-label{font-size:9.5px}
+.flip-card-hint{font-size:9.5px}
+.topic-sheet.card-study-active .topic-eyebrow{font-size:9.5px}
+.topic-sheet.card-study-active #topicSheetSubtitle{font-size:10px}
 
 @media(max-width:430px){
   .bottom-nav button>svg{width:21px;height:21px}
-  .bottom-nav button span{font-size:8px}
+  .bottom-nav button span{font-size:9.5px}
 }
 
 /* Çıkış Yap tasarımı */
@@ -978,8 +999,22 @@ body.auth-page{
 .signout-btn:hover{background:#fde3e4}
 .signout-btn svg{width:17px;height:17px}
 
-/* Kadro ibaresi (header chip) */
-.role-badge{display:inline-block;margin-top:3px;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.1);color:#c9d4e8;font-size:9px;font-weight:700;letter-spacing:.3px}
+/* Kadro ibaresi (header chip) — belirgin, rozet hissi veren tasarım */
+.role-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:5px;padding:4px 10px 4px 8px;
+  border-radius:20px;
+  background:linear-gradient(135deg,#ff6a6d,#e2262c);
+  color:#fff;
+  font-size:10px;font-weight:800;letter-spacing:.4px;
+  text-transform:uppercase;
+  box-shadow:0 4px 10px rgba(233,50,56,.35),0 0 0 1px rgba(255,255,255,.14) inset;
+}
+.role-badge::before{
+  content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0;
+  background:#fff;
+  box-shadow:0 0 0 3px rgba(255,255,255,.28);
+}
 /* ================= BİLGİ KARTLARI — FLIP CARD ÇALIŞMA MODU =================
    app.js -> renderCardStudy() tarafından üretilen markup ile eşleşir:
    .card-study-wrap > .flip-card(.flipped) > .flip-card-inner >
@@ -1056,7 +1091,7 @@ body.auth-page{
 .flip-card-label{
   position:absolute;
   top:14px; left:14px;
-  font-size:8.5px;
+  font-size:9.5px;
   font-weight:800;
   letter-spacing:.6px;
   text-transform:uppercase;
@@ -1089,7 +1124,7 @@ body.auth-page{
   left:50%; bottom:14px;
   transform:translateX(-50%);
   -webkit-transform:translateX(-50%);
-  font-size:8.5px;
+  font-size:9.5px;
   font-weight:700;
   letter-spacing:.3px;
   color:rgba(255,255,255,.65);
@@ -1269,7 +1304,7 @@ body.auth-page{
   color:var(--red);
   padding:4px 9px 4px 7px;
   border-radius:20px;
-  font-size:8.5px;
+  font-size:9.5px;
   margin-bottom:7px;
 }
 .topic-sheet.card-study-active .topic-eyebrow::before{
