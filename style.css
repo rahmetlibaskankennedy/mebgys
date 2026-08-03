@@ -192,26 +192,6 @@ body{background:var(--bg)}
 .bottom-nav button span{font-size:9px;font-weight:600;margin-top:2px}
 .bottom-nav button.active{color:var(--red);font-weight:700}
 
-/* Orta vurgulu (FAB) — "Kartlarım" sekmesi yükseltilmiş dairesel buton olarak öne çıkar */
-.bottom-nav button:nth-child(1){grid-column:1}
-.bottom-nav button:nth-child(2){grid-column:2}
-.bottom-nav button:nth-child(4){grid-column:4}
-.bottom-nav button:nth-child(5){grid-column:5}
-.bottom-nav button[data-nav="cards"]{
-  position:absolute;left:50%;top:-22px;transform:translateX(-50%);
-  width:56px;height:56px;border-radius:50%;
-  background:linear-gradient(155deg,var(--red),#c81e24);
-  color:#fff;box-shadow:0 10px 22px rgba(233,50,56,.4);
-  border:4px solid var(--bg);z-index:1;
-}
-.bottom-nav button[data-nav="cards"]>svg{width:24px;height:24px}
-.bottom-nav button[data-nav="cards"] span{
-  position:absolute;top:44px;left:50%;transform:translateX(-50%);
-  font-size:9px;font-weight:600;color:#788295;white-space:nowrap;margin-top:0;
-}
-.bottom-nav button[data-nav="cards"].active{color:#fff}
-.bottom-nav button[data-nav="cards"].active span{color:var(--red);font-weight:700}
-
 .toast{position:absolute;left:50%;bottom:96px;transform:translate(-50%,18px);background:#071f49;color:#fff;padding:10px 14px;border-radius:11px;font-size:10px;opacity:0;pointer-events:none;transition:.25s;z-index:200;white-space:nowrap}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
@@ -928,19 +908,6 @@ body.auth-page{
   .bottom-nav button span{font-size:13px;font-weight:600;margin-top:0}
   .bottom-nav button.active{background:var(--red2);color:var(--red)}
 
-  /* Masaüstünde FAB'ı normal menü satırına geri döndür */
-  .bottom-nav button:nth-child(1),.bottom-nav button:nth-child(2),
-  .bottom-nav button:nth-child(4),.bottom-nav button:nth-child(5){grid-column:auto}
-  .bottom-nav button[data-nav="cards"]{
-    position:static;left:auto;top:auto;transform:none;width:auto;height:auto;
-    border-radius:12px;background:none;color:#4a5a70;box-shadow:none;border:0;
-    flex-direction:row;justify-content:flex-start;align-items:center;gap:12px;padding:12px 14px;
-  }
-  .bottom-nav button[data-nav="cards"]>svg{width:20px;height:20px}
-  .bottom-nav button[data-nav="cards"] span{position:static;transform:none;font-size:13px;font-weight:600;color:inherit;margin-top:0}
-  .bottom-nav button[data-nav="cards"].active{background:var(--red2);color:var(--red)}
-  .bottom-nav button[data-nav="cards"].active span{color:var(--red)}
-
   /* Bottom sheet / topic sheet masaüstünde ortalanmış bir panel gibi davransın */
   .topic-sheet,.bottom-sheet{left:50%;right:auto;width:min(560px,92%);transform:translate(-50%,100%);border-radius:28px}
   .topic-sheet.open,.bottom-sheet.open{transform:translate(-50%,0)}
@@ -1353,5 +1320,94 @@ body.auth-page{
   }
   .quiz-premium-topbar{
     margin-bottom: 18px;
+  }
+}
+
+/* ================= YÜKSELEN SEKME — MOBİL ALT MENÜ =================
+   Aktif sekmenin ikonu menünün üzerine çıkar. 1000 px ve üzerindeki
+   kalıcı sol menü düzeni bu bloktan etkilenmez. */
+@media(max-width:999px){
+  .bottom-nav{
+    height:calc(72px + env(safe-area-inset-bottom));
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    overflow:visible;
+    background:rgba(255,255,255,.98);
+    border-top:1px solid var(--line);
+    box-shadow:0 -8px 24px rgba(13,33,68,.06);
+  }
+
+  .app-scroll{
+    padding-bottom:calc(88px + env(safe-area-inset-bottom));
+  }
+
+  .bottom-nav button{
+    position:relative;
+    min-width:0;
+    min-height:60px;
+    padding:2px 2px 4px;
+    gap:3px;
+    transition:color .2s ease,transform .2s ease;
+  }
+
+  .bottom-nav button>svg{
+    width:21px;
+    height:21px;
+    flex-shrink:0;
+    transition:color .22s ease,background .22s ease,box-shadow .22s ease;
+  }
+
+  .bottom-nav button>span{
+    transition:color .2s ease,transform .2s ease;
+  }
+
+  .bottom-nav button.active{
+    color:var(--red);
+  }
+
+  .bottom-nav button.active>svg{
+    position:absolute;
+    top:-18px;
+    left:50%;
+    width:21px;
+    height:21px;
+    box-sizing:content-box;
+    padding:8px;
+    border:4px solid var(--bg);
+    border-radius:50%;
+    color:#fff;
+    background:var(--red);
+    box-shadow:0 8px 18px rgba(233,50,56,.28);
+    transform:translateX(-50%);
+  }
+
+  .bottom-nav button.active>span{
+    position:absolute;
+    right:0;
+    bottom:4px;
+    left:0;
+    color:var(--red);
+    font-weight:700;
+    transform:translateY(-1px);
+  }
+
+  .bottom-nav button:focus-visible{
+    outline:2px solid var(--blue);
+    outline-offset:-2px;
+    border-radius:12px;
+  }
+}
+
+@media(max-width:360px){
+  .bottom-nav button.active>svg{
+    top:-16px;
+    padding:7px;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .bottom-nav button,
+  .bottom-nav button>svg,
+  .bottom-nav button>span{
+    transition:none;
   }
 }
