@@ -768,7 +768,6 @@ function bindViewEvents() {
   // Rota panelini açma butonu
   document.getElementById('openRouteSheetButton')?.addEventListener('click', openRouteSheet);
   
-  document.getElementById('startKadroExamButton')?.addEventListener('click', startKadroExam);
   document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
   app.querySelectorAll('[data-open-mistake-category]').forEach(element => {
   element.addEventListener('click', () => openMistakeCategorySheet(element.dataset.openMistakeCategory));
