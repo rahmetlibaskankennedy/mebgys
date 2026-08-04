@@ -442,7 +442,7 @@ function homeView() {
 function bankView() {
   const stats = getStats();
   return `<section class="screen content-screen">
-    <div class="page-heading"><span>DENEMELER</span><h2>Hızlı denemeler</h2><p>Aktif soru bankalarından oluşan denemelerle performansını ölç.</p></div>
+    <div class="page-heading"><h2>Deneme Sınavları</h2><p>Aktif soru bankalarından oluşan denemelerle performansını ölç.</p></div>
     <article class="practice-card">
       <div class="practice-card-icon">${svg('target')}</div>
       <div><span>GERÇEK SINAV FORMATI</span><h3>${ROLES.find(r => r.key === progress.selectedRole)?.label || 'Kadrona'} özel deneme</h3><p>MEB'in resmi konu ağırlıklarına göre 60 soruluk tam kapsamlı deneme.</p></div>
@@ -497,7 +497,7 @@ function mistakesView() {
   const totalCount = Object.keys(progress.wrongQuestions).length;
   if (!totalCount) {
     return `<section class="screen content-screen">
-      <div class="page-heading"><span>TEKRAR HAVUZU</span><h2>Yanlışlarım</h2><p>Daha önce yanlış yaptığın tüm sorular burada birikir.</p></div>
+      <div class="page-heading"><h2>Yanlışlarım</h2><p>Daha önce yanlış yaptığın tüm sorular burada birikir.</p></div>
       <div class="empty-inline">Henüz yanlış yaptığın bir soru yok.</div>
     </section>`;
   }
