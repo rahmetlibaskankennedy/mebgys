@@ -383,19 +383,21 @@ const bulkForm = document.getElementById('bulkForm');
 const bulkError = document.getElementById('bulkError');
 const bTopicSelect = document.getElementById('bTopic');
 const bJsonInput = document.getElementById('bJson');
+const bFileInput = document.getElementById('bFile');
 
 document.getElementById('bulkModalCancelBtn').addEventListener('click', closeBulkModal);
 bulkModalBackdrop.addEventListener('click', (e) => { if (e.target === bulkModalBackdrop) closeBulkModal(); });
+document.getElementById('bulkTemplateLink').addEventListener('click', (e) => { e.preventDefault(); downloadBulkTemplate(); });
 
 function openBulkModal() {
   bulkError.classList.remove('show');
   bJsonInput.value = '';
+  bFileInput.value = '';
   bTopicSelect.innerHTML = topicOptionsFlat.map(t =>
     `<option value="${t.id}">${' '.repeat(t.depth)}${escapeHtml(t.title)}</option>`
   ).join('');
   if (currentTopicId) bTopicSelect.value = currentTopicId;
   bulkModalBackdrop.classList.add('open');
-  bJsonInput.focus();
 }
 
 function closeBulkModal() {
@@ -403,9 +405,81 @@ function closeBulkModal() {
   bulkForm.reset();
 }
 
-// Beklenen format: bir JSON dizisi, her eleman:
+// Excel şablonunu tarayıcıda oluşturup indirir (SheetJS).
+function downloadBulkTemplate() {
+  const rows = [
+    ['Soru', 'Şık A', 'Şık B', 'Şık C', 'Şık D', 'Doğru Şık', 'Açıklama'],
+    ['657 sayılı DMK kaç yılında kabul edilmiştir?', '1965', '1970', '1975', '1980', 'A', 'Opsiyonel açıklama buraya yazılabilir.']
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 50 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 10 }, { wch: 30 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sorular');
+  XLSX.writeFile(wb, 'soru-sablonu.xlsx');
+}
+
+const ANSWER_LETTER_MAP = { A: 0, B: 1, C: 2, D: 3, E: 4, F: 5 };
+
+function answerToIndex(raw, optionCount) {
+  const v = String(raw ?? '').trim();
+  if (v === '') return NaN;
+  if (v.toUpperCase() in ANSWER_LETTER_MAP) return ANSWER_LETTER_MAP[v.toUpperCase()];
+  const n = Number(v);
+  return Number.isInteger(n) ? n : NaN;
+}
+
+// Excel/CSV dosyasını okuyup soru satırlarına çevirir.
+// Beklenen sütunlar: Soru, Şık A, Şık B, Şık C, Şık D, Doğru Şık, Açıklama
+function excelRowsToQuestions(sheetRows, topicId) {
+  if (!sheetRows.length) throw new Error('Excel dosyasında veri satırı bulunamadı.');
+
+  return sheetRows.map((row, i) => {
+    const n = i + 2; // 1. satır başlık, veri Excel'de 2. satırdan başlar
+    const prompt = String(row['Soru'] || '').trim();
+    const options = ['Şık A', 'Şık B', 'Şık C', 'Şık D', 'Şık E', 'Şık F']
+      .map(k => (row[k] != null ? String(row[k]).trim() : ''))
+      .filter(o => o !== '');
+    const answerIndex = answerToIndex(row['Doğru Şık'], options.length);
+    const explanation = row['Açıklama'] ? String(row['Açıklama']).trim() : null;
+
+    if (!prompt) throw new Error(`Satır ${n}: "Soru" sütunu boş olamaz.`);
+    if (options.length < 2) throw new Error(`Satır ${n}: en az 2 dolu şık sütunu (Şık A, Şık B, ...) gerekli.`);
+    if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex >= options.length) {
+      throw new Error(`Satır ${n}: "Doğru Şık" değeri geçersiz (A-${String.fromCharCode(65 + options.length - 1)} veya 0-${options.length - 1} olmalı).`);
+    }
+
+    return {
+      id: `${topicId}-${Date.now().toString(36)}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+      topic_id: topicId,
+      prompt,
+      options,
+      answer_index: answerIndex,
+      explanation
+    };
+  });
+}
+
+function readExcelFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const wb = XLSX.read(e.target.result, { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        resolve(rows);
+      } catch (err) {
+        reject(new Error('Dosya okunamadı: ' + err.message));
+      }
+    };
+    reader.onerror = () => reject(new Error('Dosya okunamadı.'));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+// Beklenen JSON formatı (gelişmiş/opsiyonel yol), her eleman:
 // { "prompt": "...", "options": ["A","B","C","D"], "answerIndex": 0, "explanation": "..." (opsiyonel) }
-function parseBulkQuestions(raw, topicId) {
+function parseBulkQuestionsJson(raw, topicId) {
   let parsed;
   try {
     parsed = JSON.parse(raw);
@@ -445,9 +519,18 @@ bulkForm.addEventListener('submit', async (e) => {
   bulkError.classList.remove('show');
 
   const topicId = bTopicSelect.value;
+  const file = bFileInput.files[0];
+
   let rows;
   try {
-    rows = parseBulkQuestions(bJsonInput.value, topicId);
+    if (file) {
+      const sheetRows = await readExcelFile(file);
+      rows = excelRowsToQuestions(sheetRows, topicId);
+    } else if (bJsonInput.value.trim()) {
+      rows = parseBulkQuestionsJson(bJsonInput.value, topicId);
+    } else {
+      throw new Error('Bir Excel dosyası seçin veya JSON alanına soruları yapıştırın.');
+    }
   } catch (err) {
     bulkError.textContent = err.message;
     bulkError.classList.add('show');
@@ -473,6 +556,7 @@ bulkForm.addEventListener('submit', async (e) => {
   if (currentTopicId === topicId) loadQuestions();
   else alert(`${rows.length} soru "${bTopicSelect.selectedOptions[0].textContent.trim()}" konusuna eklendi.`);
 });
+
 
 // ========================= 6) Denemeler: kadro sidebar + liste =========================
 async function loadKadrolar() {
