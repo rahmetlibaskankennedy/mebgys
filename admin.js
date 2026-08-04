@@ -882,7 +882,7 @@ async function deleteTopicNode(id, title) {
     currentTopicTitle = '';
   }
   await refreshTopicsAndRerender();
-});
+}
 
 // ---- Kategori ekle/düzenle modalı ----
 const categoryModalBackdrop = document.getElementById('categoryModalBackdrop');
