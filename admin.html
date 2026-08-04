@@ -103,6 +103,23 @@
   .form-error{color:var(--danger);font-size:12.5px;margin-top:8px;display:none;}
   .form-error.show{display:block;}
   .form-hint{font-size:11.5px;color:var(--muted);margin-top:4px;}
+  .kadro-check-group{display:flex;flex-wrap:wrap;gap:10px 16px;}
+  .kadro-check-group label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);font-weight:400;}
+  .kadro-check-group input{width:auto;}
+  .breadcrumb{font-size:13px;color:var(--muted);}
+  .breadcrumb a{color:var(--accent);cursor:pointer;text-decoration:none;}
+  .breadcrumb a:hover{text-decoration:underline;}
+  .manage-list{display:flex;flex-direction:column;gap:6px;}
+  .manage-row{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;}
+  .manage-row:hover{border-color:var(--accent);}
+  .mr-title{font-size:13.5px;font-weight:500;}
+  .mr-meta{font-size:11.5px;color:var(--muted);}
+  .mr-actions{display:flex;gap:10px;margin-top:2px;}
+  .mr-actions button{background:none;border:none;cursor:pointer;font-size:12px;color:var(--accent);padding:0;}
+  .mr-actions button.del{color:var(--danger);}
+  .type-badge{display:inline-block;font-size:10.5px;font-weight:600;color:var(--muted);
+    border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-right:6px;vertical-align:middle;}
 </style>
 </head>
 <body>
@@ -118,6 +135,7 @@
       <div class="tabs">
         <button type="button" class="active" data-tab="questions">Sorular</button>
         <button type="button" data-tab="denemeler">Denemeler</button>
+        <button type="button" data-tab="topics">Konular</button>
       </div>
       <div class="side-panel" id="sidePanel"><div class="empty-state">Yükleniyor…</div></div>
     </aside>
@@ -202,6 +220,75 @@
             <button type="button" class="btn secondary" id="denemeModalCancelBtn">Vazgeç</button>
             <button type="submit" class="btn" id="denemeModalSaveBtn">Kaydet</button>
           </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Konu ekle/düzenle modalı -->
+  <div class="modal-backdrop" id="topicModalBackdrop">
+    <div class="modal">
+      <h3 id="topicModalTitle">Yeni Konu</h3>
+      <div class="form-hint" id="topicParentHint" style="margin-bottom:10px;"></div>
+      <form id="topicForm">
+        <div class="field">
+          <label>Başlık</label>
+          <input type="text" id="tTitle" required placeholder="Örn. Devlet Memurları Kanunu">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Tür</label>
+            <select id="tType">
+              <option value="topic">Konu</option>
+              <option value="document">Kanun / Belge</option>
+              <option value="section">Bölüm</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Soru hedefi (opsiyonel)</label>
+            <input type="number" id="tQuestionCount" min="0">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Kanun numarası (opsiyonel)</label>
+            <input type="text" id="tDocNumber" placeholder="Örn. 657">
+          </div>
+          <div class="field">
+            <label>Madde aralığı (opsiyonel)</label>
+            <input type="text" id="tArticleRange" placeholder="Örn. 1-15">
+          </div>
+        </div>
+        <div class="field">
+          <label>Geçerli kadrolar</label>
+          <div class="kadro-check-group" id="tKadroGroup"></div>
+        </div>
+        <div class="form-error" id="topicFormError"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" id="topicModalCancelBtn">Vazgeç</button>
+          <button type="submit" class="btn" id="topicModalSaveBtn">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Kategori ekle/düzenle modalı -->
+  <div class="modal-backdrop" id="categoryModalBackdrop">
+    <div class="modal">
+      <h3 id="categoryModalTitle">Yeni Kategori</h3>
+      <form id="categoryForm">
+        <div class="field">
+          <label>Başlık</label>
+          <input type="text" id="cTitle" required placeholder="Örn. Genel Yetenek">
+        </div>
+        <div class="field">
+          <label>Alt başlık (opsiyonel)</label>
+          <input type="text" id="cSubtitle" placeholder="Örn. Türkçe, Matematik, Tarih...">
+        </div>
+        <div class="form-error" id="categoryFormError"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" id="categoryModalCancelBtn">Vazgeç</button>
+          <button type="submit" class="btn" id="categoryModalSaveBtn">Kaydet</button>
         </div>
       </form>
     </div>
