@@ -170,6 +170,53 @@ function renderTopicTree() {
     title.textContent = cat.title;
     block.appendChild(title);
 
+    // Yeni: Ağacı iç içe (nested) oluşturacak recursive fonksiyon
+    function buildNode(list, depth, parentContainer) {
+      (list || []).forEach(t => {
+        const hasChildren = childrenByParent[t.id] && childrenByParent[t.id].length > 0;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'tree-node-wrapper';
+
+        const node = document.createElement('div');
+        node.className = `tree-node depth-${depth}${t.id === currentTopicId ? ' active' : ''}`;
+        node.dataset.topicId = t.id;
+
+        // Alt konusu varsa ok işareti, yoksa boşluk ekle
+        const iconHtml = hasChildren 
+          ? `<span class="toggle-icon">▼</span>` 
+          : `<span class="toggle-spacer"></span>`;
+        
+        node.innerHTML = `${iconHtml}<span class="node-title">${escapeHtml(t.title)}</span>${t.question_count != null ? `<span class="qcount">${t.question_count}</span>` : ''}`;
+
+        // Tıklama event'i: Ok ikonuna tıklanırsa aç/kapat, metne tıklanırsa konuyu seç
+        node.addEventListener('click', (e) => {
+          if (e.target.classList.contains('toggle-icon')) {
+            e.stopPropagation();
+            wrapper.classList.toggle('collapsed');
+          } else {
+            selectTopic(t.id, t.title);
+          }
+        });
+
+        wrapper.appendChild(node);
+
+        if (hasChildren) {
+          const childrenContainer = document.createElement('div');
+          childrenContainer.className = 'tree-children';
+          buildNode(childrenByParent[t.id], depth + 1, childrenContainer);
+          wrapper.appendChild(childrenContainer);
+        }
+
+        parentContainer.appendChild(wrapper);
+      });
+    }
+
+    buildNode(byCategory[cat.id], 0, block);
+    panel.appendChild(block);
+  });
+}
+
     function appendChildren(list, depth) {
       (list || []).forEach(t => {
         const node = document.createElement('div');
