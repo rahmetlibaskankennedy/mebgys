@@ -53,7 +53,10 @@ const state = {
   questionBanks: new Map(),
   quiz: null,
   cardStudy: null,
-  expandedMistakeGroup: null
+  expandedMistakeGroup: null,
+  denemeler: null,
+  denemelerError: '',
+  denemelerRoleKey: null
 };
 
 // Rota Ayarları State'i
@@ -332,6 +335,7 @@ window.go = function go(view) {
   setNav(view);
   render();
   scrollArea.scrollTop = 0;
+  if (view === 'bank') loadDenemeler();
 };
 
 function getCategories() {
@@ -441,9 +445,32 @@ function homeView() {
 
 function bankView() {
   const stats = getStats();
+  const roleKey = progress.selectedRole;
+  const roleLabel = ROLES.find(r => r.key === roleKey)?.label || '';
+
+  let listHtml;
+  if (state.denemelerError) {
+    listHtml = `<div class="empty-state empty-state-error"><h3>Denemeler yüklenemedi</h3><p>${escapeHtml(state.denemelerError)}</p><button class="reader-primary" id="retryDenemelerButton" type="button">Tekrar Dene</button></div>`;
+  } else if (!state.denemeler || state.denemelerRoleKey !== roleKey) {
+    listHtml = `<div class="empty-state"><p>Denemeler yükleniyor…</p></div>`;
+  } else if (!state.denemeler.length) {
+    listHtml = `<div class="empty-state"><p>${escapeHtml(roleLabel)} kadrosu için henüz yayınlanmış deneme yok.</p></div>`;
+  } else {
+    listHtml = `<div class="deneme-list">${state.denemeler.map(d => `
+      <article class="deneme-card">
+        <div class="deneme-card-info">
+          <h3>${escapeHtml(d.title)}</h3>
+          <p>${d.duration_minutes ? `${d.duration_minutes} dk` : 'Süresiz'} • ${d.questionCount} soru</p>
+        </div>
+        <button class="reader-primary" data-start-deneme="${d.id}" type="button">Başla</button>
+      </article>`).join('')}</div>`;
+  }
+
   return `<section class="screen content-screen">
     <div class="page-heading"><h2>Deneme Sınavları</h2><p>Aktif soru bankalarından oluşan denemelerle performansını ölç.</p></div>
     <div class="metric-strip"><div><strong>${stats.completedMocks}</strong><span>Tamamlanan deneme</span></div><div><strong>%${stats.accuracy}</strong><span>Genel doğruluk</span></div></div>
+    <div class="section-head"><h3>${escapeHtml(roleLabel)} Denemeleri</h3></div>
+    ${listHtml}
   </section>`;
 }
 
@@ -773,6 +800,10 @@ function bindViewEvents() {
   element.addEventListener('click', () => openMistakeCategorySheet(element.dataset.openMistakeCategory));
   element.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') openMistakeCategorySheet(element.dataset.openMistakeCategory); });
     });
+  document.getElementById('retryDenemelerButton')?.addEventListener('click', () => loadDenemeler(true));
+  app.querySelectorAll('[data-start-deneme]').forEach(button => {
+    button.addEventListener('click', () => startDenemeSinavi(Number(button.dataset.startDeneme)));
+  });
   document.getElementById('resetProgressButton')?.addEventListener('click', resetProgress);
   document.getElementById('signOutButton')?.addEventListener('click', () => window.signOut());
 
@@ -1835,6 +1866,68 @@ async function handleAuthenticated() {
 
 document.addEventListener('sinavrotasi:authenticated', handleAuthenticated);
 if (window.currentUserAuthReady) handleAuthenticated();
+
+// ================= ADMIN'İN OLUŞTURDUĞU DENEMELER (Supabase: denemeler) =================
+async function loadDenemeler(force = false) {
+  const roleKey = progress.selectedRole;
+  if (!roleKey) { state.denemeler = []; state.denemelerRoleKey = roleKey; state.denemelerError = ''; return; }
+  if (!force && state.denemeler && state.denemelerRoleKey === roleKey) return;
+
+  state.denemelerError = '';
+  state.denemeler = null;
+  state.denemelerRoleKey = roleKey;
+  if (state.view === 'bank') render();
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('denemeler')
+      .select('id,title,kadro,duration_minutes,sort_order,deneme_questions(count)')
+      .eq('kadro', roleKey)
+      .eq('is_published', true)
+      .order('sort_order', { ascending: true });
+    if (error) throw error;
+    state.denemeler = (data || []).map(d => ({ ...d, questionCount: d.deneme_questions?.[0]?.count ?? 0 }));
+  } catch (error) {
+    state.denemelerError = error.message || 'Denemeler yüklenemedi.';
+    state.denemeler = null;
+  }
+  if (state.view === 'bank') render();
+}
+
+async function startDenemeSinavi(denemeId) {
+  const meta = state.denemeler?.find(d => d.id === denemeId);
+  showToast('Deneme hazırlanıyor…');
+  try {
+    const { data, error } = await supabaseClient
+      .from('deneme_questions')
+      .select('id,prompt,options,answer_index,sort_order')
+      .eq('deneme_id', denemeId)
+      .order('sort_order', { ascending: true });
+    if (error) throw error;
+    if (!data || !data.length) return showToast('Bu denemede henüz soru eklenmemiş.');
+
+    const questions = data.map(q => ({
+      id: `deneme-${denemeId}-${q.id}`,
+      prompt: q.prompt,
+      options: q.options,
+      answerIndex: q.answer_index,
+      documentId: `deneme-${denemeId}`,
+      documentTitle: meta?.title || 'Deneme Sınavı'
+    }));
+
+    const customTimeSeconds = meta?.duration_minutes ? meta.duration_minutes * 60 : null;
+    startQuiz({
+      questions,
+      kind: 'mock',
+      title: meta?.title || 'Deneme Sınavı',
+      subtitle: `${questions.length} soru`,
+      returnView: () => window.go('bank'),
+      customTimeSeconds
+    });
+  } catch (error) {
+    showToast(error.message || 'Deneme başlatılamadı.');
+  }
+}
 
 // ================= KADRO BAZLI GERÇEK SINAV DENEMESİ =================
 // Ek-2 (Konu Başlıkları, Ağırlık Yüzdeleri ve Soru Sayılarını Gösteren
