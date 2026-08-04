@@ -10,78 +10,78 @@ insert into public.categories (id, title, subtitle, icon, icon_class, sort_order
 on conflict (id) do update set title=excluded.title, subtitle=excluded.subtitle, icon=excluded.icon, icon_class=excluded.icon_class, sort_order=excluded.sort_order;
 
 -- ---- topics (kategori ağacı) ----
-insert into public.topics (id, category_id, parent_id, type, title, document_number, article_range, article_count, question_count, kadrolar, sort_order) values
-  ('topic-turkce', 'general-culture', NULL, 'topic', 'Türkçe Dilbilgisi ve Anlatım Bozuklukları', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 1),
-  ('topic-inkilap', 'general-culture', NULL, 'topic', 'Atatürk İlkeleri ve İnkılap Tarihi', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 2),
-  ('topic-cografya', 'general-culture', NULL, 'topic', 'Türkiye Coğrafyası ve Jeopolitiği', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 3),
-  ('topic-yurttaslik', 'general-culture', NULL, 'topic', 'Yurttaşlık Bilgisi ve Temel Hukuk', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 4),
-  ('topic-guncel', 'general-culture', NULL, 'topic', 'Güncel Bilgiler ve Uluslararası Kuruluşlar', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 5),
-  ('law-anayasa', 'general-legislation', NULL, 'document', 'T.C. Anayasası', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 1),
-  ('law-657', 'general-legislation', NULL, 'document', '657 sayılı Devlet Memurları Kanunu', '657', NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 2),
-  ('law-657-section-kapsam-amac-ilkeler', 'general-legislation', 'law-657', 'section', 'Kapsam, Amaç ve Temel İlkeler', NULL, 'Madde 1 – 3', NULL, NULL, '{}', 3),
-  ('law-657-section-istihdam-sekilleri', 'general-legislation', 'law-657', 'section', 'İstihdam Şekilleri', NULL, 'Madde 4 – 5', NULL, NULL, '{}', 4),
-  ('law-657-section-odevler-sorumluluklar', 'general-legislation', 'law-657', 'section', 'Ödevler ve Sorumluluklar', NULL, 'Madde 6 – 16', NULL, NULL, '{}', 5),
-  ('law-657-section-genel-haklar-yasaklar', 'general-legislation', 'law-657', 'section', 'Genel Haklar ve Yasaklar', NULL, 'Madde 17 – 31', NULL, NULL, '{}', 6),
-  ('law-657-section-siniflandirma', 'general-legislation', 'law-657', 'section', 'Sınıflandırma', NULL, 'Madde 32 – 45', NULL, NULL, '{}', 7),
-  ('law-657-section-memurluga-alinma', 'general-legislation', 'law-657', 'section', 'Devlet Memurluğuna Alınma (Usul, Şartlar, Adaylık)', NULL, 'Madde 46 – 57', NULL, NULL, '{}', 8),
-  ('law-657-section-atanma-ilerleme-yer-degistirme', 'general-legislation', 'law-657', 'section', 'Atanma, İlerleme-Yükselme ve Yer Değiştirme', NULL, 'Madde 58 – 93', NULL, NULL, '{}', 9),
-  ('law-657-section-memurlugun-sona-ermesi', 'general-legislation', 'law-657', 'section', 'Memurluğun Sona Ermesi', NULL, 'Madde 94 – 98', NULL, NULL, '{}', 10),
-  ('law-657-section-calisma-saatleri-izinler', 'general-legislation', 'law-657', 'section', 'Çalışma Saatleri ve İzinler', NULL, 'Madde 99 – 108', NULL, NULL, '{}', 11),
-  ('law-657-section-ozluk-dosyasi', 'general-legislation', 'law-657', 'section', 'Özlük Dosyası', NULL, 'Madde 109 – 123', NULL, NULL, '{}', 12),
-  ('law-657-section-disiplin', 'general-legislation', 'law-657', 'section', 'Disiplin Cezaları ve Soruşturma', NULL, 'Madde 124 – 136', NULL, NULL, '{}', 13),
-  ('law-657-section-gorevden-uzaklastirma', 'general-legislation', 'law-657', 'section', 'Görevden Uzaklaştırma', NULL, 'Madde 137 – 145', NULL, NULL, '{}', 14),
-  ('law-657-section-mali-hukumler', 'general-legislation', 'law-657', 'section', 'Mali Hükümler (Aylık ve Ödenekler)', NULL, 'Madde 146 – 186', NULL, NULL, '{}', 15),
-  ('law-657-section-sosyal-haklar-yardimlar', 'general-legislation', 'law-657', 'section', 'Sosyal Haklar ve Yardımlar', NULL, 'Madde 187 – 213', NULL, NULL, '{}', 16),
-  ('law-657-section-memur-yetistirilmesi', 'general-legislation', 'law-657', 'section', 'Devlet Memurlarının Yetiştirilmesi', NULL, 'Madde 214 – 225', NULL, NULL, '{}', 17),
-  ('law-657-section-cesitli-hukumler', 'general-legislation', 'law-657', 'section', 'Çeşitli Hükümler', NULL, 'Madde 226 – 236', NULL, NULL, '{}', 18),
-  ('law-657-section-gecici-ve-son-hukumler', 'general-legislation', 'law-657', 'section', 'Geçici ve Son Hükümler', NULL, 'Ek/Geçici Maddeler, Madde 237 – 239', NULL, NULL, '{}', 19),
-  ('law-4483', 'general-legislation', NULL, 'document', '4483 sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması Hakkında Kanun', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 20),
-  ('law-5442', 'general-legislation', NULL, 'document', '5442 sayılı İl İdaresi Kanunu', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 21),
-  ('law-4982', 'general-legislation', NULL, 'document', '4982 sayılı Bilgi Edinme Hakkı Kanunu', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 22),
-  ('law-3071', 'general-legislation', NULL, 'document', '3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 23),
-  ('law-5018', 'general-legislation', NULL, 'document', '5018 sayılı Kamu Mali Yönetimi ve Kontrol Kanunu', NULL, NULL, NULL, 20, '{"sayman","sube-mudur"}', 24),
-  ('law-1739', 'meb-legislation', NULL, 'document', '1739 sayılı Milli Eğitim Temel Kanunu', NULL, NULL, 62, 20, '{"memur","sef","sayman","sube-mudur"}', 1),
-  ('law-222', 'meb-legislation', NULL, 'document', '222 sayılı İlköğretim ve Eğitim Kanunu', '222', NULL, 91, 61, '{"memur","sef","sayman","sube-mudur"}', 2),
-  ('law-222-section-genel-esaslar', 'meb-legislation', 'law-222', 'section', 'Genel Esaslar', NULL, 'Madde 1 – 5', NULL, NULL, '{}', 3),
-  ('law-222-section-te-kilat', 'meb-legislation', 'law-222', 'section', 'Teşkilat', NULL, 'Madde 6 – 13', NULL, NULL, '{}', 4),
-  ('law-222-section-i-lde-i-lk-retim-g-revlileri', 'meb-legislation', 'law-222', 'section', 'İlde İlköğretim Görevlileri', NULL, 'Madde 14 – 25', NULL, NULL, '{}', 5),
-  ('law-222-section-i-lk-retim-kurullar', 'meb-legislation', 'law-222', 'section', 'İlköğretim Kurulları', NULL, 'Madde 26', NULL, NULL, '{}', 6),
-  ('law-222-section-a-lma-kapanma-ve-tatiller', 'meb-legislation', 'law-222', 'section', 'Açılma, Kapanma ve Tatiller', NULL, 'Madde 27 – 45', NULL, NULL, '{}', 7),
-  ('law-222-section-kay-t-ve-kabul', 'meb-legislation', 'law-222', 'section', 'Kayıt ve Kabul', NULL, 'Madde 46 – 54', NULL, NULL, '{}', 8),
-  ('law-222-section-okula-devam', 'meb-legislation', 'law-222', 'section', 'Okula Devam', NULL, 'Madde 55 – 61', NULL, NULL, '{}', 9),
-  ('law-222-section-okullar-n-arsa-ve-arazi-i-leri', 'meb-legislation', 'law-222', 'section', 'Okulların Arsa ve Arazi İşleri', NULL, 'Madde 62 – 68', NULL, NULL, '{}', 10),
-  ('law-222-section-okul-yap-m-ve-donat-m', 'meb-legislation', 'law-222', 'section', 'Okul Yapım ve Donatım', NULL, 'Madde 69 – 70', NULL, NULL, '{}', 11),
-  ('law-222-section-gelir-gider-ve-planlama', 'meb-legislation', 'law-222', 'section', 'Gelir, Gider ve Planlama', NULL, 'Madde 71 – 88', NULL, NULL, '{}', 12),
-  ('law-222-section-t-rl-h-k-mler', 'meb-legislation', 'law-222', 'section', 'Türlü Hükümler', NULL, 'Madde 89', NULL, NULL, '{}', 13),
-  ('law-222-section-ek-ge-ici-ve-son-h-k-mler', 'meb-legislation', 'law-222', 'section', 'Ek, Geçici ve Son Hükümler', NULL, 'Ek ve Geçici Maddeler', NULL, NULL, '{}', 14),
-  ('law-cbk1', 'meb-legislation', NULL, 'document', '1 Sayılı Cumhurbaşkanlığı Kararnamesi (MEB Teşkilatı)', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 15),
-  ('law-5580', 'meb-legislation', NULL, 'document', '5580 sayılı Özel Öğretim Kurumları Kanunu', NULL, NULL, NULL, 20, '{"sayman","sube-mudur"}', 16)
-on conflict (id) do update set category_id=excluded.category_id, parent_id=excluded.parent_id, type=excluded.type, title=excluded.title, document_number=excluded.document_number, article_range=excluded.article_range, article_count=excluded.article_count, question_count=excluded.question_count, kadrolar=excluded.kadrolar, sort_order=excluded.sort_order;
+insert into public.topics (id, category_id, parent_id, type, title, document_number, article_range, article_count, question_count, kadrolar, sort_order, source_file) values
+  ('topic-turkce', 'general-culture', NULL, 'topic', 'Türkçe Dilbilgisi ve Anlatım Bozuklukları', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 1, 'sorular/questions-turkce.json'),
+  ('topic-inkilap', 'general-culture', NULL, 'topic', 'Atatürk İlkeleri ve İnkılap Tarihi', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 2, 'sorular/questions-inkilap.json'),
+  ('topic-cografya', 'general-culture', NULL, 'topic', 'Türkiye Coğrafyası ve Jeopolitiği', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 3, 'sorular/questions-cografya.json'),
+  ('topic-yurttaslik', 'general-culture', NULL, 'topic', 'Yurttaşlık Bilgisi ve Temel Hukuk', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 4, 'sorular/questions-yurttaslik.json'),
+  ('topic-guncel', 'general-culture', NULL, 'topic', 'Güncel Bilgiler ve Uluslararası Kuruluşlar', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 5, 'sorular/questions-guncel.json'),
+  ('law-anayasa', 'general-legislation', NULL, 'document', 'T.C. Anayasası', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 1, 'sorular/questions-anayasa.json'),
+  ('law-657', 'general-legislation', NULL, 'document', '657 sayılı Devlet Memurları Kanunu', '657', NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 2, 'sorular/questions-657.json'),
+  ('law-657-section-kapsam-amac-ilkeler', 'general-legislation', 'law-657', 'section', 'Kapsam, Amaç ve Temel İlkeler', NULL, 'Madde 1 – 3', NULL, NULL, '{}', 3, NULL),
+  ('law-657-section-istihdam-sekilleri', 'general-legislation', 'law-657', 'section', 'İstihdam Şekilleri', NULL, 'Madde 4 – 5', NULL, NULL, '{}', 4, NULL),
+  ('law-657-section-odevler-sorumluluklar', 'general-legislation', 'law-657', 'section', 'Ödevler ve Sorumluluklar', NULL, 'Madde 6 – 16', NULL, NULL, '{}', 5, NULL),
+  ('law-657-section-genel-haklar-yasaklar', 'general-legislation', 'law-657', 'section', 'Genel Haklar ve Yasaklar', NULL, 'Madde 17 – 31', NULL, NULL, '{}', 6, NULL),
+  ('law-657-section-siniflandirma', 'general-legislation', 'law-657', 'section', 'Sınıflandırma', NULL, 'Madde 32 – 45', NULL, NULL, '{}', 7, NULL),
+  ('law-657-section-memurluga-alinma', 'general-legislation', 'law-657', 'section', 'Devlet Memurluğuna Alınma (Usul, Şartlar, Adaylık)', NULL, 'Madde 46 – 57', NULL, NULL, '{}', 8, NULL),
+  ('law-657-section-atanma-ilerleme-yer-degistirme', 'general-legislation', 'law-657', 'section', 'Atanma, İlerleme-Yükselme ve Yer Değiştirme', NULL, 'Madde 58 – 93', NULL, NULL, '{}', 9, NULL),
+  ('law-657-section-memurlugun-sona-ermesi', 'general-legislation', 'law-657', 'section', 'Memurluğun Sona Ermesi', NULL, 'Madde 94 – 98', NULL, NULL, '{}', 10, NULL),
+  ('law-657-section-calisma-saatleri-izinler', 'general-legislation', 'law-657', 'section', 'Çalışma Saatleri ve İzinler', NULL, 'Madde 99 – 108', NULL, NULL, '{}', 11, NULL),
+  ('law-657-section-ozluk-dosyasi', 'general-legislation', 'law-657', 'section', 'Özlük Dosyası', NULL, 'Madde 109 – 123', NULL, NULL, '{}', 12, NULL),
+  ('law-657-section-disiplin', 'general-legislation', 'law-657', 'section', 'Disiplin Cezaları ve Soruşturma', NULL, 'Madde 124 – 136', NULL, NULL, '{}', 13, NULL),
+  ('law-657-section-gorevden-uzaklastirma', 'general-legislation', 'law-657', 'section', 'Görevden Uzaklaştırma', NULL, 'Madde 137 – 145', NULL, NULL, '{}', 14, NULL),
+  ('law-657-section-mali-hukumler', 'general-legislation', 'law-657', 'section', 'Mali Hükümler (Aylık ve Ödenekler)', NULL, 'Madde 146 – 186', NULL, NULL, '{}', 15, NULL),
+  ('law-657-section-sosyal-haklar-yardimlar', 'general-legislation', 'law-657', 'section', 'Sosyal Haklar ve Yardımlar', NULL, 'Madde 187 – 213', NULL, NULL, '{}', 16, NULL),
+  ('law-657-section-memur-yetistirilmesi', 'general-legislation', 'law-657', 'section', 'Devlet Memurlarının Yetiştirilmesi', NULL, 'Madde 214 – 225', NULL, NULL, '{}', 17, NULL),
+  ('law-657-section-cesitli-hukumler', 'general-legislation', 'law-657', 'section', 'Çeşitli Hükümler', NULL, 'Madde 226 – 236', NULL, NULL, '{}', 18, NULL),
+  ('law-657-section-gecici-ve-son-hukumler', 'general-legislation', 'law-657', 'section', 'Geçici ve Son Hükümler', NULL, 'Ek/Geçici Maddeler, Madde 237 – 239', NULL, NULL, '{}', 19, NULL),
+  ('law-4483', 'general-legislation', NULL, 'document', '4483 sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması Hakkında Kanun', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 20, 'sorular/questions-4483.json'),
+  ('law-5442', 'general-legislation', NULL, 'document', '5442 sayılı İl İdaresi Kanunu', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 21, 'sorular/questions-5442.json'),
+  ('law-4982', 'general-legislation', NULL, 'document', '4982 sayılı Bilgi Edinme Hakkı Kanunu', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 22, 'sorular/questions-4982.json'),
+  ('law-3071', 'general-legislation', NULL, 'document', '3071 sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 23, 'sorular/questions-3071.json'),
+  ('law-5018', 'general-legislation', NULL, 'document', '5018 sayılı Kamu Mali Yönetimi ve Kontrol Kanunu', NULL, NULL, NULL, 20, '{"sayman","sube-mudur"}', 24, 'sorular/questions-5018.json'),
+  ('law-1739', 'meb-legislation', NULL, 'document', '1739 sayılı Milli Eğitim Temel Kanunu', NULL, NULL, 62, 20, '{"memur","sef","sayman","sube-mudur"}', 1, 'sorular/questions-1739.json'),
+  ('law-222', 'meb-legislation', NULL, 'document', '222 sayılı İlköğretim ve Eğitim Kanunu', '222', NULL, 91, 61, '{"memur","sef","sayman","sube-mudur"}', 2, 'sorular/questions-222.json'),
+  ('law-222-section-genel-esaslar', 'meb-legislation', 'law-222', 'section', 'Genel Esaslar', NULL, 'Madde 1 – 5', NULL, NULL, '{}', 3, NULL),
+  ('law-222-section-te-kilat', 'meb-legislation', 'law-222', 'section', 'Teşkilat', NULL, 'Madde 6 – 13', NULL, NULL, '{}', 4, NULL),
+  ('law-222-section-i-lde-i-lk-retim-g-revlileri', 'meb-legislation', 'law-222', 'section', 'İlde İlköğretim Görevlileri', NULL, 'Madde 14 – 25', NULL, NULL, '{}', 5, NULL),
+  ('law-222-section-i-lk-retim-kurullar', 'meb-legislation', 'law-222', 'section', 'İlköğretim Kurulları', NULL, 'Madde 26', NULL, NULL, '{}', 6, NULL),
+  ('law-222-section-a-lma-kapanma-ve-tatiller', 'meb-legislation', 'law-222', 'section', 'Açılma, Kapanma ve Tatiller', NULL, 'Madde 27 – 45', NULL, NULL, '{}', 7, NULL),
+  ('law-222-section-kay-t-ve-kabul', 'meb-legislation', 'law-222', 'section', 'Kayıt ve Kabul', NULL, 'Madde 46 – 54', NULL, NULL, '{}', 8, NULL),
+  ('law-222-section-okula-devam', 'meb-legislation', 'law-222', 'section', 'Okula Devam', NULL, 'Madde 55 – 61', NULL, NULL, '{}', 9, NULL),
+  ('law-222-section-okullar-n-arsa-ve-arazi-i-leri', 'meb-legislation', 'law-222', 'section', 'Okulların Arsa ve Arazi İşleri', NULL, 'Madde 62 – 68', NULL, NULL, '{}', 10, NULL),
+  ('law-222-section-okul-yap-m-ve-donat-m', 'meb-legislation', 'law-222', 'section', 'Okul Yapım ve Donatım', NULL, 'Madde 69 – 70', NULL, NULL, '{}', 11, NULL),
+  ('law-222-section-gelir-gider-ve-planlama', 'meb-legislation', 'law-222', 'section', 'Gelir, Gider ve Planlama', NULL, 'Madde 71 – 88', NULL, NULL, '{}', 12, NULL),
+  ('law-222-section-t-rl-h-k-mler', 'meb-legislation', 'law-222', 'section', 'Türlü Hükümler', NULL, 'Madde 89', NULL, NULL, '{}', 13, NULL),
+  ('law-222-section-ek-ge-ici-ve-son-h-k-mler', 'meb-legislation', 'law-222', 'section', 'Ek, Geçici ve Son Hükümler', NULL, 'Ek ve Geçici Maddeler', NULL, NULL, '{}', 14, NULL),
+  ('law-cbk1', 'meb-legislation', NULL, 'document', '1 Sayılı Cumhurbaşkanlığı Kararnamesi (MEB Teşkilatı)', NULL, NULL, NULL, 20, '{"memur","sef","sayman","sube-mudur"}', 15, 'sorular/questions-cbk1.json'),
+  ('law-5580', 'meb-legislation', NULL, 'document', '5580 sayılı Özel Öğretim Kurumları Kanunu', NULL, NULL, NULL, 20, '{"sayman","sube-mudur"}', 16, 'sorular/questions-5580.json')
+on conflict (id) do update set category_id=excluded.category_id, parent_id=excluded.parent_id, type=excluded.type, title=excluded.title, document_number=excluded.document_number, article_range=excluded.article_range, article_count=excluded.article_count, question_count=excluded.question_count, kadrolar=excluded.kadrolar, sort_order=excluded.sort_order, source_file=excluded.source_file;
 
 -- ---- topics (sadece exam-blueprint taxonomy'de geçen ek konular) ----
-insert into public.topics (id, category_id, parent_id, type, title, document_number, article_range, article_count, question_count, kadrolar, sort_order) values
-  ('yonetim-insan-iliskileri', 'general-culture', NULL, 'exam_topic', 'Yönetimde İnsan İlişkileri ve İletişim', NULL, NULL, NULL, NULL, '{}', 0),
-  ('yonetim-liderlik', 'general-culture', NULL, 'exam_topic', 'Yönetim, Liderlik ve Organizasyon', NULL, NULL, NULL, NULL, '{}', 0),
-  ('yonetimde-etik', 'general-culture', NULL, 'exam_topic', 'Yönetimde Etik', NULL, NULL, NULL, NULL, '{}', 0),
-  ('4982-kanun', 'general-legislation', NULL, 'exam_topic', '4982 Sayılı Bilgi Edinme Hakkı Kanunu', NULL, NULL, NULL, NULL, '{}', 0),
-  ('2886-kanun', 'general-legislation', NULL, 'exam_topic', '2886 Sayılı Devlet İhale Kanunu', NULL, NULL, NULL, NULL, '{}', 0),
-  ('4734-kanun', 'general-legislation', NULL, 'exam_topic', '4734 Sayılı Kamu İhale Kanunu', NULL, NULL, NULL, NULL, '{}', 0),
-  ('4735-kanun', 'general-legislation', NULL, 'exam_topic', '4735 Sayılı Kamu İhale Sözleşmeleri Kanunu', NULL, NULL, NULL, NULL, '{}', 0),
-  ('4688-kanun', 'general-legislation', NULL, 'exam_topic', '4688 Sayılı Kamu Görevlileri Sendikaları ve Toplu Sözleşme Kanunu', NULL, NULL, NULL, NULL, '{}', 0),
-  ('652-khk', 'meb-legislation', NULL, 'exam_topic', '652 Sayılı KHK', NULL, NULL, NULL, NULL, '{}', 0),
-  ('bagli-mevzuat-memur', 'meb-legislation', NULL, 'exam_topic', 'Bağlı Mevzuat (Memur)', NULL, NULL, NULL, NULL, '{}', 0),
-  ('bagli-mevzuat-sef', 'meb-legislation', NULL, 'exam_topic', 'Bağlı Mevzuat (Şef)', NULL, NULL, NULL, NULL, '{}', 0)
+insert into public.topics (id, category_id, parent_id, type, title, document_number, article_range, article_count, question_count, kadrolar, sort_order, source_file) values
+  ('yonetim-insan-iliskileri', 'general-culture', NULL, 'exam_topic', 'Yönetimde İnsan İlişkileri ve İletişim', NULL, NULL, NULL, NULL, '{}', 0, 'sorular/questions-yonetim-insan-iliskileri.json'),
+  ('yonetim-liderlik', 'general-culture', NULL, 'exam_topic', 'Yönetim, Liderlik ve Organizasyon', NULL, NULL, NULL, NULL, '{}', 0, 'sorular/questions-yonetim-liderlik.json'),
+  ('yonetimde-etik', 'general-culture', NULL, 'exam_topic', 'Yönetimde Etik', NULL, NULL, NULL, NULL, '{}', 0, 'sorular/questions-yonetimde-etik.json'),
+  ('4982-kanun', 'general-legislation', NULL, 'exam_topic', '4982 Sayılı Bilgi Edinme Hakkı Kanunu', NULL, NULL, NULL, NULL, '{}', 0, 'sorular/questions-4982-alone.json'),
+  ('2886-kanun', 'general-legislation', NULL, 'exam_topic', '2886 Sayılı Devlet İhale Kanunu', NULL, NULL, NULL, NULL, '{}', 0, 'sorular/questions-2886.json'),
+  ('4734-kanun', 'general-legislation', NULL, 'exam_topic', '4734 Sayılı Kamu İhale Kanunu', NULL, NULL, NULL, NULL, '{}', 0, 'sorular/questions-4734.json'),
+  ('4735-kanun', 'general-legislation', NULL, 'exam_topic', '4735 Sayılı Kamu İhale Sözleşmeleri Kanunu', NULL, NULL, NULL, NULL, '{}', 0, 'sorular/questions-4735.json'),
+  ('4688-kanun', 'general-legislation', NULL, 'exam_topic', '4688 Sayılı Kamu Görevlileri Sendikaları ve Toplu Sözleşme Kanunu', NULL, NULL, NULL, NULL, '{}', 0, 'sorular/questions-4688.json'),
+  ('652-khk', 'meb-legislation', NULL, 'exam_topic', '652 Sayılı KHK', NULL, NULL, NULL, NULL, '{}', 0, 'sorular/questions-652-khk.json'),
+  ('bagli-mevzuat-memur', 'meb-legislation', NULL, 'exam_topic', 'Bağlı Mevzuat (Memur)', NULL, NULL, NULL, NULL, '{}', 0, 'sorular/questions-bagli-mevzuat-memur.json'),
+  ('bagli-mevzuat-sef', 'meb-legislation', NULL, 'exam_topic', 'Bağlı Mevzuat (Şef)', NULL, NULL, NULL, NULL, '{}', 0, 'sorular/questions-bagli-mevzuat-sef.json')
 on conflict (id) do nothing;
 
 -- ---- card_decks (quiz: taxonomy demo konuları) ----
-insert into public.card_decks (id, title, deck_type, category_id, sort_order) values
-  ('turkce', 'Türkçe Dilbilgisi', 'quiz', NULL, 1),
-  ('insan-haklari', 'İnsan Hakları ve Demokrasi', 'quiz', NULL, 2),
-  ('idare-sistemi', 'Türk İdare Sistemi', 'quiz', NULL, 3),
-  ('protokol', 'Protokol Kuralları', 'quiz', NULL, 4),
-  ('ataturk', 'Atatürk İlkeleri ve İnkılap Tarihi', 'quiz', NULL, 5),
-  ('genel-kultur', 'Genel Kültür', 'quiz', NULL, 6)
-on conflict (id) do update set title=excluded.title, deck_type=excluded.deck_type, sort_order=excluded.sort_order;
+insert into public.card_decks (id, title, deck_type, category_id, sort_order, source_file) values
+  ('turkce', 'Türkçe Dilbilgisi', 'quiz', NULL, 1, 'cards/turkce.json'),
+  ('insan-haklari', 'İnsan Hakları ve Demokrasi', 'quiz', NULL, 2, 'cards/insan-haklari.json'),
+  ('idare-sistemi', 'Türk İdare Sistemi', 'quiz', NULL, 3, 'cards/idare-sistemi.json'),
+  ('protokol', 'Protokol Kuralları', 'quiz', NULL, 4, 'cards/protokol.json'),
+  ('ataturk', 'Atatürk İlkeleri ve İnkılap Tarihi', 'quiz', NULL, 5, 'cards/ataturk.json'),
+  ('genel-kultur', 'Genel Kültür', 'quiz', NULL, 6, 'cards/genel-kultur.json')
+on conflict (id) do update set title=excluded.title, deck_type=excluded.deck_type, sort_order=excluded.sort_order, source_file=excluded.source_file;
 
 -- ---- card_questions ----
 insert into public.card_questions (id, deck_id, prompt, options, answer_index, sort_order) values
@@ -109,14 +109,14 @@ insert into public.card_questions (id, deck_id, prompt, options, answer_index, s
 on conflict (id) do update set deck_id=excluded.deck_id, prompt=excluded.prompt, options=excluded.options, answer_index=excluded.answer_index, sort_order=excluded.sort_order;
 
 -- ---- card_decks (flashcard: kanun kartları, app.js CARD_CATALOGUE) ----
-insert into public.card_decks (id, title, deck_type, category_id, sort_order) values
-  ('anayasa', 'T.C. Anayasası', 'flashcard', 'general-legislation', 1),
-  ('657-sayili-kanun', '657 Sayılı Devlet Memurları Kanunu', 'flashcard', 'general-legislation', 2),
-  ('4483-sayili-kanun', '4483 Sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması Hakkında Kanun', 'flashcard', 'general-legislation', 3),
-  ('5442-sayili-kanun', '5442 Sayılı İl İdaresi Kanunu', 'flashcard', 'general-legislation', 4),
-  ('4982-sayili-kanun', '4982 Sayılı Bilgi Edinme Hakkı Kanunu', 'flashcard', 'general-legislation', 5),
-  ('3071-sayili-kanun', '3071 Sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun', 'flashcard', 'general-legislation', 6)
-on conflict (id) do update set title=excluded.title, deck_type=excluded.deck_type, category_id=excluded.category_id, sort_order=excluded.sort_order;
+insert into public.card_decks (id, title, deck_type, category_id, sort_order, source_file) values
+  ('anayasa', 'T.C. Anayasası', 'flashcard', 'general-legislation', 1, 'cards/anayasa.json'),
+  ('657-sayili-kanun', '657 Sayılı Devlet Memurları Kanunu', 'flashcard', 'general-legislation', 2, 'cards/657.json'),
+  ('4483-sayili-kanun', '4483 Sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması Hakkında Kanun', 'flashcard', 'general-legislation', 3, 'cards/4483.json'),
+  ('5442-sayili-kanun', '5442 Sayılı İl İdaresi Kanunu', 'flashcard', 'general-legislation', 4, 'cards/5442.json'),
+  ('4982-sayili-kanun', '4982 Sayılı Bilgi Edinme Hakkı Kanunu', 'flashcard', 'general-legislation', 5, 'cards/4982.json'),
+  ('3071-sayili-kanun', '3071 Sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun', 'flashcard', 'general-legislation', 6, 'cards/3071.json')
+on conflict (id) do update set title=excluded.title, deck_type=excluded.deck_type, category_id=excluded.category_id, sort_order=excluded.sort_order, source_file=excluded.source_file;
 
 -- ---- flashcards ----
 insert into public.flashcards (deck_id, question, answer, sort_order) values
