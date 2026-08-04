@@ -669,12 +669,6 @@ body{background:var(--bg)}
 .metric-strip strong,.study-grid strong{display:block;color:var(--navy);font-size:15px;margin-bottom:3px}
 .metric-strip span,.study-grid span{font-size:9px;line-height:1.3;color:var(--muted)}
 .study-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.recent-tests{margin-top:16px}
-.recent-tests h3{font-size:12px;color:var(--navy);margin:0 0 8px}
-.recent-tests article{display:flex;justify-content:space-between;align-items:center;padding:10px 11px;background:#fff;border:1px solid var(--line);border-radius:11px;margin-bottom:7px}
-.recent-tests strong{display:block;font-size:10.5px;color:var(--navy);margin-bottom:3px}
-.recent-tests span,.recent-tests small{font-size:8.5px;color:var(--muted)}
-.recent-tests small{color:var(--red);font-weight:700}
 .empty-inline{padding:14px;text-align:center;border:1px dashed #d9dfe9;border-radius:11px;font-size:10px;color:var(--muted)}
 .reset-progress{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;border:1.5px solid var(--line);background:#fff;color:var(--navy2);font-size:11.5px;font-weight:700;cursor:pointer;padding:14px 10px;border-radius:14px;transition:.15s}
 .reset-progress:hover{background:#f7f9fc;border-color:#d7deea}
@@ -962,7 +956,6 @@ body.auth-page{
 .practice-card p{font-size:10px}
 .practice-card span{font-size:9.5px}
 .metric-strip span,.study-grid span{font-size:10px}
-.recent-tests span,.recent-tests small{font-size:9.5px}
 .profile-summary span{font-size:10.5px}
 .profile-goal-desc{font-size:11px}
 .profile-goal-head>span{font-size:9.5px}
