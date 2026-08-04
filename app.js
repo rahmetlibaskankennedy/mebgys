@@ -1,6 +1,5 @@
 const STORAGE_KEY = 'sinavrotasi-study-progress-v2';
 const EXAM_KINDS = ['mock', 'kadro-exam'];
-const CATALOGUE_URL = 'categorytopics.json';
 const DEFAULT_DAILY_GOAL = 20;
 const DAILY_GOAL_MIN = 1;
 const DAILY_GOAL_MAX = 500;
@@ -668,9 +667,7 @@ function renderCardCategoryLevel(categoryKey) {
 async function loadCardDeck(doc) {
   if (!doc.cardFile) throw new Error('Bu kaynak için kart seti henüz eklenmedi.');
   if (cardDecks.has(doc.id)) return cardDecks.get(doc.id);
-  const response = await fetch(doc.cardFile, { cache: 'no-store' });
-  if (!response.ok) throw new Error('Kart dosyası okunamadı.');
-  const data = await response.json();
+  const data = await ContentRepo.fetchFlashcardsByPath(doc.cardFile);
   const cards = Array.isArray(data.cards) ? data.cards : [];
   cardDecks.set(doc.id, cards);
   return cards;
@@ -1161,9 +1158,7 @@ async function loadQuestionBank(documentItem) {
   if (!documentItem.questionFile) throw new Error('Bu başlık için soru bankası henüz tanımlanmamış.');
   if (state.questionBanks.has(documentItem.id)) return state.questionBanks.get(documentItem.id);
   try {
-    const response = await fetch(documentItem.questionFile, { cache: 'no-store' });
-    if (!response.ok) throw new Error('Soru dosyası okunamadı.');
-    const data = await response.json();
+    const data = await ContentRepo.fetchQuestionsByPath(documentItem.questionFile);
     const questions = Array.isArray(data.questions) ? data.questions : [];
     state.questionBanks.set(documentItem.id, questions);
     return questions;
@@ -1765,9 +1760,7 @@ async function loadCatalogue() {
   state.catalogue = null;
   render();
   try {
-    const response = await fetch(CATALOGUE_URL, { cache: 'no-store' });
-    if (!response.ok) throw new Error('categoryTopics.json dosyasını okunamadı.');
-    const data = await response.json();
+    const data = await ContentRepo.fetchCatalogue();
     if (!data || typeof data !== 'object') throw new Error('Konu verisi geçerli değil.');
     state.catalogue = data;
     render();
@@ -1887,22 +1880,17 @@ if (window.currentUserAuthReady) handleAuthenticated();
 // ================= KADRO BAZLI GERÇEK SINAV DENEMESİ =================
 // Ek-2 (Konu Başlıkları, Ağırlık Yüzdeleri ve Soru Sayılarını Gösteren
 // Tablo) kaynaklı resmi soru dağılımına göre kadroya özel deneme üretir.
-const EXAM_TOPIC_REGISTRY_URL = 'exam-blueprint/topics-taxonomy.json';
-const EXAM_BLUEPRINT_URL = 'exam-blueprint/exam-blueprint.json';
-
 let examTopicRegistry = null;
 let examBlueprints = null;
 
 async function loadExamConfig() {
   if (examTopicRegistry && examBlueprints) return;
-  const [topicsRes, blueprintRes] = await Promise.all([
-    fetch(EXAM_TOPIC_REGISTRY_URL, { cache: 'no-store' }),
-    fetch(EXAM_BLUEPRINT_URL, { cache: 'no-store' })
+  const [topicsData, blueprintData] = await Promise.all([
+    ContentRepo.fetchExamTaxonomy(),
+    ContentRepo.fetchExamBlueprint()
   ]);
-  if (!topicsRes.ok || !blueprintRes.ok) throw new Error('Sınav yapılandırması okunamadı.');
-  const topicsData = await topicsRes.json();
   examTopicRegistry = topicsData.topics || {};
-  examBlueprints = await blueprintRes.json();
+  examBlueprints = blueprintData;
 }
 
 async function loadExamTopicBank(topicId) {
@@ -1911,9 +1899,7 @@ async function loadExamTopicBank(topicId) {
   const cacheKey = `exam-topic:${topicId}`;
   if (state.questionBanks.has(cacheKey)) return state.questionBanks.get(cacheKey);
   try {
-    const response = await fetch(topic.questionFile, { cache: 'no-store' });
-    if (!response.ok) throw new Error('okunamadı');
-    const data = await response.json();
+    const data = await ContentRepo.fetchQuestionsByPath(topic.questionFile);
     const questions = Array.isArray(data.questions) ? data.questions : [];
     state.questionBanks.set(cacheKey, questions);
     return questions;
