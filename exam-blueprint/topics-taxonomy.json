@@ -142,13 +142,15 @@
       "title": "Bağlı Mevzuat (Memur)",
       "category": "meb-legislation",
       "questionFile": "sorular/questions-bagli-mevzuat-memur.json",
-      "status": "demo"
+      "status": "demo",
+      "kadrolar": ["memur"]
     },
     "bagli-mevzuat-sef": {
       "title": "Bağlı Mevzuat (Şef)",
       "category": "meb-legislation",
       "questionFile": "sorular/questions-bagli-mevzuat-sef.json",
-      "status": "demo"
+      "status": "demo",
+      "kadrolar": ["sef"]
     }
   }
 }
