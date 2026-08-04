@@ -6,7 +6,7 @@
 const KADRO_LABELS = { memur: 'Memur', sef: 'Şef', sayman: 'Sayman', 'sube-mudur': 'Şube Müdürü' };
 function kadroLabel(k) { return KADRO_LABELS[k] || k; }
 
-let activeTab = 'questions';           // 'questions' | 'denemeler'
+let activeTab = 'questions';           // 'questions' | 'denemeler' | 'topics'
 
 // ---- Sorular sekmesi state'i ----
 let currentTopicId = null;
@@ -21,6 +21,15 @@ let editingQuestionId = null;
 let currentKadro = null;                // null => tüm kadrolar
 let kadroRows = [];                     // exam_kadrolar satırları
 let editingDenemeId = null;
+
+// ---- Konular sekmesi state'i ----
+const TOPIC_TYPE_LABELS = { topic: 'Konu', document: 'Kanun / Belge', section: 'Bölüm' };
+let manageCategoryId = null;            // Konular sekmesinde seçili kategori
+let manageParentId = null;              // null => kategori kökü
+let editingTopicId = null;
+let newTopicParentId = null;            // "+ Ekle" tıklandığında hedef parent
+let newTopicCategoryId = null;
+let editingCategoryId = null;
 
 // ========================= 1) Giriş / admin kontrolü =========================
 async function boot() {
@@ -70,7 +79,7 @@ function switchTab(tab) {
       document.getElementById('mainSub').textContent = '';
       document.getElementById('content').innerHTML = '<div class="empty-state">Soldan bir konu seçerek sorularını görüntüleyin.</div>';
     }
-  } else {
+  } else if (tab === 'denemeler') {
     document.getElementById('mainActions').innerHTML =
       '<button class="btn" id="newDenemeBtn" type="button">+ Yeni Deneme</button>';
     document.getElementById('newDenemeBtn').addEventListener('click', () => openDenemeModal(null));
@@ -78,14 +87,26 @@ function switchTab(tab) {
     document.getElementById('mainTitle').textContent = currentKadro ? `${kadroLabel(currentKadro)} denemeleri` : 'Tüm denemeler';
     document.getElementById('mainSub').textContent = '';
     loadDenemeler();
+  } else {
+    document.getElementById('mainActions').innerHTML =
+      '<button class="btn" id="newCategoryBtn" type="button">+ Yeni Kategori</button>';
+    document.getElementById('newCategoryBtn').addEventListener('click', () => openCategoryModal(null));
+    renderCategorySidebar();
+    if (manageCategoryId) {
+      renderManageContent();
+    } else {
+      document.getElementById('mainTitle').textContent = 'Bir kategori seçin';
+      document.getElementById('mainSub').textContent = '';
+      document.getElementById('content').innerHTML = '<div class="empty-state">Soldan bir kategori seçin, ya da yeni bir kategori oluşturun.</div>';
+    }
   }
 }
 
 // ========================= 3) Konu ağacı (paylaşılan veri) =========================
 async function loadTopics() {
   const [{ data: categories, error: catErr }, { data: topics, error: topicErr }] = await Promise.all([
-    supabaseClient.from('categories').select('id,title,sort_order').order('sort_order'),
-    supabaseClient.from('topics').select('id,category_id,parent_id,type,title,question_count,sort_order').order('sort_order')
+    supabaseClient.from('categories').select('id,title,subtitle,sort_order').order('sort_order'),
+    supabaseClient.from('topics').select('id,category_id,parent_id,type,title,document_number,article_range,question_count,kadrolar,sort_order').order('sort_order')
   ]);
 
   if (catErr || topicErr) {
@@ -541,7 +562,352 @@ denemeForm.addEventListener('submit', async (e) => {
   }
 });
 
-// ========================= 8) Otomatik soru çekme (kılavuz sırasına göre) =========================
+// ========================= 8) Konular sekmesi: kategori + konu ağacı yönetimi =========================
+function renderCategorySidebar() {
+  const panel = document.getElementById('sidePanel');
+  panel.innerHTML = '';
+
+  if (!categoriesCache.length) {
+    panel.innerHTML = '<div class="empty-state">Henüz kategori yok. "+ Yeni Kategori" ile oluşturun.</div>';
+    return;
+  }
+
+  const block = document.createElement('div');
+  block.className = 'cat-block';
+  categoriesCache.forEach(cat => {
+    const node = document.createElement('div');
+    node.className = `tree-node${cat.id === manageCategoryId ? ' active' : ''}`;
+    node.textContent = cat.title;
+    node.addEventListener('click', () => selectManageCategory(cat.id));
+    block.appendChild(node);
+  });
+  panel.appendChild(block);
+}
+
+function selectManageCategory(categoryId) {
+  manageCategoryId = categoryId;
+  manageParentId = null;
+  renderCategorySidebar();
+  renderManageContent();
+}
+
+// Kökten (kategori) verilen konuya kadar olan zinciri döner.
+function getBreadcrumbChain(topicId) {
+  const chain = [];
+  let cur = topicId ? topicsById[topicId] : null;
+  while (cur) {
+    chain.unshift(cur);
+    cur = cur.parent_id ? topicsById[cur.parent_id] : null;
+  }
+  return chain;
+}
+
+function openManageNode(topicId) {
+  manageParentId = topicId;
+  renderManageContent();
+}
+
+function renderManageContent() {
+  const contentEl = document.getElementById('content');
+  const category = categoriesCache.find(c => c.id === manageCategoryId);
+  if (!category) { contentEl.innerHTML = '<div class="empty-state">Kategori bulunamadı.</div>'; return; }
+
+  const chain = getBreadcrumbChain(manageParentId);
+  document.getElementById('mainTitle').textContent = chain.length ? chain[chain.length - 1].title : category.title;
+  document.getElementById('mainSub').textContent = '';
+
+  const breadcrumb = document.createElement('div');
+  breadcrumb.className = 'breadcrumb';
+  const rootLink = document.createElement('a');
+  rootLink.textContent = category.title;
+  rootLink.addEventListener('click', () => openManageNode(null));
+  breadcrumb.appendChild(rootLink);
+  chain.forEach(node => {
+    breadcrumb.appendChild(document.createTextNode(' › '));
+    const a = document.createElement('a');
+    a.textContent = node.title;
+    a.addEventListener('click', () => openManageNode(node.id));
+    breadcrumb.appendChild(a);
+  });
+
+  const headerRow = document.createElement('div');
+  headerRow.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;';
+  headerRow.appendChild(breadcrumb);
+
+  const actions = document.createElement('div');
+  actions.style.cssText = 'display:flex;gap:8px;flex-shrink:0;';
+  if (!manageParentId) {
+    const editCatBtn = document.createElement('button');
+    editCatBtn.className = 'btn secondary small';
+    editCatBtn.type = 'button';
+    editCatBtn.textContent = 'Kategoriyi Düzenle';
+    editCatBtn.addEventListener('click', () => openCategoryModal(category));
+    actions.appendChild(editCatBtn);
+  }
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn small';
+  addBtn.type = 'button';
+  addBtn.textContent = manageParentId ? '+ Alt Konu/Bölüm Ekle' : '+ Yeni Konu Ekle';
+  addBtn.addEventListener('click', () => openTopicModal(null, manageParentId, manageCategoryId));
+  actions.appendChild(addBtn);
+  headerRow.appendChild(actions);
+
+  const children = Object.values(topicsById)
+    .filter(t => t.category_id === manageCategoryId && (t.parent_id || null) === (manageParentId || null))
+    .sort((a, b) => a.sort_order - b.sort_order);
+
+  const list = document.createElement('div');
+  list.className = 'manage-list';
+
+  if (!children.length) {
+    list.innerHTML = '<div class="empty-state">Burada henüz bir alt konu/bölüm yok.</div>';
+  } else {
+    children.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'manage-row';
+
+      const title = document.createElement('div');
+      title.className = 'mr-title';
+      title.innerHTML = `<span class="type-badge">${TOPIC_TYPE_LABELS[t.type] || t.type}</span> ${escapeHtml(t.title)}`;
+      row.appendChild(title);
+
+      const metaParts = [];
+      if (t.article_range) metaParts.push(t.article_range);
+      if (t.question_count != null) metaParts.push(`${t.question_count} soru hedefi`);
+      if (metaParts.length) {
+        const meta = document.createElement('div');
+        meta.className = 'mr-meta';
+        meta.textContent = metaParts.join(' • ');
+        row.appendChild(meta);
+      }
+
+      const rowActions = document.createElement('div');
+      rowActions.className = 'mr-actions';
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button'; editBtn.textContent = 'Düzenle';
+      editBtn.addEventListener('click', (e) => { e.stopPropagation(); openTopicModal(t, t.parent_id, t.category_id); });
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button'; delBtn.className = 'del'; delBtn.textContent = 'Sil';
+      delBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteTopicNode(t.id, t.title); });
+      rowActions.appendChild(editBtn);
+      rowActions.appendChild(delBtn);
+      row.appendChild(rowActions);
+
+      row.addEventListener('click', () => openManageNode(t.id));
+      list.appendChild(row);
+    });
+  }
+
+  contentEl.innerHTML = '';
+  contentEl.appendChild(headerRow);
+  contentEl.appendChild(list);
+}
+
+async function refreshTopicsAndRerender() {
+  await loadTopics();
+  if (activeTab === 'questions') { renderTopicTree(); }
+  else if (activeTab === 'topics') { renderCategorySidebar(); if (manageCategoryId) renderManageContent(); }
+}
+
+// Türkçe karakterleri sadeleştirip URL/ID dostu bir slug üretir.
+function slugify(str) {
+  const map = { 'ç':'c','ğ':'g','ı':'i','ö':'o','ş':'s','ü':'u' };
+  return String(str).toLowerCase().replace(/[çğıöşü]/g, c => map[c] || c)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'konu';
+}
+
+// ---- Konu ekle/düzenle modalı ----
+const topicModalBackdrop = document.getElementById('topicModalBackdrop');
+const topicForm = document.getElementById('topicForm');
+const topicFormError = document.getElementById('topicFormError');
+const tKadroGroup = document.getElementById('tKadroGroup');
+
+tKadroGroup.innerHTML = Object.keys(KADRO_LABELS).map(k =>
+  `<label><input type="checkbox" value="${k}" checked> ${kadroLabel(k)}</label>`
+).join('');
+
+document.getElementById('topicModalCancelBtn').addEventListener('click', closeTopicModal);
+topicModalBackdrop.addEventListener('click', (e) => { if (e.target === topicModalBackdrop) closeTopicModal(); });
+
+function openTopicModal(topic, parentId, categoryId) {
+  editingTopicId = topic ? topic.id : null;
+  newTopicParentId = parentId || null;
+  newTopicCategoryId = categoryId;
+  topicFormError.classList.remove('show');
+
+  document.getElementById('topicModalTitle').textContent = topic ? 'Konuyu Düzenle' : 'Yeni Konu';
+  document.getElementById('tTitle').value = topic?.title || '';
+  document.getElementById('tType').value = topic?.type || (parentId ? 'section' : 'topic');
+  document.getElementById('tDocNumber').value = topic?.document_number || '';
+  document.getElementById('tArticleRange').value = topic?.article_range || '';
+  document.getElementById('tQuestionCount').value = topic?.question_count ?? '';
+
+  const selectedKadrolar = topic?.kadrolar || Object.keys(KADRO_LABELS);
+  tKadroGroup.querySelectorAll('input').forEach(cb => { cb.checked = selectedKadrolar.includes(cb.value); });
+
+  const chain = getBreadcrumbChain(parentId);
+  document.getElementById('topicParentHint').textContent = chain.length
+    ? `Konum: ${chain.map(c => c.title).join(' › ')}`
+    : 'Bu, kategori kökünde üst düzey bir konu olacak.';
+
+  topicModalBackdrop.classList.add('open');
+  document.getElementById('tTitle').focus();
+}
+
+function closeTopicModal() {
+  topicModalBackdrop.classList.remove('open');
+  topicForm.reset();
+  editingTopicId = null;
+}
+
+topicForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  topicFormError.classList.remove('show');
+
+  const title = document.getElementById('tTitle').value.trim();
+  const type = document.getElementById('tType').value;
+  const documentNumber = document.getElementById('tDocNumber').value.trim();
+  const articleRange = document.getElementById('tArticleRange').value.trim();
+  const questionCountRaw = document.getElementById('tQuestionCount').value;
+  const kadrolar = Array.from(tKadroGroup.querySelectorAll('input:checked')).map(cb => cb.value);
+
+  if (!title) {
+    topicFormError.textContent = 'Başlık zorunludur.';
+    topicFormError.classList.add('show');
+    return;
+  }
+
+  const saveBtn = document.getElementById('topicModalSaveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Kaydediliyor…';
+
+  const payload = {
+    title,
+    type,
+    document_number: documentNumber || null,
+    article_range: articleRange || null,
+    question_count: questionCountRaw === '' ? null : Number(questionCountRaw),
+    kadrolar
+  };
+
+  let error;
+  if (editingTopicId) {
+    ({ error } = await supabaseClient.from('topics').update(payload).eq('id', editingTopicId));
+  } else {
+    // Yeni konuya benzersiz bir id ver. source_file'ı da aynı değere eşitliyoruz;
+    // böylece uygulama tarafı bu konuyu "içerik paketi aktif" olarak görüp
+    // sorularını (questions.topic_id üzerinden) doğrudan çekebiliyor —
+    // yani kod değişikliği gerekmeden admin panelinden eklenen her konu
+    // otomatik olarak çalışılabilir hale geliyor.
+    const id = `t-${slugify(title)}-${Date.now().toString(36).slice(-5)}`;
+    const siblings = Object.values(topicsById).filter(t =>
+      t.category_id === newTopicCategoryId && (t.parent_id || null) === (newTopicParentId || null));
+    const sortOrder = siblings.length ? Math.max(...siblings.map(s => s.sort_order)) + 1 : 0;
+
+    ({ error } = await supabaseClient.from('topics').insert({
+      id,
+      category_id: newTopicCategoryId,
+      parent_id: newTopicParentId,
+      source_file: id,
+      sort_order: sortOrder,
+      ...payload
+    }));
+  }
+
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Kaydet';
+
+  if (error) {
+    topicFormError.textContent = 'Kaydedilemedi: ' + error.message;
+    topicFormError.classList.add('show');
+    return;
+  }
+
+  closeTopicModal();
+  await refreshTopicsAndRerender();
+});
+
+async function deleteTopicNode(id, title) {
+  const childCount = (childrenByParent[id] || []).length;
+  const warn = childCount
+    ? `"${title}" silinirse altındaki ${childCount} alt konu/bölüm ve tüm soruları da silinecek. Emin misiniz?`
+    : `"${title}" ve varsa içindeki tüm sorular silinecek. Emin misiniz?`;
+  if (!confirm(warn)) return;
+
+  const { error } = await supabaseClient.from('topics').delete().eq('id', id);
+  if (error) { alert('Silinemedi: ' + error.message); return; }
+  if (manageParentId === id) manageParentId = null;
+  await refreshTopicsAndRerender();
+}
+
+// ---- Kategori ekle/düzenle modalı ----
+const categoryModalBackdrop = document.getElementById('categoryModalBackdrop');
+const categoryForm = document.getElementById('categoryForm');
+const categoryFormError = document.getElementById('categoryFormError');
+
+document.getElementById('categoryModalCancelBtn').addEventListener('click', closeCategoryModal);
+categoryModalBackdrop.addEventListener('click', (e) => { if (e.target === categoryModalBackdrop) closeCategoryModal(); });
+
+function openCategoryModal(category) {
+  editingCategoryId = category ? category.id : null;
+  categoryFormError.classList.remove('show');
+  document.getElementById('categoryModalTitle').textContent = category ? 'Kategoriyi Düzenle' : 'Yeni Kategori';
+  document.getElementById('cTitle').value = category?.title || '';
+  document.getElementById('cSubtitle').value = category?.subtitle || '';
+  categoryModalBackdrop.classList.add('open');
+  document.getElementById('cTitle').focus();
+}
+
+function closeCategoryModal() {
+  categoryModalBackdrop.classList.remove('open');
+  categoryForm.reset();
+  editingCategoryId = null;
+}
+
+categoryForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  categoryFormError.classList.remove('show');
+
+  const title = document.getElementById('cTitle').value.trim();
+  const subtitle = document.getElementById('cSubtitle').value.trim();
+  if (!title) {
+    categoryFormError.textContent = 'Başlık zorunludur.';
+    categoryFormError.classList.add('show');
+    return;
+  }
+
+  const saveBtn = document.getElementById('categoryModalSaveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Kaydediliyor…';
+
+  let error, newId = editingCategoryId;
+  if (editingCategoryId) {
+    ({ error } = await supabaseClient.from('categories').update({ title, subtitle: subtitle || null }).eq('id', editingCategoryId));
+  } else {
+    let base = slugify(title);
+    if (categoriesCache.some(c => c.id === base)) base = `${base}-${Date.now().toString(36).slice(-4)}`;
+    newId = base;
+    const sortOrder = categoriesCache.length ? Math.max(...categoriesCache.map(c => c.sort_order || 0)) + 1 : 0;
+    ({ error } = await supabaseClient.from('categories').insert({ id: newId, title, subtitle: subtitle || null, sort_order: sortOrder }));
+  }
+
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Kaydet';
+
+  if (error) {
+    categoryFormError.textContent = 'Kaydedilemedi: ' + error.message;
+    categoryFormError.classList.add('show');
+    return;
+  }
+
+  const wasNew = !editingCategoryId;
+  closeCategoryModal();
+  await refreshTopicsAndRerender();
+  if (wasNew) selectManageCategory(newId);
+});
+
+// ========================= 9) Otomatik soru çekme (kılavuz sırasına göre) =========================
 function shuffle(arr) {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
