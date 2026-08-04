@@ -273,7 +273,10 @@ function openQuestionModal(question) {
   document.getElementById('modalTitle').textContent = question ? 'Soruyu Düzenle' : 'Yeni Soru';
   formError.classList.remove('show');
 
-  populateTopicSelect(question ? currentTopicId : (currentTopicId || (topicOptionsFlat[0] && topicOptionsFlat[0].id)));
+  // DÜZELTME: düzenlerken sorunun kendi topic_id'sini kullan, currentTopicId'i değil.
+  // Böylece bu modal ileride "tüm sorular" gibi farklı bir listeden çağrılsa bile
+  // yanlış konuyu seçili göstermez.
+  populateTopicSelect(question ? question.topic_id : (currentTopicId || (topicOptionsFlat[0] && topicOptionsFlat[0].id)));
 
   document.getElementById('fPrompt').value = question?.prompt || '';
   document.getElementById('fExplanation').value = question?.explanation || '';
@@ -499,12 +502,31 @@ regenerateBtn.addEventListener('click', async () => {
   regenerateBtn.disabled = true;
   regenerateBtn.textContent = 'Oluşturuluyor…';
   try {
-    await supabaseClient.from('deneme_questions').delete().eq('deneme_id', editingDenemeId);
     const kadro = dKadroSelect.value;
-    const summary = await generateDenemeQuestions(editingDenemeId, kadro);
+
+    // DÜZELTME: önce eski soruları yedekle, yeni soruları ÜRETMEDEN ÖNCE SİLME.
+    // generateDenemeQuestions() içindeki sorgular başarısız olursa (ör. sınav
+    // planı eksikse) eski sorular kaybolmasın diye önce mevcut satırları
+    // hafızada tutuyoruz; insert başarılı olduktan sonra eskileri temizliyoruz.
+    const { data: oldRows, error: fetchErr } = await supabaseClient
+      .from('deneme_questions')
+      .select('id')
+      .eq('deneme_id', editingDenemeId);
+    if (fetchErr) throw fetchErr;
+
+    const summary = await generateDenemeQuestions(editingDenemeId, kadro, { skipInsertIfEmpty: true });
+
+    // Yeni sorular üretilebildiyse (ya da bilinçli olarak boş sonuç kabul edildiyse)
+    // şimdi eski satırları sil.
+    if (oldRows && oldRows.length) {
+      const oldIds = oldRows.map(r => r.id);
+      const { error: delErr } = await supabaseClient.from('deneme_questions').delete().in('id', oldIds);
+      if (delErr) throw delErr;
+    }
+
     reportGenerationSummary(summary);
   } catch (err) {
-    alert('Sorular yeniden oluşturulamadı: ' + err.message);
+    alert('Sorular yeniden oluşturulamadı, mevcut sorular korundu: ' + err.message);
   } finally {
     regenerateBtn.disabled = false;
     regenerateBtn.textContent = 'Soruları Yeniden Oluştur';
@@ -530,6 +552,7 @@ denemeForm.addEventListener('submit', async (e) => {
   saveBtn.disabled = true;
   saveBtn.textContent = 'Kaydediliyor…';
 
+  let insertedId = null;
   try {
     if (editingDenemeId) {
       const { error } = await supabaseClient
@@ -546,14 +569,22 @@ denemeForm.addEventListener('submit', async (e) => {
         .select('id')
         .single();
       if (error) throw error;
+      insertedId = inserted.id;
 
       saveBtn.textContent = 'Sorular çekiliyor…';
-      const summary = await generateDenemeQuestions(inserted.id, kadro);
+      const summary = await generateDenemeQuestions(insertedId, kadro);
       closeDenemeModal();
       loadDenemeler();
       reportGenerationSummary(summary);
     }
   } catch (err) {
+    // DÜZELTME: deneme kaydı oluşturuldu ama soru çekme başarısız olduysa,
+    // yarım kalmış (0 sorulu) denemeyi geride bırakmamak için sil.
+    if (insertedId) {
+      await supabaseClient.from('denemeler').delete().eq('id', insertedId).then(
+        () => {}, () => {}
+      ).catch(() => {});
+    }
     denemeFormError.textContent = 'Kaydedilemedi: ' + err.message;
     denemeFormError.classList.add('show');
   } finally {
@@ -835,11 +866,23 @@ async function deleteTopicNode(id, title) {
     : `"${title}" ve varsa içindeki tüm sorular silinecek. Emin misiniz?`;
   if (!confirm(warn)) return;
 
+  // DÜZELTME: silinecek konu (ve tüm alt konuları) şu anda "Sorular" sekmesinde
+  // seçili olan konuyu kapsıyorsa, eskimiş (stale) referansı temizle. Aksi halde
+  // kullanıcı "Sorular" sekmesine dönünce artık var olmayan bir topic_id için
+  // sorgu atılır ve başlıkta silinmiş konunun adı görünmeye devam eder.
+  const affectedIds = collectDescendantTopicIds(id);
+  const currentTopicWasAffected = currentTopicId && affectedIds.includes(currentTopicId);
+
   const { error } = await supabaseClient.from('topics').delete().eq('id', id);
   if (error) { alert('Silinemedi: ' + error.message); return; }
+
   if (manageParentId === id) manageParentId = null;
+  if (currentTopicWasAffected) {
+    currentTopicId = null;
+    currentTopicTitle = '';
+  }
   await refreshTopicsAndRerender();
-}
+});
 
 // ---- Kategori ekle/düzenle modalı ----
 const categoryModalBackdrop = document.getElementById('categoryModalBackdrop');
