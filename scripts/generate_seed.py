@@ -75,7 +75,7 @@ for cat_id, cat in catalogue.items():
         topics_rows.append((
             node["id"], category_id, parent_id, node.get("type", "topic"), node["title"],
             node.get("documentNumber"), node.get("articleRange"), node.get("articleCount"),
-            node.get("questionCount"), node.get("kadrolar", []), sort_order
+            node.get("questionCount"), node.get("kadrolar", []), sort_order, qfile
         ))
         if qfile and qfile not in questionfile_to_topicid:
             questionfile_to_topicid[qfile] = node["id"]
@@ -97,15 +97,16 @@ out.append("")
 
 out.append("-- ---- topics (kategori ağacı) ----")
 out.append("insert into public.topics (id, category_id, parent_id, type, title, document_number, "
-            "article_range, article_count, question_count, kadrolar, sort_order) values")
+            "article_range, article_count, question_count, kadrolar, sort_order, source_file) values")
 out.append(",\n".join(
     f"  ({sql_str(r[0])}, {sql_str(r[1])}, {sql_str(r[2])}, {sql_str(r[3])}, {sql_str(r[4])}, "
-    f"{sql_str(r[5])}, {sql_str(r[6])}, {sql_int(r[7])}, {sql_int(r[8])}, {sql_array(r[9])}, {r[10]})"
+    f"{sql_str(r[5])}, {sql_str(r[6])}, {sql_int(r[7])}, {sql_int(r[8])}, {sql_array(r[9])}, {r[10]}, {sql_str(r[11])})"
     for r in topics_rows
 ) + "\non conflict (id) do update set category_id=excluded.category_id, parent_id=excluded.parent_id, "
     "type=excluded.type, title=excluded.title, document_number=excluded.document_number, "
     "article_range=excluded.article_range, article_count=excluded.article_count, "
-    "question_count=excluded.question_count, kadrolar=excluded.kadrolar, sort_order=excluded.sort_order;")
+    "question_count=excluded.question_count, kadrolar=excluded.kadrolar, sort_order=excluded.sort_order, "
+    "source_file=excluded.source_file;")
 out.append("")
 
 # ============================================================================
@@ -125,7 +126,7 @@ for tkey, t in taxonomy.items():
         deck_id = os.path.splitext(os.path.basename(qfile))[0]
         if deck_id not in [d[0] for d in card_decks_rows]:
             deck_sort += 1
-            card_decks_rows.append((deck_id, t.get("title"), deck_sort))
+            card_decks_rows.append((deck_id, t.get("title"), deck_sort, qfile))
             deck_data = load(qfile)
             for i, q in enumerate(deck_data.get("questions", [])):
                 card_questions_rows.append((
@@ -143,7 +144,7 @@ for tkey, t in taxonomy.items():
             if linked_id not in questionfile_to_topicid.values():
                 extra_topics_rows.append((
                     tkey, t.get("category"), None, "exam_topic", t["title"],
-                    None, None, None, None, [], 0
+                    None, None, None, None, [], 0, qfile
                 ))
             questionfile_to_topicid[qfile] = linked_id
         exam_topics_rows.append((
@@ -153,20 +154,20 @@ for tkey, t in taxonomy.items():
 if extra_topics_rows:
     out.append("-- ---- topics (sadece exam-blueprint taxonomy'de geçen ek konular) ----")
     out.append("insert into public.topics (id, category_id, parent_id, type, title, document_number, "
-                "article_range, article_count, question_count, kadrolar, sort_order) values")
+                "article_range, article_count, question_count, kadrolar, sort_order, source_file) values")
     out.append(",\n".join(
         f"  ({sql_str(r[0])}, {sql_str(r[1])}, {sql_str(r[2])}, {sql_str(r[3])}, {sql_str(r[4])}, "
-        f"{sql_str(r[5])}, {sql_str(r[6])}, {sql_int(r[7])}, {sql_int(r[8])}, {sql_array(r[9])}, {r[10]})"
+        f"{sql_str(r[5])}, {sql_str(r[6])}, {sql_int(r[7])}, {sql_int(r[8])}, {sql_array(r[9])}, {r[10]}, {sql_str(r[11])})"
         for r in extra_topics_rows
     ) + "\non conflict (id) do nothing;")
     out.append("")
 
 out.append("-- ---- card_decks (quiz: taxonomy demo konuları) ----")
-out.append("insert into public.card_decks (id, title, deck_type, category_id, sort_order) values")
+out.append("insert into public.card_decks (id, title, deck_type, category_id, sort_order, source_file) values")
 out.append(",\n".join(
-    f"  ({sql_str(r[0])}, {sql_str(r[1])}, 'quiz', NULL, {r[2]})" for r in card_decks_rows
+    f"  ({sql_str(r[0])}, {sql_str(r[1])}, 'quiz', NULL, {r[2]}, {sql_str(r[3])})" for r in card_decks_rows
 ) + "\non conflict (id) do update set title=excluded.title, deck_type=excluded.deck_type, "
-    "sort_order=excluded.sort_order;")
+    "sort_order=excluded.sort_order, source_file=excluded.source_file;")
 out.append("")
 
 out.append("-- ---- card_questions ----")
@@ -194,17 +195,18 @@ FLASHCARD_CATALOGUE = [
 flashcard_deck_rows = []
 flashcard_rows = []
 for i, (deck_id, title, category_id, path) in enumerate(FLASHCARD_CATALOGUE):
-    flashcard_deck_rows.append((deck_id, title, category_id, i + 1))
+    flashcard_deck_rows.append((deck_id, title, category_id, i + 1, path))
     data = load(path)
     for j, c in enumerate(data.get("cards", [])):
         flashcard_rows.append((deck_id, c["question"], c["answer"], j + 1))
 
 out.append("-- ---- card_decks (flashcard: kanun kartları, app.js CARD_CATALOGUE) ----")
-out.append("insert into public.card_decks (id, title, deck_type, category_id, sort_order) values")
+out.append("insert into public.card_decks (id, title, deck_type, category_id, sort_order, source_file) values")
 out.append(",\n".join(
-    f"  ({sql_str(r[0])}, {sql_str(r[1])}, 'flashcard', {sql_str(r[2])}, {r[3]})" for r in flashcard_deck_rows
+    f"  ({sql_str(r[0])}, {sql_str(r[1])}, 'flashcard', {sql_str(r[2])}, {r[3]}, {sql_str(r[4])})"
+    for r in flashcard_deck_rows
 ) + "\non conflict (id) do update set title=excluded.title, deck_type=excluded.deck_type, "
-    "category_id=excluded.category_id, sort_order=excluded.sort_order;")
+    "category_id=excluded.category_id, sort_order=excluded.sort_order, source_file=excluded.source_file;")
 out.append("")
 
 out.append("-- ---- flashcards ----")
