@@ -1502,10 +1502,6 @@ function renderQuiz() {
 
       <div class="quiz-premium-card-wrapper">
         <div class="quiz-premium-card">
-          <div class="quiz-card-header">
-            <span class="quiz-badge">${escapeHtml(quiz.subtitle)}</span>
-          </div>
-
           <h3 class="quiz-question-text">${escapeHtml(current.prompt)}</h3>
 
           <div class="quiz-options">
