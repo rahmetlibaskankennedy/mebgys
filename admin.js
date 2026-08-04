@@ -382,28 +382,66 @@ const bulkModalBackdrop = document.getElementById('bulkModalBackdrop');
 const bulkForm = document.getElementById('bulkForm');
 const bulkError = document.getElementById('bulkError');
 const bTopicSelect = document.getElementById('bTopic');
+const bSubtopicField = document.getElementById('bSubtopicField');
+const bSubtopicSelect = document.getElementById('bSubtopic');
 const bJsonInput = document.getElementById('bJson');
 const bFileInput = document.getElementById('bFile');
 
 document.getElementById('bulkModalCancelBtn').addEventListener('click', closeBulkModal);
 bulkModalBackdrop.addEventListener('click', (e) => { if (e.target === bulkModalBackdrop) closeBulkModal(); });
 document.getElementById('bulkTemplateLink').addEventListener('click', (e) => { e.preventDefault(); downloadBulkTemplate(); });
+bTopicSelect.addEventListener('change', () => populateBulkSubtopics(bTopicSelect.value));
+
+// bTopic: sadece kök konular (her kategorinin altındaki üst düzey topic/document'lar), kategoriye göre gruplu.
+// bSubtopic: seçilen kök konunun varsa doğrudan alt konuları (bölümler). Yoksa alan gizlenir.
+function populateBulkTopicRoots(selectedRootId) {
+  const byCategory = window.__byCategory || {};
+  bTopicSelect.innerHTML = categoriesCache.map(cat => {
+    const roots = byCategory[cat.id] || [];
+    if (!roots.length) return '';
+    const opts = roots.map(t => `<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('');
+    return `<optgroup label="${escapeHtml(cat.title)}">${opts}</optgroup>`;
+  }).join('');
+  if (selectedRootId) bTopicSelect.value = selectedRootId;
+}
+
+function populateBulkSubtopics(rootId) {
+  const children = childrenByParent[rootId] || [];
+  if (!children.length) {
+    bSubtopicField.style.display = 'none';
+    bSubtopicSelect.innerHTML = '';
+    return;
+  }
+  bSubtopicSelect.innerHTML = children.map(t => `<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('');
+  bSubtopicField.style.display = '';
+}
 
 function openBulkModal() {
   bulkError.classList.remove('show');
   bJsonInput.value = '';
   bFileInput.value = '';
-  bTopicSelect.innerHTML = topicOptionsFlat.map(t =>
-    `<option value="${t.id}">${' '.repeat(t.depth)}${escapeHtml(t.title)}</option>`
-  ).join('');
-  if (currentTopicId) bTopicSelect.value = currentTopicId;
+
+  // Şu an seçili konu bir alt bölümse (parent_id var), önce üst konuyu, sonra alt konuyu seçili getir.
+  const current = currentTopicId ? topicsById[currentTopicId] : null;
+  const rootId = current && current.parent_id ? current.parent_id : currentTopicId;
+
+  populateBulkTopicRoots(rootId);
+  populateBulkSubtopics(bTopicSelect.value);
+  if (current && current.parent_id) bSubtopicSelect.value = current.id;
+
   bulkModalBackdrop.classList.add('open');
 }
 
 function closeBulkModal() {
   bulkModalBackdrop.classList.remove('open');
   bulkForm.reset();
+  bSubtopicField.style.display = 'none';
 }
+
+function selectedBulkTopicId() {
+  return (bSubtopicField.style.display !== 'none' && bSubtopicSelect.value) ? bSubtopicSelect.value : bTopicSelect.value;
+}
+
 
 // Excel şablonunu tarayıcıda oluşturup indirir (SheetJS).
 function downloadBulkTemplate() {
@@ -518,7 +556,7 @@ bulkForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   bulkError.classList.remove('show');
 
-  const topicId = bTopicSelect.value;
+  const topicId = selectedBulkTopicId();
   const file = bFileInput.files[0];
 
   let rows;
@@ -552,10 +590,12 @@ bulkForm.addEventListener('submit', async (e) => {
     return;
   }
 
+  const topicLabel = topicsById[topicId] ? topicsById[topicId].title : topicId;
   closeBulkModal();
   if (currentTopicId === topicId) loadQuestions();
-  else alert(`${rows.length} soru "${bTopicSelect.selectedOptions[0].textContent.trim()}" konusuna eklendi.`);
+  else alert(`${rows.length} soru "${topicLabel}" konusuna eklendi.`);
 });
+
 
 
 // ========================= 6) Denemeler: kadro sidebar + liste =========================
