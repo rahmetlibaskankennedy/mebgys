@@ -1916,12 +1916,14 @@ async function startDenemeSinavi(denemeId) {
     }));
 
     const customTimeSeconds = meta?.duration_minutes ? meta.duration_minutes * 60 : null;
+    topicSheet.classList.add('open');
+    topicBackdrop.classList.add('open');
     startQuiz({
       questions,
       kind: 'mock',
       title: meta?.title || 'Deneme Sınavı',
       subtitle: `${questions.length} soru`,
-      returnView: () => window.go('bank'),
+      returnView: closeTopicSheet,
       customTimeSeconds
     });
   } catch (error) {
