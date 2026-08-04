@@ -226,6 +226,37 @@
     </div>
   </div>
 
+  <!-- Toplu soru ekleme modalı -->
+  <div class="modal-backdrop" id="bulkModalBackdrop">
+    <div class="modal" style="width:680px;">
+      <h3>Toplu Soru Ekle</h3>
+      <form id="bulkForm">
+        <div class="field">
+          <label>Konu / bölüm</label>
+          <select id="bTopic" required></select>
+        </div>
+        <div class="field">
+          <label>Sorular (JSON dizisi)</label>
+          <textarea id="bJson" required rows="14" style="font-family: ui-monospace, monospace; font-size:13px;"
+            placeholder='[
+  {
+    "prompt": "Soru metni?",
+    "options": ["A şıkkı", "B şıkkı", "C şıkkı", "D şıkkı"],
+    "answerIndex": 1,
+    "explanation": "opsiyonel açıklama"
+  }
+]'></textarea>
+          <div class="form-hint">Yukarıdaki seçili konuya, dizideki tüm sorular tek seferde eklenir. "answerIndex" 0'dan başlar (0=A, 1=B, ...).</div>
+        </div>
+        <div class="form-error" id="bulkError"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" id="bulkModalCancelBtn">Vazgeç</button>
+          <button type="submit" class="btn" id="bulkModalSaveBtn">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Deneme ekle/düzenle modalı -->
   <div class="modal-backdrop" id="denemeModalBackdrop">
     <div class="modal">

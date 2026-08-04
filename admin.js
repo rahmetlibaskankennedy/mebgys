@@ -68,8 +68,10 @@ function switchTab(tab) {
 
   if (tab === 'questions') {
     document.getElementById('mainActions').innerHTML =
+      '<button class="btn secondary" id="bulkQuestionBtn" type="button">+ Toplu Soru Ekle</button>' +
       '<button class="btn" id="newQuestionBtn" type="button">+ Yeni Soru</button>';
     document.getElementById('newQuestionBtn').addEventListener('click', () => openQuestionModal(null));
+    document.getElementById('bulkQuestionBtn').addEventListener('click', () => openBulkModal());
     renderTopicTree();
     if (currentTopicId) {
       document.getElementById('mainTitle').textContent = currentTopicTitle;
@@ -373,6 +375,103 @@ questionForm.addEventListener('submit', async (e) => {
   closeQuestionModal();
   const topic = topicsById[topicId];
   selectTopic(topicId, topic ? topic.title : currentTopicTitle);
+});
+
+// ========================= 5b) Toplu soru ekleme modalı =========================
+const bulkModalBackdrop = document.getElementById('bulkModalBackdrop');
+const bulkForm = document.getElementById('bulkForm');
+const bulkError = document.getElementById('bulkError');
+const bTopicSelect = document.getElementById('bTopic');
+const bJsonInput = document.getElementById('bJson');
+
+document.getElementById('bulkModalCancelBtn').addEventListener('click', closeBulkModal);
+bulkModalBackdrop.addEventListener('click', (e) => { if (e.target === bulkModalBackdrop) closeBulkModal(); });
+
+function openBulkModal() {
+  bulkError.classList.remove('show');
+  bJsonInput.value = '';
+  bTopicSelect.innerHTML = topicOptionsFlat.map(t =>
+    `<option value="${t.id}">${' '.repeat(t.depth)}${escapeHtml(t.title)}</option>`
+  ).join('');
+  if (currentTopicId) bTopicSelect.value = currentTopicId;
+  bulkModalBackdrop.classList.add('open');
+  bJsonInput.focus();
+}
+
+function closeBulkModal() {
+  bulkModalBackdrop.classList.remove('open');
+  bulkForm.reset();
+}
+
+// Beklenen format: bir JSON dizisi, her eleman:
+// { "prompt": "...", "options": ["A","B","C","D"], "answerIndex": 0, "explanation": "..." (opsiyonel) }
+function parseBulkQuestions(raw, topicId) {
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    throw new Error('Geçersiz JSON: ' + e.message);
+  }
+  if (!Array.isArray(parsed)) throw new Error('JSON bir dizi ([...]) olmalı.');
+  if (!parsed.length) throw new Error('Dizi boş.');
+
+  return parsed.map((q, i) => {
+    const n = i + 1;
+    if (!q || typeof q !== 'object') throw new Error(`#${n}: geçersiz soru nesnesi.`);
+    const prompt = String(q.prompt || '').trim();
+    const options = Array.isArray(q.options) ? q.options.map(o => String(o).trim()) : [];
+    const answerIndex = Number(q.answerIndex ?? q.answer_index);
+    const explanation = q.explanation ? String(q.explanation).trim() : null;
+
+    if (!prompt) throw new Error(`#${n}: "prompt" zorunlu.`);
+    if (options.length < 2 || options.some(o => !o)) throw new Error(`#${n}: "options" en az 2 dolu şık içermeli.`);
+    if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex >= options.length) {
+      throw new Error(`#${n}: "answerIndex" geçerli bir şık indeksi olmalı (0-${options.length - 1}).`);
+    }
+
+    return {
+      id: `${topicId}-${Date.now().toString(36)}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+      topic_id: topicId,
+      prompt,
+      options,
+      answer_index: answerIndex,
+      explanation
+    };
+  });
+}
+
+bulkForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  bulkError.classList.remove('show');
+
+  const topicId = bTopicSelect.value;
+  let rows;
+  try {
+    rows = parseBulkQuestions(bJsonInput.value, topicId);
+  } catch (err) {
+    bulkError.textContent = err.message;
+    bulkError.classList.add('show');
+    return;
+  }
+
+  const saveBtn = document.getElementById('bulkModalSaveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Kaydediliyor…';
+
+  const { error } = await supabaseClient.from('questions').insert(rows);
+
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Kaydet';
+
+  if (error) {
+    bulkError.textContent = 'Kaydedilemedi: ' + error.message;
+    bulkError.classList.add('show');
+    return;
+  }
+
+  closeBulkModal();
+  if (currentTopicId === topicId) loadQuestions();
+  else alert(`${rows.length} soru "${bTopicSelect.selectedOptions[0].textContent.trim()}" konusuna eklendi.`);
 });
 
 // ========================= 6) Denemeler: kadro sidebar + liste =========================
