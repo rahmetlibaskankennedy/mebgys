@@ -242,7 +242,7 @@ modalBackdrop.addEventListener('click', (e) => { if (e.target === modalBackdrop)
 
 function populateTopicSelect(selectedId) {
   fTopicSelect.innerHTML = topicOptionsFlat.map(t =>
-    `<option value="${t.id}">${'　'.repeat(t.depth)}${escapeHtml(t.title)}</option>`
+    `<option value="${t.id}">${' '.repeat(t.depth)}${escapeHtml(t.title)}</option>`
   ).join('');
   if (selectedId) fTopicSelect.value = selectedId;
 }
