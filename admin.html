@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SınavRotası — Admin</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --panel:#fff; --border:#e2e4e9; --text:#1c1e21; --muted:#6b7280;
+    --accent:#2f6fed; --accent-dark:#1e54c4; --danger:#dc2626; --danger-bg:#fef2f2;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+  #authGate{display:flex;align-items:center;justify-content:center;height:100vh;color:var(--muted);}
+  #adminApp{display:none;height:100vh;}
+  #adminApp.ready{display:flex;}
+
+  /* Sol panel: kategori/konu ağacı */
+  .sidebar{width:280px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;}
+  .sidebar-header{padding:16px;border-bottom:1px solid var(--border);}
+  .sidebar-header h1{font-size:16px;margin:0 0 4px;}
+  .sidebar-header .who{font-size:12px;color:var(--muted);}
+  .sidebar-header .who button{margin-left:8px;font-size:12px;background:none;border:none;color:var(--accent);cursor:pointer;padding:0;}
+  .tree{flex:1;overflow-y:auto;padding:8px;}
+  .cat-block{margin-bottom:4px;}
+  .cat-title{font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);
+    padding:8px 8px 4px;}
+  .topic-node{padding:7px 10px;border-radius:6px;cursor:pointer;color:var(--text);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;}
+  .topic-node:hover{background:#eef1f6;}
+  .topic-node.active{background:var(--accent);color:#fff;}
+  .topic-node .qcount{float:right;font-size:11px;color:inherit;opacity:.65;}
+  .topic-node.depth-1{padding-left:22px;font-size:13px;}
+  .topic-node.depth-2{padding-left:34px;font-size:12.5px;}
+
+  /* Sağ panel: sorular */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .main-header{padding:16px 24px;border-bottom:1px solid var(--border);background:var(--panel);
+    display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .main-header h2{font-size:16px;margin:0;}
+  .main-header .sub{font-size:12px;color:var(--muted);margin-top:2px;}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:8px 14px;
+    font-size:13px;cursor:pointer;font-weight:500;}
+  .btn:hover{background:var(--accent-dark);}
+  .btn.secondary{background:#fff;color:var(--text);border:1px solid var(--border);}
+  .btn.secondary:hover{background:#f4f5f7;}
+  .btn.danger{background:var(--danger);}
+  .btn.danger:hover{background:#b91c1c;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  .content{flex:1;overflow-y:auto;padding:24px;}
+  .empty-state{color:var(--muted);text-align:center;padding:60px 20px;}
+
+  table.q-table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--border);
+    border-radius:var(--radius);overflow:hidden;}
+  table.q-table th{text-align:left;font-size:11px;text-transform:uppercase;color:var(--muted);
+    padding:10px 12px;border-bottom:1px solid var(--border);background:#fafbfc;}
+  table.q-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+  table.q-table tr:last-child td{border-bottom:none;}
+  table.q-table tr:hover td{background:#fafbfc;}
+  .q-prompt{max-width:420px;}
+  .q-options{font-size:12px;color:var(--muted);line-height:1.6;}
+  .q-options .correct{color:#15803d;font-weight:600;}
+  .row-actions{white-space:nowrap;}
+  .row-actions button{background:none;border:none;cursor:pointer;font-size:12px;color:var(--accent);
+    padding:2px 6px;}
+  .row-actions button.del{color:var(--danger);}
+
+  /* Modal (ekle/düzenle formu) */
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);
+    align-items:center;justify-content:center;z-index:50;}
+  .modal-backdrop.open{display:flex;}
+  .modal{background:#fff;border-radius:10px;width:560px;max-width:92vw;max-height:88vh;
+    overflow-y:auto;padding:22px;}
+  .modal h3{margin:0 0 14px;font-size:16px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:500;}
+  .field textarea,.field input[type=text]{width:100%;border:1px solid var(--border);border-radius:6px;
+    padding:8px 10px;font-size:13.5px;font-family:inherit;resize:vertical;}
+  .field textarea{min-height:56px;}
+  .option-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .option-row input[type=radio]{flex-shrink:0;}
+  .option-row input[type=text]{flex:1;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+  .form-error{color:var(--danger);font-size:12.5px;margin-top:8px;display:none;}
+  .form-error.show{display:block;}
+</style>
+</head>
+<body>
+
+  <div id="authGate">Yükleniyor…</div>
+
+  <div id="adminApp">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>SınavRotası Admin</h1>
+        <div class="who"><span id="adminEmail"></span><button id="signOutBtn" type="button">Çıkış</button></div>
+      </div>
+      <div class="tree" id="tree"><div class="empty-state">Konular yükleniyor…</div></div>
+    </aside>
+
+    <main class="main">
+      <div class="main-header">
+        <div>
+          <h2 id="selectedTopicTitle">Bir konu seçin</h2>
+          <div class="sub" id="selectedTopicSub"></div>
+        </div>
+        <button class="btn" id="newQuestionBtn" disabled type="button">+ Yeni Soru</button>
+      </div>
+      <div class="content" id="content">
+        <div class="empty-state">Soldan bir konu seçerek sorularını görüntüleyin.</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Soru ekle/düzenle modalı -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <h3 id="modalTitle">Yeni Soru</h3>
+      <form id="questionForm">
+        <div class="field">
+          <label>Soru metni</label>
+          <textarea id="fPrompt" required></textarea>
+        </div>
+        <div class="field">
+          <label>Şıklar (doğru olanı işaretleyin)</label>
+          <div class="option-row"><input type="radio" name="fCorrect" value="0" checked><input type="text" id="fOpt0" required placeholder="A şıkkı"></div>
+          <div class="option-row"><input type="radio" name="fCorrect" value="1"><input type="text" id="fOpt1" required placeholder="B şıkkı"></div>
+          <div class="option-row"><input type="radio" name="fCorrect" value="2"><input type="text" id="fOpt2" required placeholder="C şıkkı"></div>
+          <div class="option-row"><input type="radio" name="fCorrect" value="3"><input type="text" id="fOpt3" required placeholder="D şıkkı"></div>
+        </div>
+        <div class="field">
+          <label>Açıklama (opsiyonel)</label>
+          <textarea id="fExplanation"></textarea>
+        </div>
+        <div class="form-error" id="formError"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" id="modalCancelBtn">Vazgeç</button>
+          <button type="submit" class="btn" id="modalSaveBtn">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="supabaseClient.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
