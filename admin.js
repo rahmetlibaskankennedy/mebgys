@@ -216,18 +216,6 @@ function renderTopicTree() {
     panel.appendChild(block);
   });
 }
-
-    function appendChildren(list, depth) {
-      (list || []).forEach(t => {
-        const node = document.createElement('div');
-        node.className = `tree-node depth-${depth}${t.id === currentTopicId ? ' active' : ''}`;
-        node.dataset.topicId = t.id;
-        node.innerHTML = `${escapeHtml(t.title)}${t.question_count != null ? `<span class="qcount">${t.question_count}</span>` : ''}`;
-        node.addEventListener('click', () => selectTopic(t.id, t.title));
-        block.appendChild(node);
-        appendChildren(childrenByParent[t.id], depth + 1);
-      });
-    }
     appendChildren(byCategory[cat.id], 0);
     panel.appendChild(block);
   });
