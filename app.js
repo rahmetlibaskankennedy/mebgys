@@ -441,8 +441,6 @@ function homeView() {
 
 function bankView() {
   const stats = getStats();
-  const activeDocuments = getActiveDocuments();
-  const recentTests = progress.completedTests.slice(-3).reverse();
   return `<section class="screen content-screen">
     <div class="page-heading"><span>DENEMELER</span><h2>Hızlı denemeler</h2><p>Aktif soru bankalarından oluşan denemelerle performansını ölç.</p></div>
     <article class="practice-card">
@@ -450,13 +448,7 @@ function bankView() {
       <div><span>GERÇEK SINAV FORMATI</span><h3>${ROLES.find(r => r.key === progress.selectedRole)?.label || 'Kadrona'} özel deneme</h3><p>MEB'in resmi konu ağırlıklarına göre 60 soruluk tam kapsamlı deneme.</p></div>
       <button class="reader-primary" id="startKadroExamButton" type="button" ${progress.selectedRole ? '' : 'disabled'}>Başlat</button>
     </article>
-    <article class="practice-card">
-      <div class="practice-card-icon">${svg('trophy')}</div>
-      <div><span>KARMA MEVZUAT</span><h3>20 soruluk hızlı deneme</h3><p>${activeDocuments.length ? `${activeDocuments.length} aktif paketten dengeli rastgele seçilir.` : 'Aktif soru paketi bulunmuyor.'}</p></div>
-      <button class="reader-primary" id="startMockButton" type="button" ${activeDocuments.length ? '' : 'disabled'}>Başlat</button>
-    </article>
     <div class="metric-strip"><div><strong>${stats.completedMocks}</strong><span>Tamamlanan deneme</span></div><div><strong>%${stats.accuracy}</strong><span>Genel doğruluk</span></div></div>
-    <section class="recent-tests"><h3>Son testler</h3>${recentTests.length ? recentTests.map(test => `<article><div><strong>${escapeHtml(test.title)}</strong><span>${test.score}/${test.total} doğru</span></div><small>${EXAM_KINDS.includes(test.kind) ? 'Deneme' : 'Konu testi'}</small></article>`).join('') : '<div class="empty-inline">Henüz tamamlanan bir test yok.</div>'}</section>
   </section>`;
 }
 
@@ -781,7 +773,6 @@ function bindViewEvents() {
   // Rota panelini açma butonu
   document.getElementById('openRouteSheetButton')?.addEventListener('click', openRouteSheet);
   
-  document.getElementById('startMockButton')?.addEventListener('click', startMixedMock);
   document.getElementById('startKadroExamButton')?.addEventListener('click', startKadroExam);
   document.getElementById('startWrongPoolButton')?.addEventListener('click', startWrongPool);
   app.querySelectorAll('[data-open-mistake-category]').forEach(element => {
@@ -1387,32 +1378,6 @@ async function startSmartPractice() {
     kind: 'route',
     title: 'Bugünkü Rota',
     subtitle: `${routeSettings.mode} • ${routeSettings.questions} Soru`,
-    returnView: closeTopicSheet
-  });
-}
-
-async function startMixedMock() {
-  const activeDocuments = getActiveDocuments();
-  if (!activeDocuments.length) return showToast('Henüz aktif soru paketi bulunmuyor.');
-  showToast('Deneme hazırlanıyor…');
-  // Promise.all yerine Promise.allSettled: "aktif" görünen 16 başlıktan biri bile
-  // gerçekte eksikse (dosya yoksa) eskiden TÜM deneme başarısız oluyordu. Artık
-  // sadece gerçekten yüklenebilen paketlerden soru toplanıyor, eksik olanlar
-  // loadQuestionBank tarafından otomatik olarak "aktif değil" işaretleniyor.
-  const results = await Promise.allSettled(activeDocuments.map(async ({ item, categoryKey }) =>
-    tagQuestions(await loadQuestionBank(item), item, categoryKey)
-  ));
-  const banks = results.filter(result => result.status === 'fulfilled').map(result => result.value);
-  const pool = banks.flat();
-  const questions = shuffle(pool).slice(0, Math.min(20, pool.length));
-  if (!questions.length) return showToast('Deneme için soru bulunamadı.');
-  topicSheet.classList.add('open');
-  topicBackdrop.classList.add('open');
-  startQuiz({
-    questions,
-    kind: 'mock',
-    title: 'Karma Mevzuat Denemesi',
-    subtitle: `${questions.length} soru • aktif paketlerden rastgele`,
     returnView: closeTopicSheet
   });
 }
