@@ -144,7 +144,7 @@ for tkey, t in taxonomy.items():
             if linked_id not in questionfile_to_topicid.values():
                 extra_topics_rows.append((
                     tkey, t.get("category"), None, "exam_topic", t["title"],
-                    None, None, None, None, [], 0, qfile
+                    None, None, None, None, t.get("kadrolar", []), 0, qfile
                 ))
             questionfile_to_topicid[qfile] = linked_id
         exam_topics_rows.append((
