@@ -216,10 +216,6 @@ function renderTopicTree() {
     panel.appendChild(block);
   });
 }
-    appendChildren(byCategory[cat.id], 0);
-    panel.appendChild(block);
-  });
-}
 
 function selectTopic(topicId, title) {
   currentTopicId = topicId;
