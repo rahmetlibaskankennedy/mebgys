@@ -1214,6 +1214,35 @@ function shuffle(arr) {
   return a;
 }
 
+// Aynı kadro+konu için bu havuzdaki her sorunun daha önceki denemelerde
+// (deneme_questions.kadro/topic_id/source_question_id üzerinden) kaç kez
+// kullanıldığını döndürür. "Torba" mantığının hafızası burası.
+async function fetchUsageCounts(kadro, topicId) {
+  const { data, error } = await supabaseClient
+    .from('deneme_questions')
+    .select('source_question_id')
+    .eq('kadro', kadro)
+    .eq('topic_id', topicId);
+  if (error) throw error;
+  const counts = new Map();
+  (data || []).forEach(r => {
+    if (!r.source_question_id) return;
+    counts.set(r.source_question_id, (counts.get(r.source_question_id) || 0) + 1);
+  });
+  return counts;
+}
+
+// Havuzdan `count` kadar soru seçer: önce hiç kullanılmamış (used=0) olanlar,
+// onlar yetmezse en az kullanılmış olanlar önceliklendirilir. Aynı kullanım
+// sayısına sahip sorular arasında rastgele sıralanır — böylece bir önceki
+// deneme oluşturma mantığındaki rastgelelik korunur, ama artık "torba"
+// tükenmeden hiçbir soru tekrar etmez.
+function pickLeastUsed(pool, usageCounts, count) {
+  const withMeta = pool.map(q => ({ q, used: usageCounts.get(q.id) || 0, rand: Math.random() }));
+  withMeta.sort((a, b) => (a.used - b.used) || (a.rand - b.rand));
+  return withMeta.slice(0, count).map(x => x.q);
+}
+
 async function generateDenemeQuestions(denemeId, kadro) {
   const { data: items, error } = await supabaseClient
     .from('exam_blueprint_items')
@@ -1249,7 +1278,8 @@ async function generateDenemeQuestions(denemeId, kadro) {
       pool = data;
     }
 
-    const picked = shuffle(pool).slice(0, item.question_count);
+    const usageCounts = await fetchUsageCounts(kadro, item.topic_id);
+    const picked = pickLeastUsed(pool, usageCounts, item.question_count);
     if (picked.length < item.question_count) {
       shortfalls.push({ title: et.title, needed: item.question_count, got: picked.length });
     }
@@ -1257,7 +1287,8 @@ async function generateDenemeQuestions(denemeId, kadro) {
       runningOrder += 1;
       rows.push({
         deneme_id: denemeId, prompt: q.prompt, options: q.options,
-        answer_index: q.answer_index, sort_order: runningOrder
+        answer_index: q.answer_index, sort_order: runningOrder,
+        kadro, topic_id: item.topic_id, source_question_id: q.id
       });
     });
   }
