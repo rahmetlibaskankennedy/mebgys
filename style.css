@@ -1468,3 +1468,7 @@ body.auth-page{
   transition: opacity .15s;
 }
 .report-modal-send:active { opacity: .85; }
+.report-modal-undo {
+  background: var(--line);
+  color: var(--navy);
+}
