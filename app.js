@@ -1266,7 +1266,7 @@ async function openSectionQuiz(documentItem, section, categoryKey) {
   try {
     showToast('Sorular hazırlanıyor…');
     const bank = tagQuestions(await loadQuestionBank(documentItem), documentItem, categoryKey);
-    const questions = bank.filter(question => question.sectionId === section.id);
+    const questions = bank.filter(question => question.topicId === section.id);
     if (!questions.length) return showToast('Bu bölüm için henüz soru bulunmuyor.');
     startQuiz({
       questions,
@@ -1472,7 +1472,7 @@ function recordAnswer(question, selected) {
   } else {
     progress.wrongQuestions[question.id] = {
       id: question.id, prompt: question.prompt, options: question.options, answerIndex: question.answerIndex,
-      sectionId: question.sectionId || null, documentId: question.documentId || null,
+      sectionId: question.topicId || null, documentId: question.documentId || null,
       documentTitle: question.documentTitle || null, categoryKey: question.categoryKey || null
     };
   }

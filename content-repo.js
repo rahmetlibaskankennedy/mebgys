@@ -14,7 +14,10 @@ const ContentRepo = (() => {
   const client = supabaseClient;
 
   function mapQuestionRow(row) {
-    return { id: row.id, prompt: row.prompt, options: row.options, answerIndex: row.answer_index };
+    // topicId eklendi: "Madde Madde Çalış" ekranı (openSectionQuiz / app.js) sorularını
+    // alt konunun (section) topic_id'sine göre filtreliyor. Bu alan olmadan hangi
+    // sorunun hangi alt konuya ait olduğu app.js tarafında hiç bilinemiyordu.
+    return { id: row.id, prompt: row.prompt, options: row.options, answerIndex: row.answer_index, topicId: row.topic_id };
   }
 
   // ---- categorytopics.json karşılığı -------------------------------------
