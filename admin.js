@@ -195,7 +195,28 @@ async function loadTopics() {
     walk(byCategory[cat.id], 0);
   });
 
+  // Her konu için, altındaki tüm alt konuların soru sayılarını da toplayan
+  // "toplam" haritayı hesapla. Ağaçtaki rozetler ve Konular sekmesindeki
+  // sayılar artık bunu kullanıyor; böylece alt konusu olan bir üst konu da
+  // gerçek (kümülatif) soru sayısını gösteriyor.
+  computeAggregatedCounts();
+
   window.__byCategory = byCategory; // renderTopicTree içinde kullanılacak
+}
+
+// actualQuestionCounts (sadece o konunun DOĞRUDAN sahip olduğu sorular) üzerinden,
+// her konu için kendisi + tüm alt konularının toplamını hesaplar.
+let aggregatedQuestionCounts = {};
+function computeAggregatedCounts() {
+  aggregatedQuestionCounts = {};
+  function sumFor(id) {
+    if (aggregatedQuestionCounts[id] !== undefined) return aggregatedQuestionCounts[id];
+    let total = actualQuestionCounts[id] || 0;
+    (childrenByParent[id] || []).forEach(child => { total += sumFor(child.id); });
+    aggregatedQuestionCounts[id] = total;
+    return total;
+  }
+  Object.keys(topicsById).forEach(id => sumFor(id));
 }
 
 function collectDescendantTopicIds(rootId) {
@@ -242,9 +263,11 @@ function renderTopicTree() {
         const iconHtml = hasChildren 
           ? `<span class="toggle-icon">▼</span>` 
           : `<span class="toggle-spacer"></span>`;
-        
-        const actualCount = actualQuestionCounts[t.id] || 0;
-        node.innerHTML = `${iconHtml}<span class="node-title">${escapeHtml(t.title)}</span>${actualCount > 0 ? `<span class="qcount">${actualCount}</span>` : ''}`;
+
+        // DÜZELTME: rozet artık sadece bu konuya DOĞRUDAN bağlı soru sayısını değil,
+        // altındaki tüm alt konuların soru sayısını da içeren toplamı gösteriyor.
+        const displayCount = aggregatedQuestionCounts[t.id] || 0;
+        node.innerHTML = `${iconHtml}<span class="node-title">${escapeHtml(t.title)}</span>${displayCount > 0 ? `<span class="qcount">${displayCount}</span>` : ''}`;
 
         // Tıklama event'i: Ok ikonuna tıklanırsa aç/kapat + o konuyu da aktif hale getir (metne tıklamakla aynı davranış)
         node.addEventListener('click', (e) => {
@@ -290,10 +313,16 @@ async function loadQuestions() {
   const contentEl = document.getElementById('content');
   contentEl.innerHTML = '<div class="empty-state">Yükleniyor…</div>';
 
+  // DÜZELTME: bir konu seçildiğinde artık sadece o konuya DOĞRUDAN bağlı sorular
+  // değil, altındaki tüm alt konulara (bölümlere) ait sorular da gösteriliyor.
+  // Önceden alt konusu olan üst konulara tıklandığında liste hep boş görünüyordu,
+  // çünkü sorular genelde en alttaki (leaf) alt konulara ekleniyor.
+  const topicIds = collectDescendantTopicIds(currentTopicId);
+
   const { data: questions, error } = await supabaseClient
     .from('questions')
-    .select('id,prompt,options,answer_index,explanation,sort_order')
-    .eq('topic_id', currentTopicId)
+    .select('id,prompt,options,answer_index,explanation,sort_order,topic_id')
+    .in('topic_id', topicIds)
     .order('sort_order');
 
   if (error) {
@@ -307,9 +336,15 @@ async function loadQuestions() {
   selectedQuestionIds.forEach(id => { if (!validIds.has(id)) selectedQuestionIds.delete(id); });
 
   // Sol ağaçtaki rozet, questions tablosuna canlı sorgu atmak yerine bu cache'den
-  // beslendiği için, bu konu için sayıyı burada güncelleyip ağacı yeniden çiziyoruz.
+  // beslendiği için, bu konunun alt ağacı için sayıları burada güncelleyip
+  // (önce bu alt ağacı sıfırlayıp gerçek dağılımla dolduruyoruz, sonra toplamları
+  // yeniden hesaplıyoruz) ağacı yeniden çiziyoruz.
   if (currentTopicId) {
-    actualQuestionCounts[currentTopicId] = currentQuestionsCache.length;
+    topicIds.forEach(id => { actualQuestionCounts[id] = 0; });
+    currentQuestionsCache.forEach(q => {
+      actualQuestionCounts[q.topic_id] = (actualQuestionCounts[q.topic_id] || 0) + 1;
+    });
+    computeAggregatedCounts();
     renderTopicTree();
   }
 
@@ -344,12 +379,19 @@ function renderQuestionsTable() {
 
   if (selectMode) contentEl.appendChild(buildBulkBar());
 
+  // Seçili konunun doğrudan alt konuları varsa, hangi sorunun hangi alt konuya
+  // ait olduğunu görebilmek için tabloya bir "Alt Konu" sütunu ekliyoruz.
+  const hasChildTopics = (childrenByParent[currentTopicId] || []).length > 0;
+
   const table = document.createElement('table');
   table.className = 'q-table';
   table.innerHTML = `
     <thead><tr>
       ${selectMode ? '<th class="q-check"><input type="checkbox" id="selectAllCheck"></th>' : ''}
-      <th style="width:${selectMode ? '40%' : '44%'}">Soru</th><th style="width:38%">Şıklar</th><th></th>
+      <th style="width:${selectMode ? '34%' : '38%'}">Soru</th>
+      <th style="width:30%">Şıklar</th>
+      ${hasChildTopics ? '<th style="width:14%">Alt Konu</th>' : ''}
+      <th></th>
     </tr></thead>
     <tbody></tbody>`;
   const tbody = table.querySelector('tbody');
@@ -360,10 +402,12 @@ function renderQuestionsTable() {
     const optionsHtml = (q.options || []).map((opt, i) =>
       `<div class="${i === q.answer_index ? 'correct' : ''}">${i === q.answer_index ? '✓ ' : ''}${escapeHtml(opt)}</div>`
     ).join('');
+    const subtopicTitle = hasChildTopics ? ((topicsById[q.topic_id] && topicsById[q.topic_id].title) || '') : '';
     tr.innerHTML = `
       ${selectMode ? `<td class="q-check"><input type="checkbox" class="row-check" ${selectedQuestionIds.has(q.id) ? 'checked' : ''}></td>` : ''}
       <td class="q-prompt">${escapeHtml(q.prompt)}</td>
       <td class="q-options">${optionsHtml}</td>
+      ${hasChildTopics ? `<td style="font-size:12px;color:var(--muted);">${escapeHtml(subtopicTitle)}</td>` : ''}
       <td class="row-actions">
         <button type="button" class="edit">Düzenle</button>
         <button type="button" class="del">Sil</button>
@@ -583,16 +627,44 @@ const modalBackdrop = document.getElementById('modalBackdrop');
 const questionForm = document.getElementById('questionForm');
 const formError = document.getElementById('formError');
 const fTopicSelect = document.getElementById('fTopic');
+const fSubtopicField = document.getElementById('fSubtopicField');
+const fSubtopicSelect = document.getElementById('fSubtopic');
 
 document.getElementById('modalCancelBtn').addEventListener('click', closeQuestionModal);
 modalBackdrop.addEventListener('click', (e) => { if (e.target === modalBackdrop) closeQuestionModal(); });
 
-function populateTopicSelect(selectedId) {
-  fTopicSelect.innerHTML = topicOptionsFlat.map(t =>
-    `<option value="${t.id}">${' '.repeat(t.depth)}${escapeHtml(t.title)}</option>`
-  ).join('');
-  if (selectedId) fTopicSelect.value = selectedId;
+// DÜZELTME: "Soru Ekle/Düzenle" modalındaki KONU alanı artık, Toplu Soru Ekle
+// modalındakiyle aynı iki kademeli mantığı kullanıyor: fTopic sadece kök konuları
+// (her kategorinin üst düzey konu/belgelerini) listeler; kökün alt konuları varsa
+// ikinci bir "Alt konu / bölüm" seçimi açılır. Böylece 30+ satırlık tek bir uzun
+// flat liste yerine, iki kısa ve sade seçim kutusu gösterilir.
+function populateFormTopicRoots(selectedRootId) {
+  const byCategory = window.__byCategory || {};
+  fTopicSelect.innerHTML = categoriesCache.map(cat => {
+    const roots = byCategory[cat.id] || [];
+    if (!roots.length) return '';
+    const opts = roots.map(t => `<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('');
+    return `<optgroup label="${escapeHtml(cat.title)}">${opts}</optgroup>`;
+  }).join('');
+  if (selectedRootId) fTopicSelect.value = selectedRootId;
 }
+
+function populateFormSubtopics(rootId) {
+  const children = childrenByParent[rootId] || [];
+  if (!children.length) {
+    fSubtopicField.style.display = 'none';
+    fSubtopicSelect.innerHTML = '';
+    return;
+  }
+  fSubtopicSelect.innerHTML = children.map(t => `<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('');
+  fSubtopicField.style.display = '';
+}
+
+function selectedFormTopicId() {
+  return (fSubtopicField.style.display !== 'none' && fSubtopicSelect.value) ? fSubtopicSelect.value : fTopicSelect.value;
+}
+
+fTopicSelect.addEventListener('change', () => populateFormSubtopics(fTopicSelect.value));
 
 function openQuestionModal(question) {
   editingQuestionId = question ? question.id : null;
@@ -601,8 +673,15 @@ function openQuestionModal(question) {
 
   // DÜZELTME: düzenlerken sorunun kendi topic_id'sini kullan, currentTopicId'i değil.
   // Böylece bu modal ileride "tüm sorular" gibi farklı bir listeden çağrılsa bile
-  // yanlış konuyu seçili göstermez.
-  populateTopicSelect(question ? question.topic_id : (currentTopicId || (topicOptionsFlat[0] && topicOptionsFlat[0].id)));
+  // yanlış konuyu seçili göstermez. Konu bir alt konu (section) ise, önce üst
+  // konuyu (kökü) sonra alt konuyu seçili getiriyoruz.
+  const targetTopicId = question ? question.topic_id : (currentTopicId || (topicOptionsFlat[0] && topicOptionsFlat[0].id));
+  const targetTopic = targetTopicId ? topicsById[targetTopicId] : null;
+  const rootId = targetTopic && targetTopic.parent_id ? targetTopic.parent_id : targetTopicId;
+
+  populateFormTopicRoots(rootId);
+  populateFormSubtopics(rootId);
+  if (targetTopic && targetTopic.parent_id) fSubtopicSelect.value = targetTopic.id;
 
   document.getElementById('fPrompt').value = question?.prompt || '';
   document.getElementById('fExplanation').value = question?.explanation || '';
@@ -620,6 +699,7 @@ function openQuestionModal(question) {
 function closeQuestionModal() {
   modalBackdrop.classList.remove('open');
   questionForm.reset();
+  fSubtopicField.style.display = 'none';
   editingQuestionId = null;
 }
 
@@ -627,7 +707,7 @@ questionForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   formError.classList.remove('show');
 
-  const topicId = fTopicSelect.value;
+  const topicId = selectedFormTopicId();
   const prompt = document.getElementById('fPrompt').value.trim();
   const options = [0, 1, 2, 3].map(i => document.getElementById(`fOpt${i}`).value.trim());
   const explanation = document.getElementById('fExplanation').value.trim();
@@ -667,7 +747,15 @@ questionForm.addEventListener('submit', async (e) => {
 
   closeQuestionModal();
   const topic = topicsById[topicId];
-  selectTopic(topicId, topic ? topic.title : currentTopicTitle);
+  // Kaydedilen soru, o an ekranda açık olan konunun alt ağacına dahilse (aynı
+  // konu ya da onun bir alt konusuysa), o konunun bağlamında kal; değilse
+  // sorunun asıl ait olduğu konuyu aç. Böylece "Yönetimde Etik" (üst) açıkken
+  // bir alt konuya soru eklenirse, ekran üst konuda kalıp yeni soruyu da gösterir.
+  if (currentTopicId && collectDescendantTopicIds(currentTopicId).includes(topicId)) {
+    loadQuestions();
+  } else {
+    selectTopic(topicId, topic ? topic.title : currentTopicTitle);
+  }
 });
 
 // ========================= 5b) Toplu soru ekleme modalı =========================
@@ -885,7 +973,7 @@ bulkForm.addEventListener('submit', async (e) => {
 
   const topicLabel = topicsById[topicId] ? topicsById[topicId].title : topicId;
   closeBulkModal();
-  if (currentTopicId === topicId) loadQuestions();
+  if (currentTopicId && collectDescendantTopicIds(currentTopicId).includes(topicId)) loadQuestions();
   else alert(`${rows.length} soru "${topicLabel}" konusuna eklendi.`);
 });
 
@@ -1258,7 +1346,9 @@ function renderManageContent() {
 
       const metaParts = [];
       if (t.article_range) metaParts.push(t.article_range);
-      const actualCount = actualQuestionCounts[t.id] || 0;
+      // DÜZELTME: burada da toplam (alt konular dahil) soru sayısını gösteriyoruz,
+      // aksi halde alt konusu olan bir üst konu "0 soru mevcut" gibi yanıltıcı görünüyordu.
+      const actualCount = aggregatedQuestionCounts[t.id] || 0;
       metaParts.push(`${actualCount} soru mevcut`);
       if (t.question_count != null) metaParts.push(`${t.question_count} hedef`);
       if (metaParts.length) {
