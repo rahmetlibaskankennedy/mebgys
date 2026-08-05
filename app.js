@@ -1670,12 +1670,30 @@ function reportQuestion(question) {
   overlay.onclick = e => { if (e.target === overlay) closeModal(); };
 
   // Geri al
-  document.getElementById('reportModalUndo').onclick = () => {
+  document.getElementById('reportModalUndo').onclick = async () => {
     delete progress.reportedQuestions[question.id];
     haptic(14);
     saveProgress();
     closeModal();
     renderQuiz();
+
+    const TELEGRAM_BOT_TOKEN = '8849973635:AAH-JXWktkpzieXfAnCSUyM9Z6lOI8VzFgI';
+    const TELEGRAM_CHAT_ID = '1066033789';
+    const user = window.currentUser;
+    const userName = user?.user_metadata?.full_name || user?.email || 'Bilinmiyor';
+    const text = [
+      '↩️ *Bildirim Geri Alındı*',
+      `👤 Kullanıcı: ${userName}`,
+      `🆔 Soru ID: \`${question.id}\``,
+      `❓ Soru: ${question.prompt}`,
+    ].join('\n');
+    try {
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text, parse_mode: 'Markdown' })
+      });
+    } catch {}
     showToast('Bildirim geri alındı.');
   };
 
