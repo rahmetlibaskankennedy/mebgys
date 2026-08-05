@@ -304,6 +304,13 @@ async function loadQuestions() {
   const validIds = new Set(currentQuestionsCache.map(q => q.id));
   selectedQuestionIds.forEach(id => { if (!validIds.has(id)) selectedQuestionIds.delete(id); });
 
+  // Sol ağaçtaki rozet, questions tablosuna canlı sorgu atmak yerine bu cache'den
+  // beslendiği için, bu konu için sayıyı burada güncelleyip ağacı yeniden çiziyoruz.
+  if (currentTopicId) {
+    actualQuestionCounts[currentTopicId] = currentQuestionsCache.length;
+    renderTopicTree();
+  }
+
   document.getElementById('mainSub').textContent = `${currentQuestionsCache.length} soru`;
 
   renderQuestionsTable();
@@ -1212,6 +1219,13 @@ function renderManageContent() {
     editCatBtn.textContent = 'Kategoriyi Düzenle';
     editCatBtn.addEventListener('click', () => openCategoryModal(category));
     actions.appendChild(editCatBtn);
+
+    const delCatBtn = document.createElement('button');
+    delCatBtn.className = 'btn danger small';
+    delCatBtn.type = 'button';
+    delCatBtn.textContent = 'Kategoriyi Sil';
+    delCatBtn.addEventListener('click', () => deleteCategory(category));
+    actions.appendChild(delCatBtn);
   }
   const addBtn = document.createElement('button');
   addBtn.className = 'btn small';
@@ -1417,6 +1431,27 @@ async function deleteTopicNode(id, title) {
   if (error) { alert('Silinemedi: ' + error.message); return; }
 
   if (manageParentId === id) manageParentId = null;
+  if (currentTopicWasAffected) {
+    currentTopicId = null;
+    currentTopicTitle = '';
+  }
+  await refreshTopicsAndRerender();
+}
+
+async function deleteCategory(category) {
+  const topicCount = Object.values(topicsById).filter(t => t.category_id === category.id).length;
+  const warn = topicCount
+    ? `"${category.title}" silinirse içindeki ${topicCount} konu/bölüm ve tüm soruları da silinecek. Emin misiniz?`
+    : `"${category.title}" kategorisini silmek istediğinize emin misiniz?`;
+  if (!confirm(warn)) return;
+
+  const affectedIds = Object.values(topicsById).filter(t => t.category_id === category.id).map(t => t.id);
+  const currentTopicWasAffected = currentTopicId && affectedIds.includes(currentTopicId);
+
+  const { error } = await supabaseClient.from('categories').delete().eq('id', category.id);
+  if (error) { alert('Silinemedi: ' + error.message); return; }
+
+  if (manageCategoryId === category.id) { manageCategoryId = null; manageParentId = null; }
   if (currentTopicWasAffected) {
     currentTopicId = null;
     currentTopicTitle = '';
