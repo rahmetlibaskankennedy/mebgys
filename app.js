@@ -1196,7 +1196,7 @@ async function loadQuestionBank(documentItem) {
     const { data, error } = await supabaseClient
       .from('questions')
       .select('id,prompt,options,answer_index,section_id')
-      .eq('topic_id', documentItem.id)
+      .in('topic_id', topicIds)
       .order('sort_order', { ascending: true });
     
     if (error) throw error;
