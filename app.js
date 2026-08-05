@@ -17,29 +17,23 @@ const ROLE_ICONS = { memur: 'idcard', sef: 'clipboard', sayman: 'calculator', 's
 // --- BİLGİ KARTLARI KATALOĞU ---
 const CARD_CATEGORY_ORDER = ['general-legislation', 'meb-legislation', 'general-culture'];
 
-const CARD_CATALOGUE = {
-  'general-legislation': {
-    title: 'Genel Mevzuat',
-    description: 'Kanunlar ve temel mevzuat kartları',
-    icon: 'scale', iconClass: '',
-    documents: [
-      { id: 'anayasa', title: 'T.C. Anayasası', cardFile: 'cards/anayasa.json' },
-      { id: '657-sayili-kanun', title: '657 Sayılı Devlet Memurları Kanunu', cardFile: 'cards/657.json' },
-      { id: '4483-sayili-kanun', title: '4483 Sayılı Memurlar ve Diğer Kamu Görevlilerinin Yargılanması Hakkında Kanun', cardFile: 'cards/4483.json' },
-      { id: '5442-sayili-kanun', title: '5442 Sayılı İl İdaresi Kanunu', cardFile: 'cards/5442.json' },
-      { id: '4982-sayili-kanun', title: '4982 Sayılı Bilgi Edinme Hakkı Kanunu', cardFile: 'cards/4982.json' },
-      { id: '3071-sayili-kanun', title: '3071 Sayılı Dilekçe Hakkının Kullanılmasına Dair Kanun', cardFile: 'cards/3071.json' }
-    ]
-  },
-  'meb-legislation': {
-    title: 'MEB Mevzuatı', description: 'Millî Eğitim Bakanlığı mevzuat kartları',
-    icon: 'schoolbook', iconClass: 'red', documents: []
-  },
-  'general-culture': {
-    title: 'Genel Kültür', description: 'Tarih, coğrafya ve güncel bilgi kartları',
-    icon: 'landmark', iconClass: 'blue', documents: []
-  }
-};
+// Kart kataloğu artık statik değil — state.catalogue'dan (Supabase) dinamik üretilir.
+// getCardCatalogue() her zaman güncel veriyi döndürür.
+function getCardCatalogue() {
+  if (!state.catalogue) return {};
+  const result = {};
+  CARD_CATEGORY_ORDER.forEach(key => {
+    const cat = state.catalogue[key];
+    if (!cat) return;
+    const meta = categoryCardMeta(key);
+    // Sadece soru sayısı olan (questionCount > 0) konuları kart olarak sun
+    const documents = (cat.topics || [])
+      .filter(t => (t.questionCount || 0) > 0)
+      .map(t => ({ id: t.id, title: t.title, topicId: t.id }));
+    result[key] = { title: cat.title, description: cat.subtitle || meta.description, icon: meta.icon, iconClass: meta.iconClass, documents };
+  });
+  return result;
+}
 
 const cardDecks = new Map();
 
@@ -626,7 +620,7 @@ function cardsView() {
     <div class="page-heading"><span>KARTLARIM</span><h2>Bilgi Kartları</h2><p>Kategorini seç, soru-cevap kartlarıyla hızlı tekrar yap.</p></div>
     <section class="categories">
       ${CARD_CATEGORY_ORDER.map(key => {
-        const meta = CARD_CATALOGUE[key];
+        const meta = getCardCatalogue()[key];
         const activeCount = meta.documents.filter(d => d.cardFile).length;
         const metaText = meta.documents.length ? `${meta.documents.length} kaynak • ${activeCount} aktif set` : 'İçerik yakında eklenecek';
         return `<article class="category" role="button" tabindex="0" data-open-card-category="${key}">
@@ -640,7 +634,7 @@ function cardsView() {
 }
 
 function openCardCategorySheet(categoryKey) {
-  const category = CARD_CATALOGUE[categoryKey];
+  const category = getCardCatalogue()[categoryKey];
   if (!category) return showToast('Kategori bulunamadı.');
   clearInterval(timerInterval);
   timerInterval = null;
@@ -651,7 +645,7 @@ function openCardCategorySheet(categoryKey) {
 }
 
 function renderCardCategoryLevel(categoryKey) {
-  const category = CARD_CATALOGUE[categoryKey];
+  const category = getCardCatalogue()[categoryKey];
   resetSheetClasses();
   applySheetHeader({ title: category.title, subtitle: 'Çalışmak istediğin kaynağı seç.', eyebrow: 'BİLGİ KARTLARI', icon: category.icon, iconClass: category.iconClass });
   topicBreadcrumbWrap.innerHTML = '';
@@ -662,8 +656,9 @@ function renderCardCategoryLevel(categoryKey) {
     return;
   }
   topicList.innerHTML = category.documents.map((doc, index) => {
-    const info = doc.cardFile ? 'Aktif kart seti' : 'Yakında eklenecek';
-    return `<article class="topic-item ${doc.cardFile ? '' : 'is-disabled'}" data-card-doc-index="${index}" role="button" tabindex="0">
+    const active = doc.topicId || doc.cardFile;
+    const info = active ? 'Aktif kart seti' : 'Yakında eklenecek';
+    return `<article class="topic-item ${active ? '' : 'is-disabled'}" data-card-doc-index="${index}" role="button" tabindex="0">
       <div class="topic-number">${String(index + 1).padStart(2, '0')}</div>
       <div class="topic-copy"><h4>${escapeHtml(doc.title)}</h4><p>${info}</p></div>
       <div class="topic-arrow">${svg('arrow')}</div>
@@ -672,7 +667,7 @@ function renderCardCategoryLevel(categoryKey) {
   topicList.querySelectorAll('[data-card-doc-index]').forEach(element => {
     const open = () => {
       const doc = category.documents[Number(element.dataset.cardDocIndex)];
-      if (!doc.cardFile) return showToast('Bu kaynak için kart seti henüz eklenmedi.');
+      if (!doc.topicId && !doc.cardFile) return showToast('Bu kaynak için kart seti henüz eklenmedi.');
       openCardDeck(doc, categoryKey);
     };
     element.addEventListener('click', open);
@@ -682,9 +677,15 @@ function renderCardCategoryLevel(categoryKey) {
 }
 
 async function loadCardDeck(doc) {
-  if (!doc.cardFile) throw new Error('Bu kaynak için kart seti henüz eklenmedi.');
   if (cardDecks.has(doc.id)) return cardDecks.get(doc.id);
-  const data = await ContentRepo.fetchFlashcardsByPath(doc.cardFile);
+  let data;
+  if (doc.topicId) {
+    data = await ContentRepo.fetchCardsByTopicId(doc.topicId);
+  } else if (doc.cardFile) {
+    data = await ContentRepo.fetchFlashcardsByPath(doc.cardFile);
+  } else {
+    throw new Error('Bu kaynak için kart seti henüz eklenmedi.');
+  }
   const cards = Array.isArray(data.cards) ? data.cards : [];
   cardDecks.set(doc.id, cards);
   return cards;
@@ -707,7 +708,7 @@ function renderCardStudy() {
   if (!study) return;
   topicSheet.classList.add('document-flow', 'card-study-active');
   topicSheet.classList.remove('quiz-active');
-  const category = CARD_CATALOGUE[study.categoryKey];
+  const category = getCardCatalogue()[study.categoryKey];
   applySheetHeader({ title: study.doc.title, subtitle: `${study.index + 1} / ${study.cards.length}`, eyebrow: 'BİLGİ KARTLARI', icon: 'gavel', iconClass: category.iconClass });
   renderBreadcrumb(category.title, () => { state.cardStudy = null; topicSheet.classList.remove('card-study-active'); renderCardCategoryLevel(study.categoryKey); });
   setSheetProgress('', Math.round(((study.index + 1) / study.cards.length) * 100));
