@@ -1520,7 +1520,7 @@ function renderQuiz() {
             <h2>${escapeHtml(quiz.title)}</h2>
           </div>
           <div class="quiz-premium-top-actions">
-            <button type="button" class="topbar-action ${progress.reportedQuestions[current.id] ? 'active' : ''}" id="quizReportButton" aria-label="Soruyu Bildir" ${progress.reportedQuestions[current.id] ? 'disabled' : ''}>
+            <button type="button" class="topbar-action ${progress.reportedQuestions[current.id] ? 'active' : ''}" id="quizReportButton" aria-label="${progress.reportedQuestions[current.id] ? 'Bildirimi Geri Al' : 'Soruyu Bildir'}">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
             </button>
           </div>
@@ -1589,9 +1589,15 @@ function renderQuiz() {
             <strong>Soruyu Bildir</strong>
             <button type="button" id="reportModalClose" aria-label="Kapat">×</button>
           </div>
-          <p class="report-modal-desc">Soruyla ilgili hata veya yorumunu yaz.</p>
-          <textarea id="reportModalNote" class="report-modal-textarea" placeholder="Notunu buraya yaz… (isteğe bağlı)" rows="4"></textarea>
-          <button type="button" class="report-modal-send" id="reportModalSend">Gönder</button>
+          <div id="reportModalNewContent">
+            <p class="report-modal-desc">Soruyla ilgili hata veya yorumunu yaz.</p>
+            <textarea id="reportModalNote" class="report-modal-textarea" placeholder="Notunu buraya yaz… (isteğe bağlı)" rows="4"></textarea>
+            <button type="button" class="report-modal-send" id="reportModalSend">Gönder</button>
+          </div>
+          <div id="reportModalUndoContent" style="display:none">
+            <p class="report-modal-desc">Bu soruyu daha önce bildirdin. Bildirimi geri almak istiyor musun?</p>
+            <button type="button" class="report-modal-send report-modal-undo" id="reportModalUndo">Bildirimi Geri Al</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -1649,16 +1655,31 @@ function toggleQuestionFlag(question) {
 }
 
 function reportQuestion(question) {
-  if (progress.reportedQuestions[question.id]) return;
   const overlay = document.getElementById('reportModalOverlay');
   if (!overlay) return;
+
+  const isReported = Boolean(progress.reportedQuestions[question.id]);
+  document.getElementById('reportModalNewContent').style.display = isReported ? 'none' : 'block';
+  document.getElementById('reportModalUndoContent').style.display = isReported ? 'block' : 'none';
+  if (!isReported) document.getElementById('reportModalNote').value = '';
+
   overlay.classList.add('open');
-  document.getElementById('reportModalNote').value = '';
 
   const closeModal = () => overlay.classList.remove('open');
   document.getElementById('reportModalClose').onclick = closeModal;
   overlay.onclick = e => { if (e.target === overlay) closeModal(); };
 
+  // Geri al
+  document.getElementById('reportModalUndo').onclick = () => {
+    delete progress.reportedQuestions[question.id];
+    haptic(14);
+    saveProgress();
+    closeModal();
+    renderQuiz();
+    showToast('Bildirim geri alındı.');
+  };
+
+  // Gönder
   document.getElementById('reportModalSend').onclick = async () => {
     const note = document.getElementById('reportModalNote').value.trim();
     closeModal();
