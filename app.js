@@ -1177,18 +1177,41 @@ function renderSummary(documentItem, categoryKey) {
 }
 
 async function loadQuestionBank(documentItem) {
-  if (!documentItem.questionFile) throw new Error('Bu başlık için soru bankası henüz tanımlanmamış.');
   if (state.questionBanks.has(documentItem.id)) return state.questionBanks.get(documentItem.id);
+  
   try {
-    const data = await ContentRepo.fetchQuestionsByPath(documentItem.questionFile);
-    const questions = Array.isArray(data.questions) ? data.questions : [];
+    // Önce JSON dosyasından dene (geriye uyumluluk için)
+    if (documentItem.questionFile) {
+      try {
+        const data = await ContentRepo.fetchQuestionsByPath(documentItem.questionFile);
+        const questions = Array.isArray(data.questions) ? data.questions : [];
+        state.questionBanks.set(documentItem.id, questions);
+        return questions;
+      } catch (jsonError) {
+        console.warn(`JSON dosyası yüklenemedi: ${documentItem.questionFile}`);
+      }
+    }
+
+    // Veritabanından yükle
+    const { data, error } = await supabaseClient
+      .from('questions')
+      .select('id,prompt,options,answer_index,section_id')
+      .eq('topic_id', documentItem.id)
+      .order('sort_order', { ascending: true });
+    
+    if (error) throw error;
+    
+    const questions = (data || []).map(q => ({
+      id: q.id,
+      prompt: q.prompt,
+      options: q.options,
+      answerIndex: q.answer_index,
+      sectionId: q.section_id
+    }));
+    
     state.questionBanks.set(documentItem.id, questions);
     return questions;
   } catch (error) {
-    // categorytopics.json bu başlık için questionFile tanımlamış olsa da dosya
-    // gerçekte yoksa (henüz eklenmediyse), başlığı kalıcı olarak "aktif değil"
-    // işaretle. Böylece getActiveDocuments() bir daha bu başlığı seçmez ve
-    // arayüz onu yanlışlıkla "içerik paketi aktif" göstermeye devam etmez.
     documentItem.questionFile = null;
     documentItem.contentStatus = 'planned';
     throw error;
@@ -1953,15 +1976,44 @@ async function loadExamConfig() {
 
 async function loadExamTopicBank(topicId) {
   const topic = examTopicRegistry?.[topicId];
-  if (!topic || !topic.questionFile) return [];
+  if (!topic) return [];
+  
   const cacheKey = `exam-topic:${topicId}`;
   if (state.questionBanks.has(cacheKey)) return state.questionBanks.get(cacheKey);
+  
   try {
-    const data = await ContentRepo.fetchQuestionsByPath(topic.questionFile);
-    const questions = Array.isArray(data.questions) ? data.questions : [];
+    // Önce JSON dosyasından dene
+    if (topic.questionFile) {
+      try {
+        const data = await ContentRepo.fetchQuestionsByPath(topic.questionFile);
+        const questions = Array.isArray(data.questions) ? data.questions : [];
+        state.questionBanks.set(cacheKey, questions);
+        return questions;
+      } catch (jsonError) {
+        console.warn(`Sınav JSON dosyası yüklenemedi: ${topic.questionFile}`);
+      }
+    }
+
+    // Veritabanından yükle
+    const { data, error } = await supabaseClient
+      .from('questions')
+      .select('id,prompt,options,answer_index')
+      .eq('topic_id', topicId)
+      .order('sort_order', { ascending: true });
+    
+    if (error) throw error;
+    
+    const questions = (data || []).map(q => ({
+      id: q.id,
+      prompt: q.prompt,
+      options: q.options,
+      answerIndex: q.answer_index
+    }));
+    
     state.questionBanks.set(cacheKey, questions);
     return questions;
-  } catch {
+  } catch (error) {
+    console.error(`Sınav konusu yüklenemedi (${topicId}):`, error);
     state.questionBanks.set(cacheKey, []);
     return [];
   }
