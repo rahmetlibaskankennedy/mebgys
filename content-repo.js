@@ -121,6 +121,24 @@ const ContentRepo = (() => {
     return { cards: data };
   }
 
+  // ---- Kart modu: topic_id'ye göre soruları kart formatına çevirir ----------
+  // Çoktan seçmeli soruyu flip-card formatına dönüştürür:
+  //   question → prompt metni
+  //   answer   → doğru şıkkın metni
+  async function fetchCardsByTopicId(topicId) {
+    const topicIds = await collectDescendantTopicIds(topicId);
+    const { data, error } = await client
+      .from('questions')
+      .select('prompt, options, answer_index')
+      .in('topic_id', topicIds)
+      .order('sort_order');
+    if (error) throw error;
+    const cards = (data || [])
+      .filter(row => row.prompt && Array.isArray(row.options) && row.options[row.answer_index] != null)
+      .map(row => ({ question: row.prompt, answer: row.options[row.answer_index] }));
+    return { cards };
+  }
+
   // ---- exam-blueprint/topics-taxonomy.json karşılığı -----------------------
   async function fetchExamTaxonomy() {
     const { data: examTopics, error } = await client
@@ -161,5 +179,5 @@ const ContentRepo = (() => {
     return result;
   }
 
-  return { fetchCatalogue, fetchQuestionsByPath, fetchFlashcardsByPath, fetchExamTaxonomy, fetchExamBlueprint };
+  return { fetchCatalogue, fetchQuestionsByPath, fetchFlashcardsByPath, fetchCardsByTopicId, fetchExamTaxonomy, fetchExamBlueprint };
 })();
