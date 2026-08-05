@@ -155,7 +155,7 @@ function switchTab(tab) {
 async function loadTopics() {
   const [{ data: categories, error: catErr }, { data: topics, error: topicErr }, { data: questionRows, error: qErr }] = await Promise.all([
     supabaseClient.from('categories').select('id,title,subtitle,sort_order').order('sort_order'),
-    supabaseClient.from('topics').select('id,category_id,parent_id,type,title,document_number,article_range,question_count,kadrolar,sort_order').order('sort_order'),
+    supabaseClient.from('topics').select('id,category_id,parent_id,type,title,document_number,article_range,question_count,kadrolar,sort_order,summary,key_points').order('sort_order'),
     supabaseClient.from('questions').select('topic_id')
   ]);
 
@@ -1419,6 +1419,8 @@ function openTopicModal(topic, parentId, categoryId) {
   document.getElementById('tDocNumber').value = topic?.document_number || '';
   document.getElementById('tArticleRange').value = topic?.article_range || '';
   document.getElementById('tQuestionCount').value = topic?.question_count ?? '';
+  document.getElementById('tSummary').value = topic?.summary || '';
+  document.getElementById('tKeyPoints').value = (topic?.key_points || []).join('\n');
 
   const selectedKadrolar = topic?.kadrolar || Object.keys(KADRO_LABELS);
   tKadroGroup.querySelectorAll('input').forEach(cb => { cb.checked = selectedKadrolar.includes(cb.value); });
@@ -1448,6 +1450,11 @@ topicForm.addEventListener('submit', async (e) => {
   const articleRange = document.getElementById('tArticleRange').value.trim();
   const questionCountRaw = document.getElementById('tQuestionCount').value;
   const kadrolar = Array.from(tKadroGroup.querySelectorAll('input:checked')).map(cb => cb.value);
+  const summary = document.getElementById('tSummary').value.trim();
+  const keyPoints = document.getElementById('tKeyPoints').value
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean);
 
   if (!title) {
     topicFormError.textContent = 'Başlık zorunludur.';
@@ -1465,7 +1472,9 @@ topicForm.addEventListener('submit', async (e) => {
     document_number: documentNumber || null,
     article_range: articleRange || null,
     question_count: questionCountRaw === '' ? null : Number(questionCountRaw),
-    kadrolar
+    kadrolar,
+    summary: summary || null,
+    key_points: keyPoints
   };
 
   let error;

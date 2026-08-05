@@ -44,6 +44,8 @@ const ContentRepo = (() => {
       if (row.question_count != null) node.questionCount = row.question_count;
       if (row.kadrolar?.length) node.kadrolar = row.kadrolar;
       if (row.source_file) node.questionFile = row.source_file;
+      if (row.summary) node.summary = row.summary;
+      if (row.key_points?.length) node.keyPoints = row.key_points;
       const children = byParent.get(row.id);
       if (children?.length) node.children = children.map(buildNode);
       return node;
