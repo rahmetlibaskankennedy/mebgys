@@ -652,9 +652,9 @@ body{background:var(--bg)}
 .summary-item h5{font-size:10.5px;line-height:1.45;color:var(--navy);margin:0}
 .summary-item ul{display:flex;flex-direction:column;gap:4px;margin:8px 0 0;padding-left:15px;color:var(--muted)}
 .summary-item li{font-size:9px;line-height:1.4}
-.summary-section>.summary-text{font-size:12.5px;line-height:1.5;color:var(--navy);margin:0;padding:0 1px}
+.summary-section>.summary-text{font-size:10.5px;line-height:1.5;color:var(--navy);margin:0;padding:0 1px}
 .summary-section>ul{display:flex;flex-direction:column;gap:5px;margin:2px 0 0;padding-left:16px;color:var(--muted)}
-.summary-section>ul>li{font-size:12px;line-height:1.45}
+.summary-section>ul>li{font-size:10px;line-height:1.45}
 .summary-empty{font-size:10px;color:var(--muted);margin:0;font-style:italic}
 .content-plan{margin-top:2px}
 .plan-points{display:flex;flex-direction:column;align-items:flex-start;gap:7px;margin:16px auto 0;max-width:214px}
@@ -1448,3 +1448,23 @@ body.auth-page{
     transition:none;
   }
 }
+
+/* --- BİLDİRİM MODALI --- */
+.report-modal-sheet { display: flex; flex-direction: column; gap: 12px; }
+.report-modal-desc { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.5; }
+.report-modal-textarea {
+  width: 100%; box-sizing: border-box;
+  border: 1.5px solid var(--line); border-radius: 12px;
+  padding: 10px 12px; font-size: 13px; font-family: inherit;
+  color: var(--navy); resize: none; outline: none;
+  transition: border-color .15s;
+}
+.report-modal-textarea:focus { border-color: var(--blue); }
+.report-modal-send {
+  width: 100%; padding: 13px;
+  background: var(--red); color: #fff;
+  border: 0; border-radius: 12px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: opacity .15s;
+}
+.report-modal-send:active { opacity: .85; }
