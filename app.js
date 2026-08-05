@@ -1520,7 +1520,6 @@ function renderQuiz() {
             <h2>${escapeHtml(quiz.title)}</h2>
           </div>
           <div class="quiz-premium-top-actions">
-            <button type="button" class="topbar-action ${progress.flaggedQuestions[current.id] ? 'active' : ''}" id="quizBookmarkButton" aria-label="Soruyu İşaretle">${svg('bookmark')}</button>
             <button type="button" class="topbar-action ${progress.reportedQuestions[current.id] ? 'active' : ''}" id="quizReportButton" aria-label="Soruyu Bildir" ${progress.reportedQuestions[current.id] ? 'disabled' : ''}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
             </button>
@@ -1584,6 +1583,17 @@ function renderQuiz() {
           <div class="quiz-nav-grid" id="quizNavGrid"></div>
         </div>
       </div>
+      <div class="quiz-nav-overlay" id="reportModalOverlay">
+        <div class="quiz-nav-sheet report-modal-sheet">
+          <div class="quiz-nav-head">
+            <strong>Soruyu Bildir</strong>
+            <button type="button" id="reportModalClose" aria-label="Kapat">×</button>
+          </div>
+          <p class="report-modal-desc">Soruyla ilgili hata veya yorumunu yaz.</p>
+          <textarea id="reportModalNote" class="report-modal-textarea" placeholder="Notunu buraya yaz… (isteğe bağlı)" rows="4"></textarea>
+          <button type="button" class="report-modal-send" id="reportModalSend">Gönder</button>
+        </div>
+      </div>
     </div>`;
   
   topicSheet.scrollTop = 0;
@@ -1640,11 +1650,51 @@ function toggleQuestionFlag(question) {
 
 function reportQuestion(question) {
   if (progress.reportedQuestions[question.id]) return;
-  progress.reportedQuestions[question.id] = true;
-  haptic(14);
-  saveProgress();
-  showToast('Bildirimin alındı, teşekkürler.');
-  renderQuiz();
+  const overlay = document.getElementById('reportModalOverlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  document.getElementById('reportModalNote').value = '';
+
+  const closeModal = () => overlay.classList.remove('open');
+  document.getElementById('reportModalClose').onclick = closeModal;
+  overlay.onclick = e => { if (e.target === overlay) closeModal(); };
+
+  document.getElementById('reportModalSend').onclick = async () => {
+    const note = document.getElementById('reportModalNote').value.trim();
+    closeModal();
+    progress.reportedQuestions[question.id] = true;
+    haptic(14);
+    saveProgress();
+    renderQuiz();
+
+    const TELEGRAM_BOT_TOKEN = '8849973635:AAH-JXWktkpzieXfAnCSUyM9Z6lOI8VzFgI';
+    const TELEGRAM_CHAT_ID = '1066033789';
+
+    const user = window.currentUser;
+    const userName = user?.user_metadata?.full_name || user?.email || 'Bilinmiyor';
+    const dogruSik = Array.isArray(question.options) ? question.options[question.answerIndex] : '-';
+
+    const lines = [
+      '🚩 *Soru Bildirimi*',
+      `👤 Kullanıcı: ${userName}`,
+      `🆔 Soru ID: \`${question.id}\``,
+      `❓ Soru: ${question.prompt}`,
+      `✅ Doğru cevap: ${dogruSik}`,
+    ];
+    if (note) lines.push(`📝 Not: ${note}`);
+    const text = lines.join('\n');
+
+    try {
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text, parse_mode: 'Markdown' })
+      });
+      showToast('Bildirimin alındı, teşekkürler.');
+    } catch {
+      showToast('Bildirim gönderilemedi, tekrar dene.');
+    }
+  };
 }
 
 function openQuizNav() {
@@ -1710,7 +1760,6 @@ function bindQuizEvents() {
     }
   });
   
-  document.getElementById('quizBookmarkButton')?.addEventListener('click', () => toggleQuestionFlag(quiz.questions[quiz.index]));
   document.getElementById('quizReportButton')?.addEventListener('click', () => reportQuestion(quiz.questions[quiz.index]));
   document.getElementById('quizGridButton')?.addEventListener('click', openQuizNav);
   document.getElementById('quizNavClose')?.addEventListener('click', () => {
