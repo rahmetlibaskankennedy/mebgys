@@ -1176,8 +1176,8 @@ function renderSummary(documentItem, categoryKey) {
     const hasOwnSummary = Boolean(section.summary || (section.keyPoints || []).length);
     const ownBlock = hasOwnSummary ? `${section.summary ? `<p class="summary-text">${escapeHtml(section.summary)}</p>` : ''}${(section.keyPoints || []).length ? `<ul>${section.keyPoints.map(point => `<li>${escapeHtml(point)}</li>`).join('')}</ul>` : ''}` : '';
     const articleBlocks = (section.children || []).map(article => `<article class="summary-item"><span>${escapeHtml(article.articleLabel || 'Madde')}</span><h5>${escapeHtml(article.summary || article.title || '')}</h5>${(article.keyPoints || []).length ? `<ul>${article.keyPoints.slice(0, 3).map(point => `<li>${escapeHtml(point)}</li>`).join('')}</ul>` : ''}</article>`).join('');
-    const body = ownBlock || articleBlocks || '<p class="summary-empty">Bu bölüm için özet henüz eklenmedi.</p>';
-    return `<section class="summary-section"><h4>${escapeHtml(section.title)}</h4>${body}</section>`;
+    if (!ownBlock && !articleBlocks) return '';
+    return `<section class="summary-section"><h4>${escapeHtml(section.title)}</h4>${ownBlock || articleBlocks}</section>`;
   }).join('')}</div>`;
   topicSheet.scrollTop = 0;
 }
