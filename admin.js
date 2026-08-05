@@ -15,6 +15,7 @@ let topicsById = {};                    // id -> topic row
 let childrenByParent = {};              // parent_id -> [topic row]
 let categoriesCache = [];
 let actualQuestionCounts = {};          // topic_id -> questions tablosundaki gerçek soru sayısı
+let collapsedTopicIds = new Set();      // ağaç her yeniden çizildiğinde daralt/genişlet durumunun kaybolmaması için
 let topicOptionsFlat = [];              // [{id,title,depth}] — modal <select> için ağaç sırasıyla
 let editingQuestionId = null;
 
@@ -231,7 +232,7 @@ function renderTopicTree() {
         const hasChildren = childrenByParent[t.id] && childrenByParent[t.id].length > 0;
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'tree-node-wrapper';
+        wrapper.className = `tree-node-wrapper${collapsedTopicIds.has(t.id) ? ' collapsed' : ''}`;
 
         const node = document.createElement('div');
         node.className = `tree-node depth-${depth}${t.id === currentTopicId ? ' active' : ''}`;
@@ -245,14 +246,15 @@ function renderTopicTree() {
         const actualCount = actualQuestionCounts[t.id] || 0;
         node.innerHTML = `${iconHtml}<span class="node-title">${escapeHtml(t.title)}</span>${actualCount > 0 ? `<span class="qcount">${actualCount}</span>` : ''}`;
 
-        // Tıklama event'i: Ok ikonuna tıklanırsa aç/kapat, metne tıklanırsa konuyu seç
+        // Tıklama event'i: Ok ikonuna tıklanırsa aç/kapat + o konuyu da aktif hale getir (metne tıklamakla aynı davranış)
         node.addEventListener('click', (e) => {
           if (e.target.classList.contains('toggle-icon')) {
             e.stopPropagation();
             wrapper.classList.toggle('collapsed');
-          } else {
-            selectTopic(t.id, t.title);
+            if (wrapper.classList.contains('collapsed')) collapsedTopicIds.add(t.id);
+            else collapsedTopicIds.delete(t.id);
           }
+          selectTopic(t.id, t.title);
         });
 
         wrapper.appendChild(node);
