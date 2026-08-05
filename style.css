@@ -231,6 +231,35 @@ body{background:var(--bg)}
 .reader-primary{background:var(--navy);color:#fff}
 .reader-primary:hover{filter:brightness(1.08)}
 
+/* --- DOĞRU / YANLIŞ (TF) MODU --- */
+.tf-shell{display:flex;flex-direction:column;height:100%;color:#fff;padding:16px 18px 22px;box-sizing:border-box}
+.tf-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.tf-topbar .topbar-back{background:rgba(255,255,255,.1);border:none;color:#fff;display:flex;align-items:center;gap:4px;padding:8px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer}
+.tf-topbar .topbar-back svg{width:16px;height:16px;transform:rotate(180deg)}
+.tf-counter{font-size:12px;font-weight:700;color:rgba(255,255,255,.75)}
+.tf-progress-bar{height:5px;border-radius:4px;background:rgba(255,255,255,.12);margin-bottom:22px;overflow:hidden;flex-shrink:0}
+.tf-progress-fill{height:100%;background:var(--blue);border-radius:4px;transition:width .3s ease}
+.tf-card{background:#fff;border-radius:20px;padding:22px 20px 24px;flex:1;display:flex;flex-direction:column;box-shadow:0 12px 32px rgba(0,0,0,.25)}
+.tf-prompt{margin:0 0 16px;font-size:15px;font-weight:700;color:var(--navy);line-height:1.45}
+.tf-answer-box{background:#f7f9fc;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:16px;transition:background .2s,border-color .2s}
+.tf-answer-label{display:block;font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.tf-answer-text{display:block;font-size:15px;font-weight:700;color:var(--navy)}
+.tf-answer-box.tf-feedback-correct{background:var(--green2);border-color:#cfead9}
+.tf-answer-box.tf-feedback-correct .tf-answer-text{color:var(--green)}
+.tf-answer-box.tf-feedback-wrong{background:var(--red2);border-color:#fad4d6}
+.tf-answer-box.tf-feedback-wrong .tf-answer-text{color:var(--red)}
+.tf-feedback-hint{margin:-10px 0 16px;font-size:12.5px;font-weight:700;color:var(--navy)}
+.tf-question{margin:0 0 16px;font-size:13px;font-weight:600;color:var(--muted)}
+.tf-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:auto}
+.tf-btn{border:none;border-radius:14px;padding:14px 10px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:filter .15s,transform .15s}
+.tf-btn:hover:not(:disabled){transform:translateY(-1px)}
+.tf-btn:disabled{opacity:.6;cursor:default}
+.tf-btn-wrong{background:var(--red2);color:var(--red)}
+.tf-btn-correct{background:var(--green2);color:var(--green)}
+.tf-result-card{background:#fff;border-radius:20px;padding:32px 20px;margin-top:14px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.25)}
+.tf-result-score{display:block;font-size:30px;font-weight:800;color:var(--navy);margin-bottom:4px}
+.tf-result-pct{display:block;font-size:13px;font-weight:700;color:var(--muted)}
+
 /* --- YENİ PREMIUM QUIZ EKRANI TASARIMI (Görsele Uygun) --- */
 .topic-sheet.quiz-active {
   padding: 0 !important;
