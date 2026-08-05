@@ -1085,7 +1085,7 @@ function renderDocumentHub(documentItem, categoryKey) {
     <div class="document-mode-grid">
       ${modeCard('sections', 'book', 'Madde Madde Çalış', 'Bölüm ve madde listesinden istediğin yere git.', sectionsReady)}
       ${modeCard('random', 'target', 'Rastgele 20 Soru', 'Kanunun tamamından rastgele sorular çöz.', isActive)}
-      ${modeCard('truefalse', 'check', 'Doğru / Yanlış', 'İçerik paketi eklendiğinde çalışır.', Boolean(documentItem.trueFalseFile))}
+      ${modeCard('truefalse', 'check', 'Doğru / Yanlış', 'Soruları doğru/yanlış olarak değerlendir.', isActive)}
       ${modeCard('summary', 'trophy', 'Özet ve Kritik Noktalar', 'Sınavda öne çıkan maddeleri hızlı tekrar et.', sectionsReady)}
     </div>`;
   topicList.querySelectorAll('[data-document-mode]').forEach(button => button.addEventListener('click', () => {
@@ -1095,7 +1095,7 @@ function renderDocumentHub(documentItem, categoryKey) {
     if (mode === 'sections') renderSections(documentItem, categoryKey);
     if (mode === 'random') openRandomQuiz(documentItem, categoryKey);
     if (mode === 'summary') renderSummary(documentItem, categoryKey);
-    if (mode === 'truefalse') showToast('Doğru / yanlış soru paketi yakında eklenecek.');
+    if (mode === 'truefalse') openTrueFalseMode(documentItem, categoryKey);
   }));
   topicSheet.scrollTop = 0;
   refreshVisibleQuestionCounts([documentItem], () => { if (state.activeDocument === documentItem) renderDocumentHub(documentItem, categoryKey); });
@@ -1131,7 +1131,7 @@ function renderTopicPlan(item, categoryKey) {
     <div class="document-mode-grid">
       ${modeCard('sections', 'book', 'Madde Madde Çalış', 'Bölüm ve madde listesinden istediğin yere git.', sectionsReady)}
       ${modeCard('random', 'target', 'Rastgele 20 Soru', 'Konunun tamamından rastgele sorular çöz.', isActive)}
-      ${modeCard('truefalse', 'check', 'Doğru / Yanlış', 'İçerik paketi eklendiğinde çalışır.', Boolean(item.trueFalseFile))}
+      ${modeCard('truefalse', 'check', 'Doğru / Yanlış', 'Soruları doğru/yanlış olarak değerlendir.', isActive)}
       ${modeCard('summary', 'trophy', 'Özet ve Kritik Noktalar', 'Sınavda öne çıkan maddeleri hızlı tekrar et.', sectionsReady)}
     </div>`;
 
@@ -1142,7 +1142,7 @@ function renderTopicPlan(item, categoryKey) {
     if (mode === 'sections') renderSections(item, categoryKey);
     if (mode === 'random') openRandomQuiz(item, categoryKey);
     if (mode === 'summary') renderSummary(item, categoryKey);
-    if (mode === 'truefalse') showToast('Doğru / yanlış soru paketi yakında eklenecek.');
+    if (mode === 'truefalse') openTrueFalseMode(documentItem, categoryKey);
   }));
 
   topicSheet.scrollTop = 0;
@@ -1306,6 +1306,151 @@ async function openRandomQuiz(documentItem, categoryKey) {
     showToast(error.message || 'Sorular yüklenemedi.');
   }
 }
+
+// ---- DOĞRU / YANLIŞ MODU ----------------------------------------
+async function openTrueFalseMode(documentItem, categoryKey) {
+  try {
+    showToast('Doğru/Yanlış modu hazırlanıyor…');
+    const bank = tagQuestions(await loadQuestionBank(documentItem), documentItem, categoryKey);
+    if (!bank.length) return showToast('Bu başlık için henüz soru bulunmuyor.');
+
+    // Her soruyu D/Y kartına dönüştür:
+    // %50 ihtimalle doğru şıkkı göster (cevap: DOĞRU)
+    // %50 ihtimalle yanlış bir şıkkı göster (cevap: YANLIŞ)
+    const tfQuestions = shuffle(bank).slice(0, Math.min(20, bank.length)).map(q => {
+      const correctAnswer = q.options[q.answerIndex];
+      const wrongOptions = q.options.filter((_, i) => i !== q.answerIndex);
+      const showCorrect = Math.random() < 0.5 || !wrongOptions.length;
+      return {
+        id: q.id,
+        prompt: q.prompt,
+        displayAnswer: showCorrect ? correctAnswer : wrongOptions[Math.floor(Math.random() * wrongOptions.length)],
+        isCorrectShown: showCorrect,
+        correctAnswer,
+        categoryKey: q.categoryKey,
+      };
+    });
+
+    state.tfQuiz = {
+      questions: tfQuestions,
+      index: 0,
+      score: 0,
+      answers: [], // { correct: bool }[]
+      documentItem,
+      categoryKey,
+      returnView: () => renderDocumentHub(documentItem, categoryKey),
+    };
+
+    topicSheet.classList.add('quiz-active');
+    topicSheet.classList.remove('document-flow', 'card-study-active');
+    renderTrueFalse();
+  } catch (err) {
+    showToast(err.message || 'Sorular yüklenemedi.');
+  }
+}
+
+function renderTrueFalse() {
+  const tf = state.tfQuiz;
+  if (!tf) return;
+
+  const q = tf.questions[tf.index];
+  const total = tf.questions.length;
+  const progressPct = Math.round((tf.index / total) * 100);
+
+  topicList.innerHTML = `
+    <div class="tf-shell">
+      <div class="tf-topbar">
+        <button type="button" class="topbar-back" id="tfClose">${svg('chevron')}<span>Çıkış</span></button>
+        <span class="tf-counter">${tf.index + 1} / ${total}</span>
+      </div>
+      <div class="tf-progress-bar"><div class="tf-progress-fill" style="width:${progressPct}%"></div></div>
+      <div class="tf-card">
+        <p class="tf-prompt">${escapeHtml(q.prompt)}</p>
+        <div class="tf-answer-box">
+          <span class="tf-answer-label">Verilen cevap</span>
+          <strong class="tf-answer-text">${escapeHtml(q.displayAnswer)}</strong>
+        </div>
+        <p class="tf-question">Bu ifade doğru mu?</p>
+        <div class="tf-buttons">
+          <button type="button" class="tf-btn tf-btn-wrong" id="tfWrong">✗ Yanlış</button>
+          <button type="button" class="tf-btn tf-btn-correct" id="tfCorrect">✓ Doğru</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('tfClose').onclick = () => {
+    state.tfQuiz = null;
+    topicSheet.classList.remove('quiz-active');
+    tf.returnView();
+  };
+
+  const answer = (userSaidCorrect) => {
+    const wasRight = userSaidCorrect === q.isCorrectShown;
+    tf.answers.push({ correct: wasRight });
+    if (wasRight) tf.score++;
+
+    // Kısa feedback göster
+    const box = topicList.querySelector('.tf-answer-box');
+    box.classList.add(wasRight ? 'tf-feedback-correct' : 'tf-feedback-wrong');
+    const hint = document.createElement('p');
+    hint.className = 'tf-feedback-hint';
+    hint.textContent = wasRight
+      ? `✓ Doğru! Cevap: ${q.correctAnswer}`
+      : `✗ Yanlış. Doğru cevap: ${q.correctAnswer}`;
+    box.after(hint);
+
+    // Butonları disable et
+    document.getElementById('tfCorrect').disabled = true;
+    document.getElementById('tfWrong').disabled = true;
+
+    setTimeout(() => {
+      tf.index++;
+      if (tf.index >= total) {
+        renderTrueFalseResult();
+      } else {
+        renderTrueFalse();
+      }
+    }, 1200);
+  };
+
+  document.getElementById('tfCorrect').onclick = () => answer(true);
+  document.getElementById('tfWrong').onclick = () => answer(false);
+}
+
+function renderTrueFalseResult() {
+  const tf = state.tfQuiz;
+  const total = tf.questions.length;
+  const pct = Math.round((tf.score / total) * 100);
+
+  topicList.innerHTML = `
+    <div class="tf-shell">
+      <div class="tf-topbar">
+        <button type="button" class="topbar-back" id="tfResultClose">${svg('chevron')}<span>Çıkış</span></button>
+        <span class="tf-counter">Sonuç</span>
+      </div>
+      <div class="tf-result-card">
+        <strong class="tf-result-score">${tf.score} / ${total}</strong>
+        <span class="tf-result-pct">%${pct} başarı</span>
+        <div class="quiz-result-actions" style="margin-top:24px">
+          <button class="reader-secondary" id="tfRetry" type="button">Tekrar Dene</button>
+          <button class="reader-primary" id="tfReturn" type="button">Listeye Dön</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('tfResultClose').onclick = () => {
+    state.tfQuiz = null;
+    topicSheet.classList.remove('quiz-active');
+    tf.returnView();
+  };
+  document.getElementById('tfReturn').onclick = () => {
+    state.tfQuiz = null;
+    topicSheet.classList.remove('quiz-active');
+    tf.returnView();
+  };
+  document.getElementById('tfRetry').onclick = () => openTrueFalseMode(tf.documentItem, tf.categoryKey);
+}
+// ---- DOĞRU / YANLIŞ MODU SONU ----------------------------------
 
 function dedupeQuestionsById(list) {
   const seen = new Set();
