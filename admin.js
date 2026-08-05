@@ -14,6 +14,7 @@ let currentTopicTitle = '';
 let topicsById = {};                    // id -> topic row
 let childrenByParent = {};              // parent_id -> [topic row]
 let categoriesCache = [];
+let actualQuestionCounts = {};          // topic_id -> questions tablosundaki gerçek soru sayısı
 let topicOptionsFlat = [];              // [{id,title,depth}] — modal <select> için ağaç sırasıyla
 let editingQuestionId = null;
 
@@ -106,15 +107,22 @@ function switchTab(tab) {
 
 // ========================= 3) Konu ağacı (paylaşılan veri) =========================
 async function loadTopics() {
-  const [{ data: categories, error: catErr }, { data: topics, error: topicErr }] = await Promise.all([
+  const [{ data: categories, error: catErr }, { data: topics, error: topicErr }, { data: questionRows, error: qErr }] = await Promise.all([
     supabaseClient.from('categories').select('id,title,subtitle,sort_order').order('sort_order'),
-    supabaseClient.from('topics').select('id,category_id,parent_id,type,title,document_number,article_range,question_count,kadrolar,sort_order').order('sort_order')
+    supabaseClient.from('topics').select('id,category_id,parent_id,type,title,document_number,article_range,question_count,kadrolar,sort_order').order('sort_order'),
+    supabaseClient.from('questions').select('topic_id')
   ]);
 
-  if (catErr || topicErr) {
-    document.getElementById('sidePanel').innerHTML = `<div class="empty-state">Konular yüklenemedi: ${escapeHtml((catErr || topicErr).message)}</div>`;
+  if (catErr || topicErr || qErr) {
+    document.getElementById('sidePanel').innerHTML = `<div class="empty-state">Konular yüklenemedi: ${escapeHtml((catErr || topicErr || qErr).message)}</div>`;
     return;
   }
+
+  // topics tablosundaki question_count yerine, questions tablosundaki gerçek satır sayısını hesapla
+  actualQuestionCounts = {};
+  (questionRows || []).forEach(q => {
+    actualQuestionCounts[q.topic_id] = (actualQuestionCounts[q.topic_id] || 0) + 1;
+  });
 
   categoriesCache = categories;
   topicsById = {};
@@ -189,7 +197,8 @@ function renderTopicTree() {
           ? `<span class="toggle-icon">▼</span>` 
           : `<span class="toggle-spacer"></span>`;
         
-        node.innerHTML = `${iconHtml}<span class="node-title">${escapeHtml(t.title)}</span>${t.question_count != null ? `<span class="qcount">${t.question_count}</span>` : ''}`;
+        const actualCount = actualQuestionCounts[t.id] || 0;
+        node.innerHTML = `${iconHtml}<span class="node-title">${escapeHtml(t.title)}</span>${actualCount > 0 ? `<span class="qcount">${actualCount}</span>` : ''}`;
 
         // Tıklama event'i: Ok ikonuna tıklanırsa aç/kapat, metne tıklanırsa konuyu seç
         node.addEventListener('click', (e) => {
@@ -958,7 +967,9 @@ function renderManageContent() {
 
       const metaParts = [];
       if (t.article_range) metaParts.push(t.article_range);
-      if (t.question_count != null) metaParts.push(`${t.question_count} soru hedefi`);
+      const actualCount = actualQuestionCounts[t.id] || 0;
+      metaParts.push(`${actualCount} soru mevcut`);
+      if (t.question_count != null) metaParts.push(`${t.question_count} hedef`);
       if (metaParts.length) {
         const meta = document.createElement('div');
         meta.className = 'mr-meta';
