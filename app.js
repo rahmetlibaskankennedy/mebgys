@@ -546,6 +546,7 @@ function openMistakeCategorySheet(categoryKey) {
   clearInterval(timerInterval);
   timerInterval = null;
   topicSheet.classList.add('open');
+  topicSheet.setAttribute('aria-hidden', 'false');
   topicBackdrop.classList.add('open');
   renderMistakeCategoryLevel(categoryKey);
 }
@@ -608,6 +609,7 @@ function startWrongPool() {
   const questions = Object.values(progress.wrongQuestions);
   if (!questions.length) return showToast('Tekrar edilecek soru yok.');
   topicSheet.classList.add('open');
+  topicSheet.setAttribute('aria-hidden', 'false');
   topicBackdrop.classList.add('open');
   startQuiz({
     questions,
@@ -643,6 +645,7 @@ function openCardCategorySheet(categoryKey) {
   clearInterval(timerInterval);
   timerInterval = null;
   topicSheet.classList.add('open');
+  topicSheet.setAttribute('aria-hidden', 'false');
   topicBackdrop.classList.add('open');
   renderCardCategoryLevel(categoryKey);
 }
@@ -963,6 +966,7 @@ function runSearch(query) {
 function openSearchResult(result) {
   closeSearchSheet();
   topicSheet.classList.add('open');
+  topicSheet.setAttribute('aria-hidden', 'false');
   topicBackdrop.classList.add('open');
   if (result.type === 'section' || result.type === 'article') {
     renderSummary(result.item, result.categoryKey);
@@ -990,6 +994,7 @@ function openTopicSheet(categoryKey) {
   state.activeDocument = null;
   state.navStack = [{ kind: 'category', categoryKey }];
   topicSheet.classList.add('open');
+  topicSheet.setAttribute('aria-hidden', 'false');
   topicBackdrop.classList.add('open');
   renderCategoryLevel(categoryKey);
 }
@@ -1001,6 +1006,7 @@ function closeTopicSheet() {
   state.cardStudy = null;
   resetSheetClasses();
   topicSheet.classList.remove('open');
+  topicSheet.setAttribute('aria-hidden', 'true');  // ← EKLE
   if (!routeSheet.classList.contains('open')) {
     topicBackdrop.classList.remove('open');
   }
@@ -1396,6 +1402,7 @@ async function startSmartPractice() {
   const questions = shuffle(dedupeQuestionsById(pool)).slice(0, Math.min(routeSettings.questions, pool.length));
 
   topicSheet.classList.add('open');
+  topicSheet.setAttribute('aria-hidden', 'false');
   topicBackdrop.classList.add('open');
 
   startQuiz({
@@ -1913,6 +1920,7 @@ async function startDenemeSinavi(denemeId) {
 
     const customTimeSeconds = meta?.duration_minutes ? meta.duration_minutes * 60 : null;
     topicSheet.classList.add('open');
+    topicSheet.setAttribute('aria-hidden', 'false');
     topicBackdrop.classList.add('open');
     startQuiz({
       questions,
@@ -2014,6 +2022,7 @@ async function startKadroExam() {
       showToast(`Bazı konularda içerik eksik: ${missingTopics.slice(0, 2).join(', ')}${missingTopics.length > 2 ? '…' : ''}`);
     }
     topicSheet.classList.add('open');
+    topicSheet.setAttribute('aria-hidden', 'false');
     topicBackdrop.classList.add('open');
     const roleLabel = ROLES.find(r => r.key === roleKey)?.label || '';
     const customTimeSeconds = blueprint.durationMinutes ? blueprint.durationMinutes * 60 : null;
