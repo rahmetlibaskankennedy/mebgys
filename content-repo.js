@@ -63,10 +63,36 @@ const ContentRepo = (() => {
   // ---- sorular/*.json ve taxonomy'nin 'sorular'/'cards' (quiz) kaynakları --
   // documentItem.questionFile ya da (kart pratiği) topic.questionFile ile
   // çağrılır; hangi tablodan geldiğine bakmaksızın aynı {questions:[...]} şeklini döner.
+  //
+  // NOT: Bir konunun alt konuları (children) olabilir ve sorular admin panelinde
+  // doğrudan alt konunun topic_id'sine kaydedilmiş olabilir (tıpkı admin.js'teki
+  // collectDescendantTopicIds ile toplanan liste gibi). Bu yüzden burada da sadece
+  // üst konunun id'sine değil, tüm alt konu id'lerine de bakmamız gerekiyor;
+  // aksi halde alt konusu olan konularda (örn. Atatürk İlkeleri ve İnkılap Tarihi)
+  // panelde görünen sorular sitede hiç listelenmiyordu.
+  async function collectDescendantTopicIds(rootId) {
+    const ids = [rootId];
+    const { data: children, error } = await client.from('topics').select('id, parent_id');
+    if (error) throw error;
+    const byParent = new Map();
+    children.forEach(t => {
+      if (!t.parent_id) return;
+      if (!byParent.has(t.parent_id)) byParent.set(t.parent_id, []);
+      byParent.get(t.parent_id).push(t.id);
+    });
+    const stack = [rootId];
+    while (stack.length) {
+      const cur = stack.pop();
+      (byParent.get(cur) || []).forEach(childId => { ids.push(childId); stack.push(childId); });
+    }
+    return ids;
+  }
+
   async function fetchQuestionsByPath(path) {
     const { data: topic } = await client.from('topics').select('id, title').eq('source_file', path).maybeSingle();
     if (topic) {
-      const { data, error } = await client.from('questions').select('*').eq('topic_id', topic.id).order('sort_order');
+      const topicIds = await collectDescendantTopicIds(topic.id);
+      const { data, error } = await client.from('questions').select('*').in('topic_id', topicIds).order('sort_order');
       if (error) throw error;
       return { topicId: topic.id, title: topic.title, questions: data.map(mapQuestionRow) };
     }
