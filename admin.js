@@ -18,6 +18,11 @@ let actualQuestionCounts = {};          // topic_id -> questions tablosundaki ge
 let topicOptionsFlat = [];              // [{id,title,depth}] — modal <select> için ağaç sırasıyla
 let editingQuestionId = null;
 
+// ---- Sorular: toplu seçim state'i ----
+let selectMode = false;
+let selectedQuestionIds = new Set();
+let currentQuestionsCache = [];         // o an ekranda listelenen sorular (dışa aktarma/toplu işlemler için)
+
 // ---- Denemeler sekmesi state'i ----
 let currentKadro = null;                // null => tüm kadrolar
 let kadroRows = [];                     // exam_kadrolar satırları
@@ -53,8 +58,44 @@ async function boot() {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
+  initSidebarResize();
   await Promise.all([loadTopics(), loadKadrolar()]);
   switchTab('questions');
+}
+
+// ========================= 1b) Sol paneli sürükleyerek genişletme =========================
+function initSidebarResize() {
+  const sidebar = document.querySelector('.sidebar');
+  const handle = document.getElementById('sidebarResizeHandle');
+  if (!sidebar || !handle) return;
+
+  const saved = parseInt(localStorage.getItem('sr_sidebar_width') || '', 10);
+  if (saved && saved >= 220 && saved <= 560) sidebar.style.width = saved + 'px';
+
+  let startX = 0, startWidth = 0, dragging = false;
+
+  handle.addEventListener('mousedown', (e) => {
+    dragging = true;
+    startX = e.clientX;
+    startWidth = sidebar.getBoundingClientRect().width;
+    handle.classList.add('dragging');
+    document.body.classList.add('sidebar-resizing');
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const next = Math.min(560, Math.max(220, startWidth + (e.clientX - startX)));
+    sidebar.style.width = next + 'px';
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove('dragging');
+    document.body.classList.remove('sidebar-resizing');
+    localStorage.setItem('sr_sidebar_width', Math.round(sidebar.getBoundingClientRect().width));
+  });
 }
 
 document.getElementById('signOutBtn').addEventListener('click', async () => {
@@ -68,11 +109,15 @@ function switchTab(tab) {
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
 
   if (tab === 'questions') {
+    selectMode = false;
+    selectedQuestionIds.clear();
     document.getElementById('mainActions').innerHTML =
+      '<button class="btn secondary" id="selectQuestionsBtn" type="button">Soruları Seç</button>' +
       '<button class="btn secondary" id="bulkQuestionBtn" type="button">+ Toplu Soru Ekle</button>' +
       '<button class="btn" id="newQuestionBtn" type="button">+ Yeni Soru</button>';
     document.getElementById('newQuestionBtn').addEventListener('click', () => openQuestionModal(null));
     document.getElementById('bulkQuestionBtn').addEventListener('click', () => openBulkModal());
+    document.getElementById('selectQuestionsBtn').addEventListener('click', () => toggleSelectMode());
     renderTopicTree();
     if (currentTopicId) {
       document.getElementById('mainTitle').textContent = currentTopicTitle;
@@ -231,6 +276,8 @@ function renderTopicTree() {
 function selectTopic(topicId, title) {
   currentTopicId = topicId;
   currentTopicTitle = title;
+  selectMode = false;
+  selectedQuestionIds.clear();
   document.querySelectorAll('.tree-node').forEach(n => n.classList.toggle('active', n.dataset.topicId === topicId));
   document.getElementById('mainTitle').textContent = title;
   loadQuestions();
@@ -252,26 +299,60 @@ async function loadQuestions() {
     return;
   }
 
-  document.getElementById('mainSub').textContent = `${questions.length} soru`;
+  currentQuestionsCache = questions || [];
+  // artık var olmayan sorular seçili kalmasın
+  const validIds = new Set(currentQuestionsCache.map(q => q.id));
+  selectedQuestionIds.forEach(id => { if (!validIds.has(id)) selectedQuestionIds.delete(id); });
+
+  document.getElementById('mainSub').textContent = `${currentQuestionsCache.length} soru`;
+
+  renderQuestionsTable();
+}
+
+function toggleSelectMode() {
+  selectMode = !selectMode;
+  if (!selectMode) selectedQuestionIds.clear();
+  renderQuestionsTable();
+}
+
+function renderQuestionsTable() {
+  const contentEl = document.getElementById('content');
+  const questions = currentQuestionsCache;
+  const selectBtn = document.getElementById('selectQuestionsBtn');
+  if (selectBtn) {
+    selectBtn.textContent = selectMode ? 'Seçimi Bitir' : 'Soruları Seç';
+    selectBtn.classList.toggle('secondary', !selectMode);
+  }
 
   if (!questions.length) {
-    contentEl.innerHTML = '<div class="empty-state">Bu konuda henüz soru yok. "Yeni Soru" ile ekleyin.</div>';
+    contentEl.innerHTML = currentTopicId
+      ? '<div class="empty-state">Bu konuda henüz soru yok. "Yeni Soru" ile ekleyin.</div>'
+      : '<div class="empty-state">Soldan bir konu seçerek sorularını görüntüleyin.</div>';
     return;
   }
+
+  contentEl.innerHTML = '';
+
+  if (selectMode) contentEl.appendChild(buildBulkBar());
 
   const table = document.createElement('table');
   table.className = 'q-table';
   table.innerHTML = `
-    <thead><tr><th style="width:44%">Soru</th><th style="width:38%">Şıklar</th><th></th></tr></thead>
+    <thead><tr>
+      ${selectMode ? '<th class="q-check"><input type="checkbox" id="selectAllCheck"></th>' : ''}
+      <th style="width:${selectMode ? '40%' : '44%'}">Soru</th><th style="width:38%">Şıklar</th><th></th>
+    </tr></thead>
     <tbody></tbody>`;
   const tbody = table.querySelector('tbody');
 
   questions.forEach(q => {
     const tr = document.createElement('tr');
+    tr.classList.toggle('selected', selectedQuestionIds.has(q.id));
     const optionsHtml = (q.options || []).map((opt, i) =>
       `<div class="${i === q.answer_index ? 'correct' : ''}">${i === q.answer_index ? '✓ ' : ''}${escapeHtml(opt)}</div>`
     ).join('');
     tr.innerHTML = `
+      ${selectMode ? `<td class="q-check"><input type="checkbox" class="row-check" ${selectedQuestionIds.has(q.id) ? 'checked' : ''}></td>` : ''}
       <td class="q-prompt">${escapeHtml(q.prompt)}</td>
       <td class="q-options">${optionsHtml}</td>
       <td class="row-actions">
@@ -280,11 +361,27 @@ async function loadQuestions() {
       </td>`;
     tr.querySelector('.edit').addEventListener('click', () => openQuestionModal(q));
     tr.querySelector('.del').addEventListener('click', () => deleteQuestion(q.id));
+    if (selectMode) {
+      tr.querySelector('.row-check').addEventListener('change', (e) => {
+        if (e.target.checked) selectedQuestionIds.add(q.id); else selectedQuestionIds.delete(q.id);
+        tr.classList.toggle('selected', e.target.checked);
+        updateBulkBar();
+      });
+    }
     tbody.appendChild(tr);
   });
 
-  contentEl.innerHTML = '';
   contentEl.appendChild(table);
+
+  if (selectMode) {
+    const selectAll = document.getElementById('selectAllCheck');
+    selectAll.checked = questions.length > 0 && selectedQuestionIds.size === questions.length;
+    selectAll.addEventListener('change', (e) => {
+      if (e.target.checked) questions.forEach(q => selectedQuestionIds.add(q.id));
+      else selectedQuestionIds.clear();
+      renderQuestionsTable();
+    });
+  }
 }
 
 async function deleteQuestion(id) {
@@ -292,6 +389,184 @@ async function deleteQuestion(id) {
   const { error } = await supabaseClient.from('questions').delete().eq('id', id);
   if (error) { alert('Silinemedi: ' + error.message); return; }
   loadQuestions();
+}
+
+// ========================= 4b) Toplu seçim çubuğu =========================
+function buildBulkBar() {
+  const bar = document.createElement('div');
+  bar.className = 'bulk-bar';
+  bar.id = 'bulkBar';
+  bar.innerHTML = `
+    <label class="select-all"><input type="checkbox" id="bulkBarSelectAll"> Tümünü seç</label>
+    <span class="bulk-count" id="bulkCount"></span>
+    <div class="bulk-bar-actions">
+      <button type="button" class="danger" id="bulkDeleteBtn">Seçileni Sil</button>
+      <span class="bulk-sep"></span>
+      <button type="button" id="bulkExportExcel">Excel</button>
+      <button type="button" id="bulkExportPdf">PDF</button>
+      <button type="button" id="bulkExportWord">Word</button>
+    </div>`;
+
+  bar.querySelector('#bulkBarSelectAll').addEventListener('change', (e) => {
+    if (e.target.checked) currentQuestionsCache.forEach(q => selectedQuestionIds.add(q.id));
+    else selectedQuestionIds.clear();
+    renderQuestionsTable();
+  });
+  bar.querySelector('#bulkDeleteBtn').addEventListener('click', bulkDeleteQuestions);
+  bar.querySelector('#bulkExportExcel').addEventListener('click', () => exportQuestionsExcel(getExportQuestions()));
+  bar.querySelector('#bulkExportPdf').addEventListener('click', () => exportQuestionsPDF(getExportQuestions()));
+  bar.querySelector('#bulkExportWord').addEventListener('click', () => exportQuestionsWord(getExportQuestions()));
+
+  queueMicrotask(updateBulkBar);
+  return bar;
+}
+
+function updateBulkBar() {
+  const bar = document.getElementById('bulkBar');
+  if (!bar) return;
+  const n = selectedQuestionIds.size;
+  const total = currentQuestionsCache.length;
+  bar.querySelector('#bulkCount').textContent = n > 0 ? `${n} / ${total} seçili` : `Hiçbir soru seçilmedi — dışa aktarma tüm listeyi (${total} soru) kapsar`;
+  bar.querySelector('#bulkDeleteBtn').disabled = n === 0;
+  const selectAll = bar.querySelector('#bulkBarSelectAll');
+  if (selectAll) selectAll.checked = total > 0 && n === total;
+}
+
+// Seçili sorular varsa onları, yoksa ekrandaki tüm listeyi döndürür.
+function getExportQuestions() {
+  if (selectedQuestionIds.size > 0) {
+    return currentQuestionsCache.filter(q => selectedQuestionIds.has(q.id));
+  }
+  return currentQuestionsCache;
+}
+
+async function bulkDeleteQuestions() {
+  const ids = Array.from(selectedQuestionIds);
+  if (!ids.length) return;
+  if (!confirm(`${ids.length} soruyu kalıcı olarak silmek istediğinize emin misiniz?`)) return;
+  const { error } = await supabaseClient.from('questions').delete().in('id', ids);
+  if (error) { alert('Silinemedi: ' + error.message); return; }
+  selectedQuestionIds.clear();
+  loadQuestions();
+}
+
+// ========================= 4c) Dışa aktarma: Excel / PDF / Word =========================
+function reportBaseName() {
+  const topicPart = currentTopicTitle ? slugify(currentTopicTitle) : 'sorular';
+  const datePart = new Date().toISOString().slice(0, 10);
+  return `${topicPart}-rapor-${datePart}`;
+}
+
+function answerLetter(i) { return ['A', 'B', 'C', 'D', 'E', 'F'][i] || ''; }
+
+function exportQuestionsExcel(questions) {
+  if (!questions.length) { alert('Dışa aktarılacak soru yok.'); return; }
+  const rows = [['No', 'Soru', 'Şık A', 'Şık B', 'Şık C', 'Şık D', 'Doğru Şık', 'Açıklama']];
+  questions.forEach((q, i) => {
+    const opts = q.options || [];
+    rows.push([
+      i + 1,
+      q.prompt || '',
+      opts[0] || '', opts[1] || '', opts[2] || '', opts[3] || '',
+      answerLetter(q.answer_index),
+      q.explanation || ''
+    ]);
+  });
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 5 }, { wch: 50 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 10 }, { wch: 30 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sorular');
+  XLSX.writeFile(wb, `${reportBaseName()}.xlsx`);
+}
+
+// Rapor için ortak, gizli bir HTML bloğu üretir (PDF ve Word'de aynı görünüm kullanılır).
+function buildReportHtml(questions) {
+  const title = currentTopicTitle || 'Sorular';
+  const dateStr = new Date().toLocaleDateString('tr-TR');
+  const items = questions.map((q, i) => {
+    const opts = (q.options || []).map((opt, oi) => {
+      const isCorrect = oi === q.answer_index;
+      return `<div style="padding:3px 0; ${isCorrect ? 'color:#2E6B4C; font-weight:600;' : 'color:#3a3a3a;'}">${isCorrect ? '✓ ' : answerLetter(oi) + ') '}${escapeHtml(opt)}</div>`;
+    }).join('');
+    const explanation = q.explanation
+      ? `<div style="margin-top:6px; font-size:12.5px; color:#6b6b6b;"><b>Açıklama:</b> ${escapeHtml(q.explanation)}</div>` : '';
+    return `
+      <div style="margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid #ddd;">
+        <div style="font-weight:700; font-size:14.5px; margin-bottom:6px;">${i + 1}. ${escapeHtml(q.prompt)}</div>
+        <div style="font-size:13px; padding-left:6px;">${opts}</div>
+        ${explanation}
+      </div>`;
+  }).join('');
+
+  return `
+    <div style="font-family: Calibri, Arial, sans-serif; color:#201D17; width:720px; padding:24px;">
+      <div style="border-bottom:2px solid #A9843F; padding-bottom:10px; margin-bottom:18px;">
+        <div style="font-size:19px; font-weight:700;">SınavRotası — Soru Raporu</div>
+        <div style="font-size:12.5px; color:#7A7462; margin-top:4px;">${escapeHtml(title)} • ${questions.length} soru • ${dateStr}</div>
+      </div>
+      ${items}
+    </div>`;
+}
+
+async function exportQuestionsPDF(questions) {
+  if (!questions.length) { alert('Dışa aktarılacak soru yok.'); return; }
+  if (!window.html2canvas || !window.jspdf) { alert('PDF kütüphaneleri yüklenemedi. İnternet bağlantınızı kontrol edin.'); return; }
+
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.top = '0';
+  container.style.left = '-9999px';
+  container.style.background = '#ffffff';
+  container.innerHTML = buildReportHtml(questions);
+  document.body.appendChild(container);
+
+  try {
+    const canvas = await html2canvas(container, { scale: 2, backgroundColor: '#ffffff' });
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = 210, pageHeight = 297, margin = 10;
+    const imgWidth = pageWidth - margin * 2;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const usableHeight = pageHeight - margin * 2;
+
+    let heightLeft = imgHeight;
+    let position = margin;
+    const imgData = canvas.toDataURL('image/png');
+
+    doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+    heightLeft -= usableHeight;
+
+    while (heightLeft > 0) {
+      position = margin - (imgHeight - heightLeft);
+      doc.addPage();
+      doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+      heightLeft -= usableHeight;
+    }
+
+    doc.save(`${reportBaseName()}.pdf`);
+  } catch (err) {
+    alert('PDF oluşturulamadı: ' + err.message);
+  } finally {
+    document.body.removeChild(container);
+  }
+}
+
+function exportQuestionsWord(questions) {
+  if (!questions.length) { alert('Dışa aktarılacak soru yok.'); return; }
+  const bodyHtml = buildReportHtml(questions);
+  const html = `<!DOCTYPE html>
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"><title>SınavRotası Rapor</title></head>
+    <body>${bodyHtml}</body></html>`;
+  const blob = new Blob(['\ufeff', html], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${reportBaseName()}.doc`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ========================= 5) Soru ekle/düzenle modalı =========================
