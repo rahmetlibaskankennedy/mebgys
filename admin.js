@@ -113,12 +113,24 @@ function switchTab(tab) {
     selectMode = false;
     selectedQuestionIds.clear();
     document.getElementById('mainActions').innerHTML =
+      '<input type="text" id="questionIdSearch" class="id-search-input" placeholder="Soru ID ile bul…">' +
+      '<button class="btn secondary" id="questionIdSearchBtn" type="button">Bul</button>' +
       '<button class="btn secondary" id="selectQuestionsBtn" type="button">Soruları Seç</button>' +
       '<button class="btn secondary" id="bulkQuestionBtn" type="button">+ Toplu Soru Ekle</button>' +
       '<button class="btn" id="newQuestionBtn" type="button">+ Yeni Soru</button>';
     document.getElementById('newQuestionBtn').addEventListener('click', () => openQuestionModal(null));
     document.getElementById('bulkQuestionBtn').addEventListener('click', () => openBulkModal());
     document.getElementById('selectQuestionsBtn').addEventListener('click', () => toggleSelectMode());
+    document.getElementById('questionIdSearchBtn').addEventListener('click', () => {
+      const val = document.getElementById('questionIdSearch').value.trim();
+      if (val) searchQuestionById(val);
+    });
+    document.getElementById('questionIdSearch').addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const val = e.target.value.trim();
+      if (val) searchQuestionById(val);
+    });
     renderTopicTree();
     if (currentTopicId) {
       document.getElementById('mainTitle').textContent = currentTopicTitle;
@@ -351,6 +363,55 @@ async function loadQuestions() {
   document.getElementById('mainSub').textContent = `${currentQuestionsCache.length} soru`;
 
   renderQuestionsTable();
+}
+
+// Telegram üzerinden gelen soru bildirimlerinde (veya başka bir kaynaktan)
+// elde edilen soru ID'siyle direkt o soruyu bulup düzenleme modalını açar.
+// Tam ID eşleşmesi bulunamazsa, ID içinde geçen sorular arasında ilk eşleşeni
+// açar (parça ID yapıştırılmış olma ihtimaline karşı).
+async function searchQuestionById(rawId) {
+  const id = rawId.trim();
+  const searchBtn = document.getElementById('questionIdSearchBtn');
+  if (searchBtn) { searchBtn.disabled = true; searchBtn.textContent = 'Aranıyor…'; }
+
+  const { data: exactMatch, error } = await supabaseClient
+    .from('questions')
+    .select('id,prompt,options,answer_index,explanation,sort_order,topic_id')
+    .eq('id', id)
+    .maybeSingle();
+
+  let question = exactMatch;
+
+  if (!question && !error) {
+    const { data: partialMatches } = await supabaseClient
+      .from('questions')
+      .select('id,prompt,options,answer_index,explanation,sort_order,topic_id')
+      .ilike('id', `%${id}%`)
+      .limit(1);
+    question = (partialMatches && partialMatches[0]) || null;
+  }
+
+  if (searchBtn) { searchBtn.disabled = false; searchBtn.textContent = 'Bul'; }
+
+  if (error) {
+    alert('Arama sırasında hata oluştu: ' + error.message);
+    return;
+  }
+  if (!question) {
+    alert(`"${id}" ile eşleşen bir soru bulunamadı.`);
+    return;
+  }
+
+  const topic = topicsById[question.topic_id];
+  const topicTitle = topic ? topic.title : question.topic_id;
+
+  // İlgili konuyu seç, listeyi o bağlamda göster, sonra soruyu doğrudan
+  // düzenleme modalında aç.
+  selectTopic(question.topic_id, topicTitle);
+  openQuestionModal(question);
+
+  const searchInput = document.getElementById('questionIdSearch');
+  if (searchInput) searchInput.value = '';
 }
 
 function toggleSelectMode() {
