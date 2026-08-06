@@ -189,6 +189,9 @@
   .option-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .option-row input[type=radio] { flex-shrink: 0; transform: scale(1.1); accent-color: var(--brass); cursor: pointer; }
   .option-row input[type=text] { flex: 1; }
+  .option-row .opt-remove { flex-shrink: 0; width: 26px; height: 26px; border: 1px solid var(--border); background: transparent; border-radius: var(--radius-sm); color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; }
+  .option-row .opt-remove:hover { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .option-row .opt-remove:disabled { opacity: 0.3; cursor: not-allowed; }
 
   .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
   .modal-actions.split { justify-content: space-between; }
@@ -279,10 +282,8 @@
         </div>
         <div class="field">
           <label>Şıklar (doğru olanı işaretleyin)</label>
-          <div class="option-row"><input type="radio" name="fCorrect" value="0" checked><input type="text" id="fOpt0" required placeholder="A şıkkı"></div>
-          <div class="option-row"><input type="radio" name="fCorrect" value="1"><input type="text" id="fOpt1" required placeholder="B şıkkı"></div>
-          <div class="option-row"><input type="radio" name="fCorrect" value="2"><input type="text" id="fOpt2" required placeholder="C şıkkı"></div>
-          <div class="option-row"><input type="radio" name="fCorrect" value="3"><input type="text" id="fOpt3" required placeholder="D şıkkı"></div>
+          <div id="fOptionsContainer"></div>
+          <button type="button" class="btn secondary small" id="fAddOptionBtn" style="margin-top:4px;">+ Şık Ekle</button>
         </div>
         <div class="field">
           <label>Açıklama (opsiyonel)</label>

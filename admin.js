@@ -690,6 +690,10 @@ const formError = document.getElementById('formError');
 const fTopicSelect = document.getElementById('fTopic');
 const fSubtopicField = document.getElementById('fSubtopicField');
 const fSubtopicSelect = document.getElementById('fSubtopic');
+const fOptionsContainer = document.getElementById('fOptionsContainer');
+const fAddOptionBtn = document.getElementById('fAddOptionBtn');
+const MIN_OPTIONS = 2;
+const MAX_OPTIONS = 6; // toplu Excel/JSON içe aktarma da en fazla 6 şıka (A-F) kadar destekliyor
 
 document.getElementById('modalCancelBtn').addEventListener('click', closeQuestionModal);
 modalBackdrop.addEventListener('click', (e) => { if (e.target === modalBackdrop) closeQuestionModal(); });
@@ -727,6 +731,60 @@ function selectedFormTopicId() {
 
 fTopicSelect.addEventListener('change', () => populateFormSubtopics(fTopicSelect.value));
 
+// DÜZELTME: Şık sayısı artık sabit 4 değil, dinamik (min 2, max 6). Soru kaçtane
+// şıka sahipse düzenlerken o kadar satır gösterilir; yeni soru eklerken varsayılan
+// olarak 4 boş satırla başlanır ve "+ Şık Ekle" / satır başındaki "×" ile
+// çoğaltılıp azaltılabilir.
+function renderOptionRows(options, correctIndex) {
+  fOptionsContainer.innerHTML = '';
+  options.forEach((val, i) => addOptionRow(val, i === correctIndex));
+  refreshOptionLabels();
+}
+
+function addOptionRow(value = '', checked = false) {
+  const rows = fOptionsContainer.querySelectorAll('.option-row');
+  if (rows.length >= MAX_OPTIONS) return;
+  const index = rows.length;
+  const row = document.createElement('div');
+  row.className = 'option-row';
+  row.innerHTML = `
+    <input type="radio" name="fCorrect" value="${index}" ${checked ? 'checked' : ''}>
+    <input type="text" class="fOpt" required placeholder="Şık">
+    <button type="button" class="opt-remove" title="Şıkkı kaldır">×</button>
+  `;
+  row.querySelector('.fOpt').value = value;
+  row.querySelector('.opt-remove').addEventListener('click', () => removeOptionRow(row));
+  fOptionsContainer.appendChild(row);
+  refreshOptionLabels();
+}
+
+function removeOptionRow(row) {
+  const rows = fOptionsContainer.querySelectorAll('.option-row');
+  if (rows.length <= MIN_OPTIONS) return; // en az 2 şık kalmalı
+  const wasChecked = row.querySelector('input[type=radio]').checked;
+  row.remove();
+  refreshOptionLabels();
+  if (wasChecked) {
+    const first = fOptionsContainer.querySelector('input[type=radio]');
+    if (first) first.checked = true;
+  }
+}
+
+// Satır sırası değiştikçe (ekleme/kaldırma) radio value'larını 0..n-1 olacak
+// şekilde yeniden numaralandırır, placeholder'ları A/B/C... ile günceller ve
+// "+ Şık Ekle" / "×" butonlarının aktif/pasif durumunu ayarlar.
+function refreshOptionLabels() {
+  const rows = fOptionsContainer.querySelectorAll('.option-row');
+  rows.forEach((row, i) => {
+    row.querySelector('input[type=radio]').value = i;
+    row.querySelector('.fOpt').placeholder = `${String.fromCharCode(65 + i)} şıkkı`;
+    row.querySelector('.opt-remove').disabled = rows.length <= MIN_OPTIONS;
+  });
+  fAddOptionBtn.disabled = rows.length >= MAX_OPTIONS;
+}
+
+fAddOptionBtn.addEventListener('click', () => addOptionRow());
+
 function openQuestionModal(question) {
   editingQuestionId = question ? question.id : null;
   document.getElementById('modalTitle').textContent = question ? 'Soruyu Düzenle' : 'Yeni Soru';
@@ -746,12 +804,9 @@ function openQuestionModal(question) {
 
   document.getElementById('fPrompt').value = question?.prompt || '';
   document.getElementById('fExplanation').value = question?.explanation || '';
-  for (let i = 0; i < 4; i++) {
-    document.getElementById(`fOpt${i}`).value = question?.options?.[i] || '';
-  }
+  const existingOptions = question?.options?.length ? question.options : ['', '', '', ''];
   const correctIndex = question?.answer_index ?? 0;
-  const radio = questionForm.querySelector(`input[name=fCorrect][value="${correctIndex}"]`);
-  if (radio) radio.checked = true;
+  renderOptionRows(existingOptions, correctIndex);
 
   modalBackdrop.classList.add('open');
   document.getElementById('fPrompt').focus();
@@ -770,11 +825,11 @@ questionForm.addEventListener('submit', async (e) => {
 
   const topicId = selectedFormTopicId();
   const prompt = document.getElementById('fPrompt').value.trim();
-  const options = [0, 1, 2, 3].map(i => document.getElementById(`fOpt${i}`).value.trim());
+  const options = Array.from(fOptionsContainer.querySelectorAll('.fOpt')).map(el => el.value.trim());
   const explanation = document.getElementById('fExplanation').value.trim();
   const answerIndex = Number(questionForm.querySelector('input[name=fCorrect]:checked').value);
 
-  if (!topicId || !prompt || options.some(o => !o)) {
+  if (!topicId || !prompt || options.length < MIN_OPTIONS || options.some(o => !o)) {
     formError.textContent = 'Konu, soru metni ve tüm şıklar zorunludur.';
     formError.classList.add('show');
     return;
