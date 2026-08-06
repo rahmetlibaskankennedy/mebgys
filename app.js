@@ -386,9 +386,9 @@ function getActiveDocuments() {
 
 function categoryCardMeta(categoryKey) {
   const presets = {
-    'general-legislation': { title: 'Mevzuat', description: 'Kanunlar, yönetmelikler ve resmi düzenlemeler', icon: 'scale', iconClass: '' },
-    'general-culture': { title: 'Genel Kültür', description: 'Tarih, coğrafya, vatandaşlık ve güncel bilgiler', icon: 'landmark', iconClass: 'blue' },
-    'meb-legislation': { title: 'MEB Mevzuatı', description: 'Millî Eğitim Bakanlığı mevzuat ve yönergeleri', icon: 'schoolbook', iconClass: 'red' }
+    'general-legislation': { title: 'Mevzuat', description: 'Kanunlar, yönetmelikler ve resmi düzenlemeler.', icon: 'scale', iconClass: '' },
+    'general-culture': { title: 'Ortak Alan Bilgisi', description: 'Türkçe, Genel Kültür gibi mevzuatta yer almayan konular.', icon: 'landmark', iconClass: 'blue' },
+    'meb-legislation': { title: 'MEB Mevzuatı', description: 'Millî Eğitim Bakanlığı mevzuat ve yönergeleri.', icon: 'schoolbook', iconClass: 'red' }
   };
   return presets[categoryKey] || { title: getCategory(categoryKey)?.title || 'Konu', description: getCategory(categoryKey)?.subtitle || '', icon: 'book', iconClass: '' };
 }
