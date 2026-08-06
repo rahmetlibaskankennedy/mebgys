@@ -1356,65 +1356,104 @@ function renderTrueFalse() {
   const q = tf.questions[tf.index];
   const total = tf.questions.length;
   const progressPct = Math.round((tf.index / total) * 100);
+  const tagMeta = categoryCardMeta(tf.categoryKey);
+  const tagLabel = tf.documentItem?.title || tagMeta.title;
+  const bookmarked = !!tf.bookmarks?.[q.id];
 
   topicList.innerHTML = `
     <div class="tf-shell">
-      <div class="tf-topbar">
-        <button type="button" class="topbar-back" id="tfClose">${svg('chevron')}<span>Çıkış</span></button>
-        <span class="tf-counter">${tf.index + 1} / ${total}</span>
-      </div>
-      <div class="tf-progress-bar"><div class="tf-progress-fill" style="width:${progressPct}%"></div></div>
-      <div class="tf-card">
-        <p class="tf-prompt">${escapeHtml(q.prompt)}</p>
-        <div class="tf-answer-box">
-          <span class="tf-answer-label">Verilen cevap</span>
-          <strong class="tf-answer-text">${escapeHtml(q.displayAnswer)}</strong>
+      <div class="tf-header">
+        <div class="tf-header-row">
+          <button type="button" class="tf-icon-btn" id="tfClose" aria-label="Geri dön">${svg('back')}</button>
+          <h2 class="tf-header-title">Doğru / Yanlış</h2>
+          <button type="button" class="tf-icon-btn${bookmarked ? ' is-active' : ''}" id="tfBookmark" aria-label="Soruyu kaydet" aria-pressed="${bookmarked}">${svg('bookmark')}</button>
         </div>
-        <p class="tf-question">Bu ifade doğru mu?</p>
-        <div class="tf-buttons">
-          <button type="button" class="tf-btn tf-btn-wrong" id="tfWrong">✗ Yanlış</button>
-          <button type="button" class="tf-btn tf-btn-correct" id="tfCorrect">✓ Doğru</button>
+        <div class="tf-progress-row">
+          <div class="tf-progress-track"><div class="tf-progress-fill" style="width:${progressPct}%"></div></div>
+          <span class="tf-progress-label">${tf.index + 1} / ${total}</span>
+        </div>
+      </div>
+      <div class="tf-body">
+        <div class="tf-card">
+          <span class="tf-topic-tag"><span class="tf-topic-icon">${svg(tagMeta.icon)}</span>${escapeHtml(tagLabel)}</span>
+          <p class="tf-statement">${escapeHtml(q.prompt)} <span class="tf-statement-answer">${escapeHtml(q.displayAnswer)}</span></p>
+          <div class="tf-buttons">
+            <button type="button" class="tf-btn tf-btn-wrong" id="tfWrong" aria-label="Bu ifade yanlış">
+              <span class="tf-btn-icon">${svg('alertX')}</span>Yanlış
+            </button>
+            <button type="button" class="tf-btn tf-btn-correct" id="tfCorrect" aria-label="Bu ifade doğru">
+              <span class="tf-btn-icon">${svg('check')}</span>Doğru
+            </button>
+          </div>
+          <div class="tf-result" id="tfResult" aria-live="polite" hidden></div>
         </div>
       </div>
     </div>`;
 
-  document.getElementById('tfClose').onclick = () => {
+  const exit = () => {
     state.tfQuiz = null;
     topicSheet.classList.remove('quiz-active');
     tf.returnView();
   };
+  document.getElementById('tfClose').onclick = exit;
+
+  document.getElementById('tfBookmark').onclick = () => {
+    tf.bookmarks = tf.bookmarks || {};
+    const nowBookmarked = !tf.bookmarks[q.id];
+    tf.bookmarks[q.id] = nowBookmarked;
+    const btn = document.getElementById('tfBookmark');
+    btn.classList.toggle('is-active', nowBookmarked);
+    btn.setAttribute('aria-pressed', String(nowBookmarked));
+    showToast(nowBookmarked ? 'Soru kaydedildi' : 'Kaydedilenlerden çıkarıldı');
+  };
+
+  const wrongBtn = document.getElementById('tfWrong');
+  const correctBtn = document.getElementById('tfCorrect');
 
   const answer = (userSaidCorrect) => {
     const wasRight = userSaidCorrect === q.isCorrectShown;
     tf.answers.push({ correct: wasRight });
     if (wasRight) tf.score++;
 
-    // Kısa feedback göster
-    const box = topicList.querySelector('.tf-answer-box');
-    box.classList.add(wasRight ? 'tf-feedback-correct' : 'tf-feedback-wrong');
-    const hint = document.createElement('p');
-    hint.className = 'tf-feedback-hint';
-    hint.textContent = wasRight
-      ? `✓ Doğru! Cevap: ${q.correctAnswer}`
-      : `✗ Yanlış. Doğru cevap: ${q.correctAnswer}`;
-    box.after(hint);
+    // Seçilen / seçilmeyen butonu görsel olarak ayır, ikisini de devre dışı bırak
+    const selectedBtn = userSaidCorrect ? correctBtn : wrongBtn;
+    const otherBtn = userSaidCorrect ? wrongBtn : correctBtn;
+    selectedBtn.classList.add('is-selected');
+    otherBtn.classList.add('is-muted');
+    wrongBtn.disabled = true;
+    correctBtn.disabled = true;
 
-    // Butonları disable et
-    document.getElementById('tfCorrect').disabled = true;
-    document.getElementById('tfWrong').disabled = true;
+    // Sonuç panelini doldur ve göster
+    const correctLabel = q.isCorrectShown ? 'Doğru' : 'Yanlış';
+    const resultBox = document.getElementById('tfResult');
+    resultBox.hidden = false;
+    resultBox.innerHTML = `
+      <div class="tf-result-panel ${wasRight ? 'is-correct' : 'is-wrong'}">
+        <div class="tf-result-head">
+          <span class="tf-result-icon">${svg(wasRight ? 'check' : 'alertX')}</span>
+          <div>
+            <strong class="tf-result-title">${wasRight ? 'Doğru cevap' : 'Cevabınız yanlış'}</strong>
+            ${wasRight ? '' : `<span class="tf-result-sub">Doğru cevap: ${escapeHtml(correctLabel)}</span>`}
+          </div>
+        </div>
+        <span class="tf-result-label">Açıklama</span>
+        <p class="tf-result-desc">Doğru bilgi: “${escapeHtml(q.correctAnswer)}”.</p>
+        <div class="tf-result-source">${svg('book')}<span>${escapeHtml(tagLabel)}</span></div>
+      </div>
+      <button type="button" class="tf-next-btn" id="tfNext">Sonraki Soru${svg('arrowRight')}</button>`;
 
-    setTimeout(() => {
+    document.getElementById('tfNext').onclick = () => {
       tf.index++;
       if (tf.index >= total) {
         renderTrueFalseResult();
       } else {
         renderTrueFalse();
       }
-    }, 1200);
+    };
   };
 
-  document.getElementById('tfCorrect').onclick = () => answer(true);
-  document.getElementById('tfWrong').onclick = () => answer(false);
+  correctBtn.onclick = () => answer(true);
+  wrongBtn.onclick = () => answer(false);
 }
 
 function renderTrueFalseResult() {
@@ -1424,16 +1463,21 @@ function renderTrueFalseResult() {
 
   topicList.innerHTML = `
     <div class="tf-shell">
-      <div class="tf-topbar">
-        <button type="button" class="topbar-back" id="tfResultClose">${svg('chevron')}<span>Çıkış</span></button>
-        <span class="tf-counter">Sonuç</span>
+      <div class="tf-header">
+        <div class="tf-header-row">
+          <button type="button" class="tf-icon-btn" id="tfResultClose" aria-label="Geri dön">${svg('back')}</button>
+          <h2 class="tf-header-title">Sonuç</h2>
+          <span class="tf-icon-btn" aria-hidden="true" style="visibility:hidden"></span>
+        </div>
       </div>
-      <div class="tf-result-card">
-        <strong class="tf-result-score">${tf.score} / ${total}</strong>
-        <span class="tf-result-pct">%${pct} başarı</span>
-        <div class="quiz-result-actions" style="margin-top:24px">
-          <button class="reader-secondary" id="tfRetry" type="button">Tekrar Dene</button>
-          <button class="reader-primary" id="tfReturn" type="button">Listeye Dön</button>
+      <div class="tf-body">
+        <div class="tf-result-card">
+          <strong class="tf-result-score">${tf.score} / ${total}</strong>
+          <span class="tf-result-pct">%${pct} başarı</span>
+          <div class="quiz-result-actions" style="margin-top:24px">
+            <button class="reader-secondary" id="tfRetry" type="button">Tekrar Dene</button>
+            <button class="reader-primary" id="tfReturn" type="button">Listeye Dön</button>
+          </div>
         </div>
       </div>
     </div>`;
