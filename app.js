@@ -1799,6 +1799,19 @@ function toggleQuestionFlag(question) {
   renderQuiz();
 }
 
+async function sendReportToTelegram(text) {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) throw new Error('Oturum bulunamadı.');
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/report-question`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+    body: JSON.stringify({ text })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Bildirim gönderilemedi.');
+  return data;
+}
+
 function reportQuestion(question) {
   const overlay = document.getElementById('reportModalOverlay');
   if (!overlay) return;
@@ -1822,8 +1835,6 @@ function reportQuestion(question) {
     closeModal();
     renderQuiz();
 
-    const TELEGRAM_BOT_TOKEN = '8849973635:AAH-JXWktkpzieXfAnCSUyM9Z6lOI8VzFgI';
-    const TELEGRAM_CHAT_ID = '1066033789';
     const user = window.currentUser;
     const userName = user?.user_metadata?.full_name || user?.email || 'Bilinmiyor';
     const text = [
@@ -1833,12 +1844,10 @@ function reportQuestion(question) {
       `❓ Soru: ${question.prompt}`,
     ].join('\n');
     try {
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text, parse_mode: 'Markdown' })
-      });
-    } catch {}
+      await sendReportToTelegram(text);
+    } catch (err) {
+      console.error('Telegram bildirimi gönderilemedi:', err);
+    }
     showToast('Bildirim geri alındı.');
   };
 
@@ -1850,9 +1859,6 @@ function reportQuestion(question) {
     haptic(14);
     saveProgress();
     renderQuiz();
-
-    const TELEGRAM_BOT_TOKEN = '8849973635:AAH-JXWktkpzieXfAnCSUyM9Z6lOI8VzFgI';
-    const TELEGRAM_CHAT_ID = '1066033789';
 
     const user = window.currentUser;
     const userName = user?.user_metadata?.full_name || user?.email || 'Bilinmiyor';
@@ -1869,13 +1875,9 @@ function reportQuestion(question) {
     const text = lines.join('\n');
 
     try {
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text, parse_mode: 'Markdown' })
-      });
+      await sendReportToTelegram(text);
       showToast('Bildirimin alındı, teşekkürler.');
-    } catch {
+    } catch (err) {
       showToast('Bildirim gönderilemedi, tekrar dene.');
     }
   };
