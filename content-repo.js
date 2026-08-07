@@ -48,7 +48,7 @@ const ContentRepo = (() => {
   // gerçekte madde verisi olmasına rağmen "- madde" görünüyordu.
   function parseArticleRangeCount(range) {
     if (!range) return 0;
-    const match = String(range).match(/(\d+)\s*-\s*(\d+)/);
+    const match = String(range).match(/(\d+)\s*[-–—]\s*(\d+)/);
     if (match) {
       const start = Number(match[1]);
       const end = Number(match[2]);
