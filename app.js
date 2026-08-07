@@ -1065,7 +1065,15 @@ function statValue(value) {
 }
 
 function statLine(item) {
-  return `${statValue(item.articleCount)} madde • ${statValue(item.questionCount)} soru`;
+  const sectionCount = (item.children || []).length;
+  const sectionPart = sectionCount > 0 ? `${sectionCount} bölüm • ` : '';
+  return `${sectionPart}${statValue(item.articleCount)} madde • ${statValue(item.questionCount)} soru`;
+}
+
+function statSpans(item, extraSpans = '') {
+  const sectionCount = (item.children || []).length;
+  const sectionSpan = sectionCount > 0 ? `<span><strong>${sectionCount}</strong> bölüm</span>` : '';
+  return `${sectionSpan}<span><strong>${statValue(item.articleCount)}</strong> madde</span><span><strong>${statValue(item.questionCount)}</strong> soru</span>${extraSpans}`;
 }
 
 function statusLabel(documentItem) {
@@ -1088,7 +1096,7 @@ function renderDocumentHub(documentItem, categoryKey) {
   topicList.innerHTML = `<section class="document-overview-card">
       <div class="document-overview-top"><span class="document-number">${escapeHtml(documentItem.documentNumber || 'KONU')}</span><span class="document-status ${isActive ? '' : 'is-pending'}">${statusLabel(documentItem)}</span></div>
       <h4>${escapeHtml(documentItem.title)}</h4><p>${isActive ? 'Bölüm bazında çalışabilir, rastgele test çözebilir ve kritik notlarla hızlı tekrar yapabilirsin.' : 'Bu başlık için akış hazır. Bölüm ve soru verisi eklendiğinde kartlar otomatik olarak aktifleşir.'}</p>
-      <div class="document-stats"><span><strong>${statValue(documentItem.articleCount)}</strong> madde</span><span><strong>${statValue(documentItem.questionCount)}</strong> soru</span><span><strong>%${documentProgress}</strong> ilerleme</span></div>
+      <div class="document-stats">${statSpans(documentItem, `<span><strong>%${documentProgress}</strong> ilerleme</span>`)}</div>
     </section>
     <div class="document-mode-grid">
       ${modeCard('sections', 'book', 'Madde Madde Çalış', 'Bölüm ve madde listesinden istediğin yere git.', sectionsReady)}
@@ -1134,7 +1142,7 @@ function renderTopicPlan(item, categoryKey) {
   topicList.innerHTML = `<section class="document-overview-card">
       <div class="document-overview-top"><span class="document-number">KONU</span><span class="document-status ${isActive ? '' : 'is-pending'}">${statusLabel(item)}</span></div>
       <h4>${escapeHtml(item.title)}</h4><p>${isActive ? 'Bölüm bazında çalışabilir, rastgele test çözebilir ve kritik notlarla hızlı tekrar yapabilirsin.' : 'Bu başlık için akış hazır. Bölüm ve soru verisi eklendiğinde kartlar otomatik olarak aktifleşir.'}</p>
-      <div class="document-stats"><span><strong>${statValue(item.articleCount)}</strong> madde</span><span><strong>${statValue(item.questionCount)}</strong> soru</span><span><strong>%${topicProgress}</strong> ilerleme</span></div>
+      <div class="document-stats">${statSpans(item, `<span><strong>%${topicProgress}</strong> ilerleme</span>`)}</div>
     </section>
     <div class="document-mode-grid">
       ${modeCard('sections', 'book', 'Madde Madde Çalış', 'Bölüm ve madde listesinden istediğin yere git.', sectionsReady)}
