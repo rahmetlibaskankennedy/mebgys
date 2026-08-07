@@ -1142,7 +1142,7 @@ function renderTopicPlan(item, categoryKey) {
     if (mode === 'sections') renderSections(item, categoryKey);
     if (mode === 'random') openRandomQuiz(item, categoryKey);
     if (mode === 'summary') renderSummary(item, categoryKey);
-    if (mode === 'truefalse') openTrueFalseMode(documentItem, categoryKey);
+    if (mode === 'truefalse') openTrueFalseMode(item, categoryKey);
   }));
 
   topicSheet.scrollTop = 0;
@@ -1203,7 +1203,7 @@ async function loadQuestionBank(documentItem) {
     const { data, error } = await supabaseClient
       .from('questions')
       .select('id,prompt,options,answer_index,section_id')
-      .in('topic_id', topicIds)
+      .eq('topic_id', documentItem.id)
       .order('sort_order', { ascending: true });
     
     if (error) throw error;
