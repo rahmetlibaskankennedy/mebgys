@@ -21,10 +21,15 @@ const ContentRepo = (() => {
   }
 
   // ---- categorytopics.json karşılığı -------------------------------------
+  // show_in_catalog=false olan topics satırları (ör. sadece deneme sınavı
+  // taslağı için var olan, kullanıcıya konu olarak gösterilmemesi gereken
+  // kayıtlar) burada filtrelenir. fetchExamTaxonomy/fetchExamBlueprint gibi
+  // diğer fonksiyonlar bu filtreyi uygulamaz; onlar hâlâ tüm topics satırlarına
+  // erişebilir, yani deneme sınavı akışı bu filtreden etkilenmez.
   async function fetchCatalogue() {
     const [{ data: categories, error: catErr }, { data: topics, error: topicErr }] = await Promise.all([
       client.from('categories').select('*').order('sort_order'),
-      client.from('topics').select('*').order('sort_order')
+      client.from('topics').select('*').eq('show_in_catalog', true).order('sort_order')
     ]);
     if (catErr) throw catErr;
     if (topicErr) throw topicErr;
