@@ -41,20 +41,47 @@ const ContentRepo = (() => {
       byParent.get(key).push(t);
     });
 
-    function buildNode(row) {
-      const node = { id: row.id, type: row.type, title: row.title };
-      if (row.document_number) node.documentNumber = row.document_number;
-      if (row.article_range) node.articleRange = row.article_range;
-      if (row.article_count != null) node.articleCount = row.article_count;
-      if (row.question_count != null) node.questionCount = row.question_count;
-      if (row.kadrolar?.length) node.kadrolar = row.kadrolar;
-      if (row.source_file) node.questionFile = row.source_file;
-      if (row.summary) node.summary = row.summary;
-      if (row.key_points?.length) node.keyPoints = row.key_points;
-      const children = byParent.get(row.id);
-      if (children?.length) node.children = children.map(buildNode);
-      return node;
+  // article_range "1-8", "9-27" gibi bir aralığı ifade eder. Bazı üst konularda
+  // (özellikle alt bölümlere ayrılmış kanunlarda) kendi article_count alanı hiç
+  // girilmemiş olabilir; bu durumda toplam madde sayısını doğrudan çocuk
+  // bölümlerin article_range toplamından hesaplıyoruz, aksi halde ekranda
+  // gerçekte madde verisi olmasına rağmen "- madde" görünüyordu.
+  function parseArticleRangeCount(range) {
+    if (!range) return 0;
+    const match = String(range).match(/(\d+)\s*-\s*(\d+)/);
+    if (match) {
+      const start = Number(match[1]);
+      const end = Number(match[2]);
+      if (Number.isFinite(start) && Number.isFinite(end) && end >= start) return end - start + 1;
     }
+    return /^\d+$/.test(String(range).trim()) ? 1 : 0;
+  }
+
+  function computeArticleCountFromChildren(children) {
+    const total = children.reduce((sum, child) => sum + parseArticleRangeCount(child.articleRange), 0);
+    return total > 0 ? total : null;
+  }
+
+  function buildNode(row) {
+    const node = { id: row.id, type: row.type, title: row.title };
+    if (row.document_number) node.documentNumber = row.document_number;
+    if (row.article_range) node.articleRange = row.article_range;
+    if (row.article_count != null) node.articleCount = row.article_count;
+    if (row.question_count != null) node.questionCount = row.question_count;
+    if (row.kadrolar?.length) node.kadrolar = row.kadrolar;
+    if (row.source_file) node.questionFile = row.source_file;
+    if (row.summary) node.summary = row.summary;
+    if (row.key_points?.length) node.keyPoints = row.key_points;
+    const children = byParent.get(row.id);
+    if (children?.length) {
+      node.children = children.map(buildNode);
+      if (node.articleCount == null) {
+        const computed = computeArticleCountFromChildren(node.children);
+        if (computed != null) node.articleCount = computed;
+      }
+    }
+    return node;
+  }
 
     const result = {};
     categories.forEach(cat => {
