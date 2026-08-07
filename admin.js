@@ -38,6 +38,10 @@ let newTopicParentId = null;            // "+ Ekle" tıklandığında hedef pare
 let newTopicCategoryId = null;
 let editingCategoryId = null;
 
+// ---- Bildirimler sekmesi state'i ----
+let feedbackStatusFilter = 'open';      // 'open' | 'resolved' | 'retracted' | 'all'
+let feedbackRowsCache = [];
+
 // ========================= 1) Giriş / admin kontrolü =========================
 async function boot() {
   const { data: { session } } = await supabaseClient.auth.getSession();
@@ -148,7 +152,7 @@ function switchTab(tab) {
     document.getElementById('mainTitle').textContent = currentKadro ? `${kadroLabel(currentKadro)} denemeleri` : 'Tüm denemeler';
     document.getElementById('mainSub').textContent = '';
     loadDenemeler();
-  } else {
+  } else if (tab === 'topics') {
     document.getElementById('mainActions').innerHTML =
       '<button class="btn" id="newCategoryBtn" type="button">+ Yeni Kategori</button>';
     document.getElementById('newCategoryBtn').addEventListener('click', () => openCategoryModal(null));
@@ -160,6 +164,24 @@ function switchTab(tab) {
       document.getElementById('mainSub').textContent = '';
       document.getElementById('content').innerHTML = '<div class="empty-state">Soldan bir kategori seçin, ya da yeni bir kategori oluşturun.</div>';
     }
+  } else if (tab === 'feedback') {
+    document.getElementById('mainActions').innerHTML = `
+      <select id="feedbackStatusSelect" class="btn secondary" style="cursor:pointer;">
+        <option value="open">Açık</option>
+        <option value="resolved">Çözüldü</option>
+        <option value="retracted">Geri Alınan</option>
+        <option value="all">Tümü</option>
+      </select>`;
+    const sel = document.getElementById('feedbackStatusSelect');
+    sel.value = feedbackStatusFilter;
+    sel.addEventListener('change', (e) => {
+      feedbackStatusFilter = e.target.value;
+      loadFeedback();
+    });
+    document.getElementById('mainTitle').textContent = 'Soru Bildirimleri';
+    document.getElementById('mainSub').textContent = '';
+    document.getElementById('content').innerHTML = '<div class="empty-state">Yükleniyor…</div>';
+    loadFeedback();
   }
 }
 
@@ -1846,6 +1868,110 @@ function reportGenerationSummary({ total, shortfalls }) {
   }
   const lines = shortfalls.map(s => `• ${s.title}: ${s.needed} isteniyordu, havuzda ${s.got} bulundu`).join('\n');
   alert(`${total} soru çekildi. Ancak bazı konularda soru havuzu yetersiz:\n\n${lines}`);
+}
+
+// ========================= 9) Bildirimler sekmesi =========================
+async function loadFeedback() {
+  let query = supabaseClient
+    .from('question_feedback')
+    .select('id, question_id, user_display, message, status, created_at, resolved_at, questions(prompt, topic_id)')
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  if (feedbackStatusFilter !== 'all') {
+    query = query.eq('status', feedbackStatusFilter);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    document.getElementById('content').innerHTML =
+      `<div class="empty-state">Bildirimler yüklenemedi: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  feedbackRowsCache = data || [];
+  document.getElementById('mainSub').textContent = `${feedbackRowsCache.length} kayıt`;
+  renderFeedbackTable();
+}
+
+function feedbackStatusBadge(status) {
+  const map = {
+    open: '<span class="badge no" style="background:#fde68a;color:#92400e;">Açık</span>',
+    resolved: '<span class="badge yes">Çözüldü</span>',
+    retracted: '<span class="badge no">Geri Alındı</span>',
+  };
+  return map[status] || escapeHtml(status);
+}
+
+function renderFeedbackTable() {
+  const contentEl = document.getElementById('content');
+  const rows = feedbackRowsCache;
+
+  if (!rows.length) {
+    contentEl.innerHTML = '<div class="empty-state">Bu filtrede bildirim yok.</div>';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'q-table';
+  table.innerHTML = `
+    <thead><tr>
+      <th style="width:14%">Tarih</th>
+      <th style="width:12%">Kullanıcı</th>
+      <th style="width:34%">Soru</th>
+      <th style="width:22%">Not</th>
+      <th style="width:10%">Durum</th>
+      <th></th>
+    </tr></thead>
+    <tbody></tbody>`;
+  const tbody = table.querySelector('tbody');
+
+  rows.forEach(row => {
+    const tr = document.createElement('tr');
+    const dt = new Date(row.created_at);
+    const dateStr = dt.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const promptText = row.questions?.prompt || `(soru bulunamadı: ${row.question_id || '-'})`;
+    tr.innerHTML = `
+      <td style="font-size:12px;color:var(--muted);">${dateStr}</td>
+      <td style="font-size:12px;">${escapeHtml(row.user_display || '-')}</td>
+      <td class="q-prompt">${escapeHtml(promptText)}</td>
+      <td style="font-size:12px;">${escapeHtml(row.message || '-')}</td>
+      <td>${feedbackStatusBadge(row.status)}</td>
+      <td class="row-actions">
+        ${row.question_id ? '<button type="button" class="edit">Soruyu Aç</button>' : ''}
+        ${row.status === 'open' ? '<button type="button" class="resolve">Çözüldü</button>' : ''}
+        <button type="button" class="del">Sil</button>
+      </td>`;
+
+    if (row.question_id) {
+      tr.querySelector('.edit').addEventListener('click', async () => {
+        const { data: q, error } = await supabaseClient.from('questions').select('*').eq('id', row.question_id).maybeSingle();
+        if (error || !q) { alert('Soru bulunamadı, silinmiş olabilir.'); return; }
+        currentTopicId = q.topic_id;
+        openQuestionModal(q);
+      });
+    }
+    const resolveBtn = tr.querySelector('.resolve');
+    if (resolveBtn) {
+      resolveBtn.addEventListener('click', async () => {
+        const { error } = await supabaseClient.from('question_feedback')
+          .update({ status: 'resolved', resolved_at: new Date().toISOString() })
+          .eq('id', row.id);
+        if (error) { alert('Güncellenemedi: ' + error.message); return; }
+        loadFeedback();
+      });
+    }
+    tr.querySelector('.del').addEventListener('click', async () => {
+      if (!confirm('Bu bildirim kalıcı olarak silinsin mi?')) return;
+      const { error } = await supabaseClient.from('question_feedback').delete().eq('id', row.id);
+      if (error) { alert('Silinemedi: ' + error.message); return; }
+      loadFeedback();
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  contentEl.innerHTML = '';
+  contentEl.appendChild(table);
 }
 
 // ========================= yardımcı =========================
