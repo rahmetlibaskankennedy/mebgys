@@ -1859,13 +1859,13 @@ function toggleQuestionFlag(question) {
   renderQuiz();
 }
 
-async function sendReportToTelegram(text) {
+async function sendReportToTelegram(text, extra = {}) {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) throw new Error('Oturum bulunamadı.');
   const response = await fetch(`${SUPABASE_URL}/functions/v1/report-question`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-    body: JSON.stringify({ text })
+    body: JSON.stringify({ text, ...extra })
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'Bildirim gönderilemedi.');
@@ -1904,7 +1904,11 @@ function reportQuestion(question) {
       `❓ Soru: ${question.prompt}`,
     ].join('\n');
     try {
-      await sendReportToTelegram(text);
+      await sendReportToTelegram(text, {
+        action: 'undo',
+        question_id: question.id,
+        user_display: userName,
+      });
     } catch (err) {
       console.error('Telegram bildirimi gönderilemedi:', err);
     }
@@ -1935,7 +1939,12 @@ function reportQuestion(question) {
     const text = lines.join('\n');
 
     try {
-      await sendReportToTelegram(text);
+      await sendReportToTelegram(text, {
+        action: 'report',
+        question_id: question.id,
+        note,
+        user_display: userName,
+      });
       showToast('Bildirimin alındı, teşekkürler.');
     } catch (err) {
       showToast('Bildirim gönderilemedi, tekrar dene.');
