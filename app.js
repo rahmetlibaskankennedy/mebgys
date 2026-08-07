@@ -1068,7 +1068,7 @@ function statLine(item) {
   return `${statValue(item.articleCount)} madde • ${statValue(item.questionCount)} soru`;
 }
 
-
+function statusLabel(documentItem) {
   if (documentItem.contentStatus === 'sample') return 'ÖRNEK İÇERİK AKTİF';
   if (documentItem.questionFile) return 'İÇERİK PAKETİ AKTİF';
   return 'İÇERİK PLANLANIYOR';
