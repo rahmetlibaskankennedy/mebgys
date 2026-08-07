@@ -1044,7 +1044,7 @@ function renderCategoryLevel(categoryKey) {
   topicList.innerHTML = items.map((item, index) => {
     const isDocument = item.type === 'document';
     const isComplete = isDocument && getDocumentProgress(item) === 100;
-    const info = isDocument ? `${item.articleCount || 0} madde • ${item.questionCount || 0} soru` : 'Konu anlatımı ve soru bankası';
+    const info = statLine(item);
     return `<article class="topic-item ${isComplete ? 'completed' : ''}" data-topic-index="${index}" role="button" tabindex="0"><div class="topic-number">${String(index + 1).padStart(2, '0')}</div><div class="topic-copy"><h4>${escapeHtml(item.title)}</h4><p>${info}</p></div>${isDocument && item.articleCount ? `<span class="article-range">${item.contentStatus === 'sample' ? 'ÖRNEK SET' : 'MEVZUAT'}</span>` : ''}<div class="topic-arrow">${svg('arrow')}</div></article>`;
   }).join('');
   topicList.querySelectorAll('[data-topic-index]').forEach(element => {
@@ -1060,7 +1060,15 @@ function renderCategoryLevel(categoryKey) {
   refreshVisibleQuestionCounts(items, () => { if (state.activeCategoryKey === categoryKey && !state.activeDocument) renderCategoryLevel(categoryKey); });
 }
 
-function statusLabel(documentItem) {
+function statValue(value) {
+  return (value === null || value === undefined) ? '-' : value;
+}
+
+function statLine(item) {
+  return `${statValue(item.articleCount)} madde • ${statValue(item.questionCount)} soru`;
+}
+
+
   if (documentItem.contentStatus === 'sample') return 'ÖRNEK İÇERİK AKTİF';
   if (documentItem.questionFile) return 'İÇERİK PAKETİ AKTİF';
   return 'İÇERİK PLANLANIYOR';
@@ -1071,7 +1079,7 @@ function renderDocumentHub(documentItem, categoryKey) {
   state.activeCategoryKey = categoryKey;
   topicSheet.classList.add('document-flow');
   topicSheet.classList.remove('quiz-active', 'card-study-active');
-  applySheetHeader({ title: documentItem.title, subtitle: documentItem.questionFile ? `${documentItem.articleCount || 0} madde • ${documentItem.questionCount || 0} soru` : 'İçerik yapısı hazır, kaynak paketi bekleniyor', eyebrow: 'MEVZUAT ÇALIŞMA MERKEZİ', icon: 'gavel', iconClass: categoryCardMeta(categoryKey).iconClass });
+  applySheetHeader({ title: documentItem.title, subtitle: documentItem.questionFile ? statLine(documentItem) : 'İçerik yapısı hazır, kaynak paketi bekleniyor', eyebrow: 'MEVZUAT ÇALIŞMA MERKEZİ', icon: 'gavel', iconClass: categoryCardMeta(categoryKey).iconClass });
   renderBreadcrumb(getCategory(categoryKey).title, () => renderCategoryLevel(categoryKey));
   const documentProgress = getDocumentProgress(documentItem);
   setSheetProgress('Henüz çalışılmadı', documentProgress);
@@ -1080,7 +1088,7 @@ function renderDocumentHub(documentItem, categoryKey) {
   topicList.innerHTML = `<section class="document-overview-card">
       <div class="document-overview-top"><span class="document-number">${escapeHtml(documentItem.documentNumber || 'KONU')}</span><span class="document-status ${isActive ? '' : 'is-pending'}">${statusLabel(documentItem)}</span></div>
       <h4>${escapeHtml(documentItem.title)}</h4><p>${isActive ? 'Bölüm bazında çalışabilir, rastgele test çözebilir ve kritik notlarla hızlı tekrar yapabilirsin.' : 'Bu başlık için akış hazır. Bölüm ve soru verisi eklendiğinde kartlar otomatik olarak aktifleşir.'}</p>
-      <div class="document-stats"><span><strong>${documentItem.articleCount || 0}</strong> madde</span><span><strong>${documentItem.questionCount || 0}</strong> soru</span><span><strong>%${documentProgress}</strong> ilerleme</span></div>
+      <div class="document-stats"><span><strong>${statValue(documentItem.articleCount)}</strong> madde</span><span><strong>${statValue(documentItem.questionCount)}</strong> soru</span><span><strong>%${documentProgress}</strong> ilerleme</span></div>
     </section>
     <div class="document-mode-grid">
       ${modeCard('sections', 'book', 'Madde Madde Çalış', 'Bölüm ve madde listesinden istediğin yere git.', sectionsReady)}
@@ -1114,7 +1122,7 @@ function renderTopicPlan(item, categoryKey) {
   const sectionsReady = Boolean(item.children && item.children.length);
   applySheetHeader({
     title: item.title,
-    subtitle: isActive ? `${item.questionCount || 0} soru • aktif soru bankası` : 'İçerik yapısı hazır, kaynak paketi bekleniyor',
+    subtitle: isActive ? statLine(item) : 'İçerik yapısı hazır, kaynak paketi bekleniyor',
     eyebrow: 'KONU ÇALIŞMA MERKEZİ',
     icon: 'book',
     iconClass: categoryCardMeta(categoryKey).iconClass
@@ -1126,7 +1134,7 @@ function renderTopicPlan(item, categoryKey) {
   topicList.innerHTML = `<section class="document-overview-card">
       <div class="document-overview-top"><span class="document-number">KONU</span><span class="document-status ${isActive ? '' : 'is-pending'}">${statusLabel(item)}</span></div>
       <h4>${escapeHtml(item.title)}</h4><p>${isActive ? 'Bölüm bazında çalışabilir, rastgele test çözebilir ve kritik notlarla hızlı tekrar yapabilirsin.' : 'Bu başlık için akış hazır. Bölüm ve soru verisi eklendiğinde kartlar otomatik olarak aktifleşir.'}</p>
-      <div class="document-stats"><span><strong>${item.articleCount || 0}</strong> madde</span><span><strong>${item.questionCount || 0}</strong> soru</span><span><strong>%${topicProgress}</strong> ilerleme</span></div>
+      <div class="document-stats"><span><strong>${statValue(item.articleCount)}</strong> madde</span><span><strong>${statValue(item.questionCount)}</strong> soru</span><span><strong>%${topicProgress}</strong> ilerleme</span></div>
     </section>
     <div class="document-mode-grid">
       ${modeCard('sections', 'book', 'Madde Madde Çalış', 'Bölüm ve madde listesinden istediğin yere git.', sectionsReady)}
