@@ -31,8 +31,10 @@ const ContentRepo = (() => {
       client.from('categories').select('*').order('sort_order'),
       client.from('topics').select('*').eq('show_in_catalog', true).order('sort_order')
     ]);
-    if (catErr) throw catErr;
-    if (topicErr) throw topicErr;
+    if (catErr) throw new Error(`Kategoriler yüklenemedi: ${catErr.message}`);
+    if (topicErr) throw new Error(`Konular yüklenemedi: ${topicErr.message}`);
+    if (!Array.isArray(categories)) throw new Error('Kategoriler beklenmeyen formatta döndü.');
+    if (!Array.isArray(topics)) throw new Error('Konular beklenmeyen formatta döndü.');
 
     const byParent = new Map();
     topics.forEach(t => {
@@ -144,11 +146,15 @@ const ContentRepo = (() => {
 
   // ---- cards/*.json (flip flashcard) karşılığı ----------------------------
   // loadCardDeck(doc) -> doc.cardFile ile çağrılır; {cards:[{question,answer}]} döner.
+  // NOT: id kolonu bilinçli olarak seçiliyor — flip-card modu şu an sadece oturum
+  // içi index kullanıyor, ama id burada olmazsa ileride kalıcı "öğrendim" işaretlemesi
+  // (aralıklı tekrar) eklenmek istendiğinde dizi indeksine bağlı kalınır ve içeriğe
+  // yeni kart eklendiğinde tüm kullanıcıların ilerlemesi kayar.
   async function fetchFlashcardsByPath(path) {
     const { data: deck, error: deckErr } = await client.from('card_decks').select('id').eq('source_file', path).eq('deck_type', 'flashcard').maybeSingle();
     if (deckErr) throw deckErr;
     if (!deck) throw new Error(`Kart destesi bulunamadı: ${path}`);
-    const { data, error } = await client.from('flashcards').select('question, answer').eq('deck_id', deck.id).order('sort_order');
+    const { data, error } = await client.from('flashcards').select('id, question, answer').eq('deck_id', deck.id).order('sort_order');
     if (error) throw error;
     return { cards: data };
   }
@@ -197,8 +203,9 @@ const ContentRepo = (() => {
       client.from('exam_kadrolar').select('*'),
       client.from('exam_blueprint_items').select('*').order('sort_order')
     ]);
-    if (kErr) throw kErr;
-    if (iErr) throw iErr;
+    if (kErr) throw new Error(`Kadrolar yüklenemedi: ${kErr.message}`);
+    if (iErr) throw new Error(`Sınav taslağı yüklenemedi: ${iErr.message}`);
+    if (!Array.isArray(kadrolar) || !Array.isArray(items)) throw new Error('Sınav taslağı beklenmeyen formatta döndü.');
     const byKadro = new Map();
     items.forEach(item => {
       if (!byKadro.has(item.kadro)) byKadro.set(item.kadro, []);

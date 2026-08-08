@@ -5,6 +5,11 @@ const DAILY_GOAL_MIN = 1;
 const DAILY_GOAL_MAX = 500;
 const QUESTION_TIME_LIMIT = 60;
 
+// ---- Zamanlama sabitleri (önceden dosya içinde dağınık "magic number" olarak vardı) ----
+const TOAST_DURATION_MS = 2400;          // Toast bildiriminin ekranda kalma süresi
+const CLOUD_SYNC_DEBOUNCE_MS = 1500;     // Progress değişikliğinden sonra Supabase'e yazana kadar bekleme (debounce)
+const SEARCH_FOCUS_DELAY_MS = 300;       // Arama input'una modal açıldıktan sonra odaklanma gecikmesi
+
 const ROLES = [
   { key: 'memur', label: 'Memur' },
   { key: 'sef', label: 'Şef' },
@@ -138,7 +143,7 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add('show');
   window.clearTimeout(showToast.timeout);
-  showToast.timeout = window.setTimeout(() => toast.classList.remove('show'), 2400);
+  showToast.timeout = window.setTimeout(() => toast.classList.remove('show'), TOAST_DURATION_MS);
 }
 
 // --- YAPAY ZEKA İLE AÇIKLAMA (Gemini üzerinden Supabase Edge Function) ---
@@ -237,7 +242,7 @@ let cloudSyncPending = false;
 function scheduleCloudSync() {
   if (!window.currentUser?.id) return;
   clearTimeout(cloudSyncTimer);
-  cloudSyncTimer = window.setTimeout(pushProgressToCloud, 1500);
+  cloudSyncTimer = window.setTimeout(pushProgressToCloud, CLOUD_SYNC_DEBOUNCE_MS);
 }
 
 async function pushProgressToCloud() {
@@ -268,6 +273,25 @@ function saveProgress() {
   updateHeader();
   if (state.view === 'home' || state.view === 'profile' || state.view === 'mistakes') render();
 }
+
+// Bekleyen (debounce'lanmış) senkronizasyonu hemen tetikler. Sekme kapatılırken/gizlenirken
+// veya çıkış yapılırken 1500ms'lik bekleme süresi içinde kalan son değişikliğin sunucuya
+// hiç ulaşmadan kaybolmasını önler.
+function flushProgressSync() {
+  if (cloudSyncTimer) {
+    clearTimeout(cloudSyncTimer);
+    cloudSyncTimer = null;
+    return pushProgressToCloud();
+  }
+  return Promise.resolve();
+}
+
+// Sekme arka plana alındığında / kapatılmak üzereyken bekleyen senkronizasyonu zorla.
+// 'pagehide' 'beforeunload'a göre daha güvenilir tetiklenir (bfcache dahil).
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') flushProgressSync();
+});
+window.addEventListener('pagehide', () => { flushProgressSync(); });
 
 function dateKey(date = new Date()) {
   const year = date.getFullYear();
@@ -398,7 +422,7 @@ function loadingView() {
 }
 
 function errorView() {
-  return `<section class="screen neutral-screen"><div class="empty-state empty-state-error"><span class="empty-state-icon">${svg('book')}</span><h3>İçerikler yüklenemedi</h3><p>${escapeHtml(state.catalogueError || 'categoryTopics.json dosyasını kontrol et.')}</p><button class="reader-primary" id="retryLoadButton" type="button">Tekrar Dene</button></div></section>`;
+  return `<section class="screen neutral-screen"><div class="empty-state empty-state-error"><span class="empty-state-icon">${svg('book')}</span><h3>İçerikler yüklenemedi</h3><p>${escapeHtml(state.catalogueError || 'Sunucuya bağlanılamadı, internet bağlantını kontrol et.')}</p><button class="reader-primary" id="retryLoadButton" type="button">Tekrar Dene</button></div></section>`;
 }
 
 function statCard(icon, colorClass, number, label, target) {
@@ -809,7 +833,10 @@ function bindViewEvents() {
     button.addEventListener('click', () => startDenemeSinavi(Number(button.dataset.startDeneme)));
   });
   document.getElementById('resetProgressButton')?.addEventListener('click', resetProgress);
-  document.getElementById('signOutButton')?.addEventListener('click', () => window.signOut());
+  document.getElementById('signOutButton')?.addEventListener('click', async () => {
+    await flushProgressSync();
+    window.signOut();
+  });
 
   const profileGoalInput = document.getElementById('profileDailyGoalInput');
   const profileGoalSaveButton = document.getElementById('profileDailyGoalSaveButton');
@@ -909,7 +936,7 @@ function openSearchSheet() {
   routeSheet.classList.remove('open');
   searchSheet.classList.add('open');
   topicBackdrop.classList.add('open');
-  window.setTimeout(() => searchInput.focus(), 300);
+  window.setTimeout(() => searchInput.focus(), SEARCH_FOCUS_DELAY_MS);
   runSearch('');
 }
 

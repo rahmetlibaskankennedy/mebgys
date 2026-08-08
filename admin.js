@@ -42,6 +42,17 @@ let editingCategoryId = null;
 let feedbackStatusFilter = 'open';      // 'open' | 'resolved' | 'retracted' | 'all'
 let feedbackRowsCache = [];
 
+// ---- Toast bildirimleri (alert() yerine) ----
+const adminToastEl = document.getElementById('adminToast');
+function showToast(message, isError = false) {
+  if (!adminToastEl) { window.alert(message); return; } // güvenlik ağı: element yoksa eski davranışa düş
+  adminToastEl.textContent = message;
+  adminToastEl.classList.toggle('error', isError);
+  adminToastEl.classList.add('show');
+  window.clearTimeout(showToast.timeout);
+  showToast.timeout = window.setTimeout(() => adminToastEl.classList.remove('show'), 3200);
+}
+
 // ========================= 1) Giriş / admin kontrolü =========================
 async function boot() {
   const { data: { session } } = await supabaseClient.auth.getSession();
@@ -416,11 +427,11 @@ async function searchQuestionById(rawId) {
   if (searchBtn) { searchBtn.disabled = false; searchBtn.textContent = 'Bul'; }
 
   if (error) {
-    alert('Arama sırasında hata oluştu: ' + error.message);
+    showToast('Arama sırasında hata oluştu: ' + error.message, true);
     return;
   }
   if (!question) {
-    alert(`"${id}" ile eşleşen bir soru bulunamadı.`);
+    showToast(`"${id}" ile eşleşen bir soru bulunamadı.`, true);
     return;
   }
 
@@ -523,7 +534,7 @@ function renderQuestionsTable() {
 async function deleteQuestion(id) {
   if (!confirm('Bu soruyu silmek istediğinize emin misiniz?')) return;
   const { error } = await supabaseClient.from('questions').delete().eq('id', id);
-  if (error) { alert('Silinemedi: ' + error.message); return; }
+  if (error) { showToast('Silinemedi: ' + error.message, true); return; }
   loadQuestions();
 }
 
@@ -581,7 +592,7 @@ async function bulkDeleteQuestions() {
   if (!ids.length) return;
   if (!confirm(`${ids.length} soruyu kalıcı olarak silmek istediğinize emin misiniz?`)) return;
   const { error } = await supabaseClient.from('questions').delete().in('id', ids);
-  if (error) { alert('Silinemedi: ' + error.message); return; }
+  if (error) { showToast('Silinemedi: ' + error.message, true); return; }
   selectedQuestionIds.clear();
   loadQuestions();
 }
@@ -596,7 +607,7 @@ function reportBaseName() {
 function answerLetter(i) { return ['A', 'B', 'C', 'D', 'E', 'F'][i] || ''; }
 
 function exportQuestionsExcel(questions) {
-  if (!questions.length) { alert('Dışa aktarılacak soru yok.'); return; }
+  if (!questions.length) { showToast('Dışa aktarılacak soru yok.', true); return; }
   const rows = [['No', 'Soru', 'Şık A', 'Şık B', 'Şık C', 'Şık D', 'Doğru Şık', 'Açıklama']];
   questions.forEach((q, i) => {
     const opts = q.options || [];
@@ -645,8 +656,8 @@ function buildReportHtml(questions) {
 }
 
 async function exportQuestionsPDF(questions) {
-  if (!questions.length) { alert('Dışa aktarılacak soru yok.'); return; }
-  if (!window.html2canvas || !window.jspdf) { alert('PDF kütüphaneleri yüklenemedi. İnternet bağlantınızı kontrol edin.'); return; }
+  if (!questions.length) { showToast('Dışa aktarılacak soru yok.', true); return; }
+  if (!window.html2canvas || !window.jspdf) { showToast('PDF kütüphaneleri yüklenemedi. İnternet bağlantınızı kontrol edin.', true); return; }
 
   const container = document.createElement('div');
   container.style.position = 'fixed';
@@ -681,14 +692,14 @@ async function exportQuestionsPDF(questions) {
 
     doc.save(`${reportBaseName()}.pdf`);
   } catch (err) {
-    alert('PDF oluşturulamadı: ' + err.message);
+    showToast('PDF oluşturulamadı: ' + err.message, true);
   } finally {
     document.body.removeChild(container);
   }
 }
 
 function exportQuestionsWord(questions) {
-  if (!questions.length) { alert('Dışa aktarılacak soru yok.'); return; }
+  if (!questions.length) { showToast('Dışa aktarılacak soru yok.', true); return; }
   const bodyHtml = buildReportHtml(questions);
   const html = `<!DOCTYPE html>
     <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
@@ -1112,7 +1123,7 @@ bulkForm.addEventListener('submit', async (e) => {
   const topicLabel = topicsById[topicId] ? topicsById[topicId].title : topicId;
   closeBulkModal();
   if (currentTopicId && collectDescendantTopicIds(currentTopicId).includes(topicId)) loadQuestions();
-  else alert(`${rows.length} soru "${topicLabel}" konusuna eklendi.`);
+  else showToast(`${rows.length} soru "${topicLabel}" konusuna eklendi.`);
 });
 
 
@@ -1213,7 +1224,7 @@ async function loadDenemeler() {
 async function deleteDeneme(id, title) {
   if (!confirm(`"${title}" denemesini silmek istediğinize emin misiniz? Bu işlemi geri alamazsınız.`)) return;
   const { error } = await supabaseClient.from('denemeler').delete().eq('id', id);
-  if (error) { alert('Silinemedi: ' + error.message); return; }
+  if (error) { showToast('Silinemedi: ' + error.message, true); return; }
   loadDenemeler();
 }
 
@@ -1299,7 +1310,7 @@ regenerateBtn.addEventListener('click', async () => {
 
     reportGenerationSummary(summary);
   } catch (err) {
-    alert('Sorular yeniden oluşturulamadı, mevcut sorular korundu: ' + err.message);
+    showToast('Sorular yeniden oluşturulamadı, mevcut sorular korundu: ' + err.message, true);
   } finally {
     regenerateBtn.disabled = false;
     regenerateBtn.textContent = 'Soruları Yeniden Oluştur';
@@ -1667,7 +1678,7 @@ async function deleteTopicNode(id, title) {
   const currentTopicWasAffected = currentTopicId && affectedIds.includes(currentTopicId);
 
   const { error } = await supabaseClient.from('topics').delete().eq('id', id);
-  if (error) { alert('Silinemedi: ' + error.message); return; }
+  if (error) { showToast('Silinemedi: ' + error.message, true); return; }
 
   if (manageParentId === id) manageParentId = null;
   if (currentTopicWasAffected) {
@@ -1688,7 +1699,7 @@ async function deleteCategory(category) {
   const currentTopicWasAffected = currentTopicId && affectedIds.includes(currentTopicId);
 
   const { error } = await supabaseClient.from('categories').delete().eq('id', category.id);
-  if (error) { alert('Silinemedi: ' + error.message); return; }
+  if (error) { showToast('Silinemedi: ' + error.message, true); return; }
 
   if (manageCategoryId === category.id) { manageCategoryId = null; manageParentId = null; }
   if (currentTopicWasAffected) {
@@ -1863,11 +1874,11 @@ async function generateDenemeQuestions(denemeId, kadro) {
 
 function reportGenerationSummary({ total, shortfalls }) {
   if (!shortfalls.length) {
-    alert(`${total} soru başarıyla çekildi.`);
+    showToast(`${total} soru başarıyla çekildi.`);
     return;
   }
   const lines = shortfalls.map(s => `• ${s.title}: ${s.needed} isteniyordu, havuzda ${s.got} bulundu`).join('\n');
-  alert(`${total} soru çekildi. Ancak bazı konularda soru havuzu yetersiz:\n\n${lines}`);
+  showToast(`${total} soru çekildi. Ancak bazı konularda soru havuzu yetersiz:\n\n${lines}`);
 }
 
 // ========================= 9) Bildirimler sekmesi =========================
@@ -1945,7 +1956,7 @@ function renderFeedbackTable() {
     if (row.question_id) {
       tr.querySelector('.edit').addEventListener('click', async () => {
         const { data: q, error } = await supabaseClient.from('questions').select('*').eq('id', row.question_id).maybeSingle();
-        if (error || !q) { alert('Soru bulunamadı, silinmiş olabilir.'); return; }
+        if (error || !q) { showToast('Soru bulunamadı, silinmiş olabilir.', true); return; }
         currentTopicId = q.topic_id;
         openQuestionModal(q);
       });
@@ -1956,14 +1967,14 @@ function renderFeedbackTable() {
         const { error } = await supabaseClient.from('question_feedback')
           .update({ status: 'resolved', resolved_at: new Date().toISOString() })
           .eq('id', row.id);
-        if (error) { alert('Güncellenemedi: ' + error.message); return; }
+        if (error) { showToast('Güncellenemedi: ' + error.message, true); return; }
         loadFeedback();
       });
     }
     tr.querySelector('.del').addEventListener('click', async () => {
       if (!confirm('Bu bildirim kalıcı olarak silinsin mi?')) return;
       const { error } = await supabaseClient.from('question_feedback').delete().eq('id', row.id);
-      if (error) { alert('Silinemedi: ' + error.message); return; }
+      if (error) { showToast('Silinemedi: ' + error.message, true); return; }
       loadFeedback();
     });
 
