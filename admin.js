@@ -42,6 +42,10 @@ let editingCategoryId = null;
 let feedbackStatusFilter = 'open';      // 'open' | 'resolved' | 'retracted' | 'all'
 let feedbackRowsCache = [];
 
+// ---- Kullanıcılar sekmesi state'i ----
+let userSearchQuery = '';
+let userRowsCache = [];
+
 // ---- Toast bildirimleri (alert() yerine) ----
 const adminToastEl = document.getElementById('adminToast');
 function showToast(message, isError = false) {
@@ -193,6 +197,25 @@ function switchTab(tab) {
     document.getElementById('mainSub').textContent = '';
     document.getElementById('content').innerHTML = '<div class="empty-state">Yükleniyor…</div>';
     loadFeedback();
+  } else if (tab === 'users') {
+    document.getElementById('mainActions').innerHTML =
+      '<input type="text" id="userSearchInput" class="id-search-input" placeholder="E-posta ile ara…">' +
+      '<button class="btn secondary" id="userSearchBtn" type="button">Ara</button>';
+    document.getElementById('userSearchInput').value = userSearchQuery;
+    document.getElementById('userSearchBtn').addEventListener('click', () => {
+      userSearchQuery = document.getElementById('userSearchInput').value.trim();
+      loadUsers();
+    });
+    document.getElementById('userSearchInput').addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      userSearchQuery = e.target.value.trim();
+      loadUsers();
+    });
+    document.getElementById('mainTitle').textContent = 'Kullanıcılar';
+    document.getElementById('mainSub').textContent = '';
+    document.getElementById('content').innerHTML = '<div class="empty-state">Yükleniyor…</div>';
+    loadUsers();
   }
 }
 
@@ -1977,6 +2000,93 @@ function renderFeedbackTable() {
       if (error) { showToast('Silinemedi: ' + error.message, true); return; }
       loadFeedback();
     });
+
+    tbody.appendChild(tr);
+  });
+
+  contentEl.innerHTML = '';
+  contentEl.appendChild(table);
+}
+
+// ========================= 10) Kullanıcılar sekmesi (premium yönetimi) =========================
+// NOT: auth.users tablosu istemciye hiç açılmıyor; e-posta/premium bilgisi
+// sadece admin_search_users() RPC'si üzerinden (is_admin() kontrollü) geliyor.
+async function loadUsers() {
+  const { data, error } = await supabaseClient.rpc('admin_search_users', { p_query: userSearchQuery });
+  if (error) {
+    document.getElementById('content').innerHTML =
+      `<div class="empty-state">Kullanıcılar yüklenemedi: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  userRowsCache = data || [];
+  document.getElementById('mainSub').textContent = userSearchQuery
+    ? `"${userSearchQuery}" için ${userRowsCache.length} sonuç`
+    : `${userRowsCache.length} kullanıcı (ilk 30)`;
+  renderUsersTable();
+}
+
+function renderUsersTable() {
+  const contentEl = document.getElementById('content');
+  const rows = userRowsCache;
+
+  if (!rows.length) {
+    contentEl.innerHTML = '<div class="empty-state">Kullanıcı bulunamadı.</div>';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'q-table';
+  table.innerHTML = `
+    <thead><tr>
+      <th style="width:34%">E-posta</th>
+      <th style="width:12%">Admin</th>
+      <th style="width:14%">Premium</th>
+      <th style="width:20%">Bitiş</th>
+      <th></th>
+    </tr></thead>
+    <tbody></tbody>`;
+  const tbody = table.querySelector('tbody');
+
+  rows.forEach(row => {
+    const tr = document.createElement('tr');
+    const untilStr = row.premium_until
+      ? new Date(row.premium_until).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+      : (row.is_premium ? 'Süresiz' : '-');
+    tr.innerHTML = `
+      <td>${escapeHtml(row.email || '-')}</td>
+      <td>${row.is_admin ? '<span class="badge yes">Admin</span>' : ''}</td>
+      <td>${row.is_premium ? '<span class="badge yes">Premium</span>' : '<span class="badge no">Ücretsiz</span>'}</td>
+      <td style="font-size:12px;color:var(--muted);">${escapeHtml(untilStr)}</td>
+      <td class="row-actions">
+        <button type="button" class="grant30">+30 Gün</button>
+        <button type="button" class="grant-forever">Süresiz Yap</button>
+        ${row.is_premium ? '<button type="button" class="revoke del">Kaldır</button>' : ''}
+      </td>`;
+
+    tr.querySelector('.grant30').addEventListener('click', async () => {
+      const until = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      const { error } = await supabaseClient.rpc('admin_set_premium', { p_user_id: row.id, p_is_premium: true, p_premium_until: until });
+      if (error) { showToast('Güncellenemedi: ' + error.message, true); return; }
+      showToast(`${row.email} — 30 günlük premium verildi.`);
+      loadUsers();
+    });
+    tr.querySelector('.grant-forever').addEventListener('click', async () => {
+      if (!confirm(`${row.email} kullanıcısına süresiz premium verilsin mi?`)) return;
+      const { error } = await supabaseClient.rpc('admin_set_premium', { p_user_id: row.id, p_is_premium: true, p_premium_until: null });
+      if (error) { showToast('Güncellenemedi: ' + error.message, true); return; }
+      showToast(`${row.email} — süresiz premium verildi.`);
+      loadUsers();
+    });
+    const revokeBtn = tr.querySelector('.revoke');
+    if (revokeBtn) {
+      revokeBtn.addEventListener('click', async () => {
+        if (!confirm(`${row.email} kullanıcısının premium erişimi kaldırılsın mı?`)) return;
+        const { error } = await supabaseClient.rpc('admin_set_premium', { p_user_id: row.id, p_is_premium: false, p_premium_until: null });
+        if (error) { showToast('Güncellenemedi: ' + error.message, true); return; }
+        showToast(`${row.email} — premium kaldırıldı.`);
+        loadUsers();
+      });
+    }
 
     tbody.appendChild(tr);
   });

@@ -144,6 +144,31 @@ const ContentRepo = (() => {
     throw new Error(`Soru kaynağı bulunamadı: ${path}`);
   }
 
+  // ---- "Rastgele Test" modunun tek giriş kapısı ----------------------------
+  // Eskiden openRandomQuiz (app.js) fetchQuestionsByPath ile TÜM konu bankasını
+  // indirip tarayıcıda shuffle+slice(0,20) yapıyordu — bu da tarayıcıya (Network
+  // sekmesinden görülebilecek şekilde) her zaman tam bankanın inmesi demekti.
+  // Artık rastgele seçim VE ücretsiz hak sayacı sunucudaki get_random_test_questions()
+  // RPC'sinde: premium ise sınırsız rastgele 20, değilse konu başına 2 hakla
+  // sınırlı rastgele 10 soru döner. Hak bittiyse RPC hata döner, biz bunu
+  // FREE_LIMIT_REACHED koduyla üst katmana (app.js) iletiyoruz.
+  async function fetchRandomTestQuestions(topicId) {
+    const topicIds = await collectDescendantTopicIds(topicId);
+    const { data, error } = await client.rpc('get_random_test_questions', {
+      p_topic_ids: topicIds,
+      p_topic_key: topicId
+    });
+    if (error) {
+      if (error.code === 'P0001' || /FREE_LIMIT_REACHED/.test(error.message || '')) {
+        const limitError = new Error('FREE_LIMIT_REACHED');
+        limitError.code = 'FREE_LIMIT_REACHED';
+        throw limitError;
+      }
+      throw error;
+    }
+    return (data || []).map(mapQuestionRow);
+  }
+
   // ---- cards/*.json (flip flashcard) karşılığı ----------------------------
   // loadCardDeck(doc) -> doc.cardFile ile çağrılır; {cards:[{question,answer}]} döner.
   // NOT: id kolonu bilinçli olarak seçiliyor — flip-card modu şu an sadece oturum
@@ -218,5 +243,5 @@ const ContentRepo = (() => {
     return result;
   }
 
-  return { fetchCatalogue, fetchQuestionsByPath, fetchFlashcardsByPath, fetchCardsByTopicId, fetchExamTaxonomy, fetchExamBlueprint };
+  return { fetchCatalogue, fetchQuestionsByPath, fetchFlashcardsByPath, fetchCardsByTopicId, fetchExamTaxonomy, fetchExamBlueprint, fetchRandomTestQuestions };
 })();
